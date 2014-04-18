@@ -3,7 +3,9 @@ OpenStackInAction
 
 Code and configuration supporting the OpenStack In Action book.
 
-ch2:
+File are in the format <listing number>_<listing name>.txt
 
-* local.conf = DevStack configuration file
-* devstack.tar.gz = **optional** DevStack code known to work with *local.conf*
+Listings:
+
+* Chapter 2
+* Chapter 3
