@@ -1,0 +1,1 @@
+"cd ~/devstack/chmod u+x tools/create-stack-user.shtools/create-stack-user.shchown -R stack:stack ~/devstack"

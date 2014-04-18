@@ -1,0 +1,1 @@
+keystone user-create --name=johndoe --pass=openstack1 --tenant-id 9932bc0607014caeab4c3d2b94d5a40c --email=johndoe@testco.com

@@ -1,0 +1,1 @@
+neutron subnet-create --tenant-id 9932bc0607014caeab4c3d2b94d5a40c GENERAL_NETWORK 172.24.220.0/24

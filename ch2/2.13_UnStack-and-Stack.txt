@@ -1,0 +1,1 @@
+"./unstack.sh./clean.shsudo rm -rf /opt/stacksudo reboot"

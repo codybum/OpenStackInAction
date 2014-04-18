@@ -1,0 +1,1 @@
+nova boot --flavor <flavor_id> --image <image_id> <instance name>

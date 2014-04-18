@@ -1,0 +1,1 @@
+keystone user-role-add --tenant-id 9932bc0607014caeab4c3d2b94d5a40c --user-id 21b27d5f7ba04817894d290b660f3f44 --role-id 4b303a1c20d64deaa6cb9c4dfacc33a9

@@ -1,0 +1,1 @@
+nova quota-show --user <user_id> --tenant <tenant_id>

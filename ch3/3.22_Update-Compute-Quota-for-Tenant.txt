@@ -1,0 +1,1 @@
+nova quota-update --<quota_key> <quota_value> <tenant-id>

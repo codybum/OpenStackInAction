@@ -1,0 +1,1 @@
+neutron net-create new_public --router:external=True
