@@ -1,1 +1,18 @@
-"Installing package prerequisitesInstalling OpenStack project sourceInstalling TempestStarting RabbitMQConfiguring and starting MySQLStarting KeystoneConfiguring and starting HorizonConfiguring GlanceConfiguring NeutronConfiguring CinderConfiguring NovaStarting GlanceStarting Nova APIStarting NeutronCreating initial neutron network elementsStarting NovaStarting CinderUploading imagesInitializing Tempeststack.sh completed in 502 seconds."
+Installing package prerequisites
+Installing OpenStack project source
+Installing TempestStarting RabbitMQ
+Configuring and starting MySQL
+Starting Keystone
+Configuring and starting Horizon
+Configuring Glance
+Configuring Neutron
+Configuring Cinder
+Configuring Nova
+Starting Glance
+Starting Nova API
+Starting Neutron
+Creating initial neutron network elements
+Starting NovaStarting Cinder
+Uploading images
+Initializing Tempest
+stack.sh completed in 502 seconds.

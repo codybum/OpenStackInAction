@@ -1,1 +1,4 @@
-"cd ~/devstack/chmod u+x tools/create-stack-user.shtools/create-stack-user.shchown -R stack:stack ~/devstack"
+cd /opt/devstack
+sudo chmod u+x tools/create-stack-user.sh
+sudo tools/create-stack-user.sh
+sudo chown -R stack:stack /opt/devstack

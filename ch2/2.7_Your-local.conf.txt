@@ -1,1 +1,48 @@
-"[[local|local.conf]]# CredentialsADMIN_PASSWORD=devstackMYSQL_PASSWORD=devstackRABBIT_PASSWORD=devstackSERVICE_PASSWORD=devstackSERVICE_TOKEN=token#Enable/Disable Servicesdisable_service n-netenable_service q-svcenable_service q-agtenable_service q-dhcpenable_service q-metaenable_service quantumenable_service q-lbaas#enable_service swift#Stable BranchesNOVA_BRANCH=stable/havanaCINDER_BRANCH=stable/havanaGLANCE_BRANCH=stable/havanaHORIZON_BRANCH=stable/havanaKEYSTONE_BRANCH=stable/havanaNEUTRON_BRANCH=stable/havana#SWIFT_BRANCH=stable/havana# OutputLOGFILE=/opt/stack/logs/stack.sh.logVERBOSE=TrueLOG_COLOR=FalseSCREEN_LOGDIR=/opt/stack/logs"
+[[local|localrc]]
+
+ADMIN_PASSWORD=devstack 
+MYSQL_PASSWORD=devstack 
+RABBIT_PASSWORD=devstack 
+SERVICE_PASSWORD=devstack
+SERVICE_TOKEN=token
+
+disable_service n-net
+enable_service q-svc
+enable_service q-agt
+enable_service q-dhcp
+enable_service q-l3
+enable_service q-meta
+enable_service neutron
+enable_service tempest
+
+HOST_IP=10.163.200.32
+FLOATING_RANGE=192.168.1.0/24
+PUBLIC_NETWORK_GATEWAY=192.168.1.1
+FIXED_RANGE=10.0.0.0/24
+
+NOVA_BRANCH=stable/icehouse
+CINDER_BRANCH=stable/icehouse
+GLANCE_BRANCH=stable/icehouse
+HORIZON_BRANCH=stable/icehouse
+KEYSTONE_BRANCH=stable/icehouse
+NEUTRON_BRANCH=stable/icehouse
+
+#CINDER
+VOLUME_BACKING_FILE_SIZE=102400M
+
+#NEUTRON CONFIG
+Q_USE_DEBUG_COMMAND=True
+
+#GENERAL
+API_RATE_LIMIT=False
+
+LOGFILE=/opt/stack/logs/stack.sh.log
+VERBOSE=True
+LOG_COLOR=False
+SCREEN_LOGDIR=/opt/stack/logs
+
+# Timeouts
+ACTIVE_TIMEOUT=120
+ASSOCIATE_TIMEOUT=60
+BOOT_TIMEOUT=120
+SERVICE_TIMEOUT=120
