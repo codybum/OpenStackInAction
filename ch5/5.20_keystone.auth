@@ -1,0 +1,12 @@
+#This file contains environmental variables used to access Keystone
+
+# Host address
+HOST_IP=10.163.200.30 #The Management Address
+
+# Keystone definitions
+KEYSTONE_REGION=RegionOne
+ADMIN_PASSWORD=admin_pass
+SERVICE_PASSWORD=service_pass
+export SERVICE_TOKEN="ADMIN"
+export SERVICE_ENDPOINT="http://10.163.200.30:35357/v2.0"
+SERVICE_TENANT_NAME=service
