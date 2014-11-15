@@ -13,3 +13,7 @@ Listings:
 * Chapter 6
 * Chapter 7
 * Chapter 8
+
+Scripts:
+* /scripts/icehouse/opt/devstack
+* /scripts/icehouse/opt/stack
