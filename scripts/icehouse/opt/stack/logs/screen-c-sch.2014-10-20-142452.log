@@ -1,0 +1,920 @@
+stack@devstack:/opt/devstack$ /opt/stack/cinder/bin/cinder-scheduler --config-fi le /etc/cinder/cinder.conf & echo $! >/opt/stack/status/stack/c-sch.pid; fg || e cho "c-sch failed to start" | tee "/opt/stack/status/stack/c-sch.failure"
+[1] 14847
+/opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf
+2014-10-20 14:29:03.231 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('qpid = oslo.messaging._drivers.impl_qpid:QpidDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.232 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('amqp = oslo.messaging._drivers.protocols.amqp.driver:ProtonDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.232 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('kombu = oslo.messaging._drivers.impl_rabbit:RabbitDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.232 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('rabbit = oslo.messaging._drivers.impl_rabbit:RabbitDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.278 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('fake = oslo.messaging._drivers.impl_fake:FakeDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.279 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('zmq = oslo.messaging._drivers.impl_zmq:ZmqDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.279 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('cinder.openstack.common.notifier.no_op_notifier = oslo.messaging.notify._impl_noop:NoOpDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.280 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('cinder.openstack.common.notifier.log_notifier = oslo.messaging.notify._impl_log:LogDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.280 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('cinder.openstack.common.notifier.test_notifier = oslo.messaging.notify._impl_test:TestDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.280 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('cinder.openstack.common.notifier.rpc_notifier2 = oslo.messaging.notify._impl_messaging:MessagingV2Driver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.280 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('cinder.openstack.common.notifier.rpc_notifier = oslo.messaging.notify._impl_messaging:MessagingDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.280 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('nova.openstack.common.notifier.no_op_notifier = oslo.messaging.notify._impl_noop:NoOpDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.280 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('nova.openstack.common.notifier.test_notifier = oslo.messaging.notify._impl_test:TestDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.280 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('nova.openstack.common.notifier.rpc_notifier = oslo.messaging.notify._impl_messaging:MessagingDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.280 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('nova.openstack.common.notifier.log_notifier = oslo.messaging.notify._impl_log:LogDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.281 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('nova.openstack.common.notifier.rpc_notifier2 = oslo.messaging.notify._impl_messaging:MessagingV2Driver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.281 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('log = oslo.messaging.notify._impl_log:LogDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.281 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('messagingv2 = oslo.messaging.notify._impl_messaging:MessagingV2Driver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.281 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('noop = oslo.messaging.notify._impl_noop:NoOpDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.281 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('routing = oslo.messaging.notify._impl_routing:RoutingDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.281 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('test = oslo.messaging.notify._impl_test:TestDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.281 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('messaging = oslo.messaging.notify._impl_messaging:MessagingDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.323 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('CapabilitiesFilter = cinder.openstack.common.scheduler.filters.capabilities_filter:CapabilitiesFilter') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.325 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('AvailabilityZoneFilter = cinder.openstack.common.scheduler.filters.availability_zone_filter:AvailabilityZoneFilter') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.326 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('CapacityFilter = cinder.scheduler.filters.capacity_filter:CapacityFilter') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.328 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('JsonFilter = cinder.openstack.common.scheduler.filters.json_filter:JsonFilter') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.329 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('RetryFilter = cinder.openstack.common.scheduler.filters.ignore_attempted_hosts_filter:IgnoreAttemptedHostsFilter') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.330 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('ChanceWeigher = cinder.scheduler.weights.chance:ChanceWeigher') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.331 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('CapacityWeigher = cinder.scheduler.weights.capacity:CapacityWeigher') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.332 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('AllocatedCapacityWeigher = cinder.scheduler.weights.capacity:AllocatedCapacityWeigher') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.333 14847 DEBUG cinder.service [-] Full set of CONF: wait /opt/stack/cinder/cinder/service.py:374
+2014-10-20 14:29:03.334 14847 DEBUG cinder.service [-] storage_availability_zone : nova wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.334 14847 DEBUG cinder.service [-] enable_v2_api : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.334 14847 DEBUG cinder.service [-] amqp_durable_queues : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.334 14847 DEBUG cinder.service [-] glance_port : 9292 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.335 14847 DEBUG cinder.service [-] glance_api_servers : ['10.0.2.32:9292'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.335 14847 DEBUG cinder.service [-] rabbit_password : FLAG SET  wait /opt/stack/cinder/cinder/service.py:382
+2014-10-20 14:29:03.335 14847 DEBUG cinder.service [-] rabbit_ha_queues : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.335 14847 DEBUG cinder.service [-] ssl_key_file : FLAG SET  wait /opt/stack/cinder/cinder/service.py:382
+2014-10-20 14:29:03.335 14847 DEBUG cinder.service [-] backdoor_port : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.336 14847 DEBUG cinder.service [-] max_age : 0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.336 14847 DEBUG cinder.service [-] enable_new_services : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.336 14847 DEBUG cinder.service [-] my_ip : 10.0.2.32 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.336 14847 DEBUG cinder.service [-] osapi_volume_listen_port : 8776 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.336 14847 DEBUG cinder.service [-] kombu_ssl_certfile :  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.336 14847 DEBUG cinder.service [-] osapi_volume_listen : 0.0.0.0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.337 14847 DEBUG cinder.service [-] scheduler_default_weighers : ['CapacityWeigher'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.337 14847 DEBUG cinder.service [-] quota_snapshots : 10 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.337 14847 DEBUG cinder.service [-] scheduler_json_config_location :  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.337 14847 DEBUG cinder.service [-] rootwrap_config : /etc/cinder/rootwrap.conf wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.337 14847 DEBUG cinder.service [-] glance_api_ssl_compression : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.337 14847 DEBUG cinder.service [-] notification_driver : [] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.338 14847 DEBUG cinder.service [-] compute_api_class : cinder.compute.nova.API wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.338 14847 DEBUG cinder.service [-] log_config_append : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.338 14847 DEBUG cinder.service [-] rabbit_port : 5672 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.338 14847 DEBUG cinder.service [-] rabbit_max_retries : 0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.338 14847 DEBUG cinder.service [-] cloned_volume_same_az : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.339 14847 DEBUG cinder.service [-] kombu_ssl_keyfile : FLAG SET  wait /opt/stack/cinder/cinder/service.py:382
+2014-10-20 14:29:03.339 14847 DEBUG cinder.service [-] capacity_weight_multiplier : 1.0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.339 14847 DEBUG cinder.service [-] snapshot_name_template : snapshot-%s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.339 14847 DEBUG cinder.service [-] quota_driver : cinder.quota.DbQuotaDriver wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.339 14847 DEBUG cinder.service [-] debug : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.339 14847 DEBUG cinder.service [-] periodic_interval : 60 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.340 14847 DEBUG cinder.service [-] volume_usage_audit_period : month wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.340 14847 DEBUG cinder.service [-] osapi_volume_workers : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.340 14847 DEBUG cinder.service [-] policy_file : policy.json wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.340 14847 DEBUG cinder.service [-] rabbit_userid : guest wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.340 14847 DEBUG cinder.service [-] volume_topic : cinder-volume wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.340 14847 DEBUG cinder.service [-] volume_name_template : volume-%s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.341 14847 DEBUG cinder.service [-] lock_path : /opt/stack/data/cinder wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.341 14847 DEBUG cinder.service [-] notification_topics : ['notifications'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.341 14847 DEBUG cinder.service [-] rabbit_login_method : AMQPLAIN wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.341 14847 DEBUG cinder.service [-] scheduler_default_filters : ['AvailabilityZoneFilter', 'CapacityFilter', 'CapabilitiesFilter'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.341 14847 DEBUG cinder.service [-] config_dir : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.342 14847 DEBUG cinder.service [-] use_stderr : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.342 14847 DEBUG cinder.service [-] fatal_deprecations : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.342 14847 DEBUG cinder.service [-] logging_context_format_string : %(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s %(user_identity)s] %(instance)s%(message)s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.342 14847 DEBUG cinder.service [-] enabled_backends : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.342 14847 DEBUG cinder.service [-] kombu_reconnect_delay : 1.0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.343 14847 DEBUG cinder.service [-] log_dir : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.343 14847 DEBUG cinder.service [-] logging_debug_format_suffix : %(funcName)s %(pathname)s:%(lineno)d wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.343 14847 DEBUG cinder.service [-] rpc_backend : cinder.openstack.common.rpc.impl_kombu wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.343 14847 DEBUG cinder.service [-] default_log_levels : ['amqp=WARN', 'amqplib=WARN', 'boto=WARN', 'qpid=WARN', 'sqlalchemy=WARN', 'suds=INFO', 'oslo.messaging=INFO', 'iso8601=WARN', 'requests.packages.urllib3.connectionpool=WARN'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.343 14847 DEBUG cinder.service [-] osapi_volume_extension : ['cinder.api.contrib.standard_extensions'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.344 14847 DEBUG cinder.service [-] amqp_auto_delete : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.344 14847 DEBUG cinder.service [-] backup_manager : cinder.backup.manager.BackupManager wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.344 14847 DEBUG cinder.service [-] rabbit_use_ssl : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.344 14847 DEBUG cinder.service [-] allowed_direct_url_schemes : [] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.344 14847 DEBUG cinder.service [-] api_rate_limit : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.345 14847 DEBUG cinder.service [-] host : devstack wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.345 14847 DEBUG cinder.service [-] ssl_cert_file : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.345 14847 DEBUG cinder.service [-] extra_capabilities : {} wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.345 14847 DEBUG cinder.service [-] glance_num_retries : 0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.346 14847 DEBUG cinder.service [-] db_backend : sqlalchemy wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.346 14847 DEBUG cinder.service [-] kombu_ssl_version :  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.346 14847 DEBUG cinder.service [-] volume_driver : cinder.volume.drivers.lvm.LVMISCSIDriver wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.347 14847 DEBUG cinder.service [-] reservation_expire : 86400 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.347 14847 DEBUG cinder.service [-] monkey_patch : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.347 14847 DEBUG cinder.service [-] rpc_conn_pool_size : 30 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.348 14847 DEBUG cinder.service [-] use_default_quota_class : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.348 14847 DEBUG cinder.service [-] default_availability_zone : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.348 14847 DEBUG cinder.service [-] zoning_mode : none wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.348 14847 DEBUG cinder.service [-] scheduler_topic : cinder-scheduler wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.348 14847 DEBUG cinder.service [-] verbose : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.348 14847 DEBUG cinder.service [-] periodic_fuzzy_delay : 60 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.349 14847 DEBUG cinder.service [-] glance_request_timeout : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.349 14847 DEBUG cinder.service [-] backup_topic : cinder-backup wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.349 14847 DEBUG cinder.service [-] tcp_keepidle : 600 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.349 14847 DEBUG cinder.service [-] scheduler_host_manager : cinder.scheduler.host_manager.HostManager wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.349 14847 DEBUG cinder.service [-] instance_format : [instance: %(uuid)s]  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.350 14847 DEBUG cinder.service [-] rpc_response_timeout : 60 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.350 14847 DEBUG cinder.service [-] glance_api_version : 1 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.350 14847 DEBUG cinder.service [-] service_down_time : 60 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.350 14847 DEBUG cinder.service [-] publish_errors : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.350 14847 DEBUG cinder.service [-] scheduler_max_attempts : 3 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.350 14847 DEBUG cinder.service [-] logging_exception_prefix : %(asctime)s.%(msecs)03d %(process)d TRACE %(name)s %(instance)s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.351 14847 DEBUG cinder.service [-] volume_api_class : cinder.volume.api.API wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.351 14847 DEBUG cinder.service [-] report_interval : 10 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.351 14847 DEBUG cinder.service [-] scheduler_manager : cinder.scheduler.manager.SchedulerManager wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.351 14847 DEBUG cinder.service [-] kombu_ssl_ca_certs :  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.351 14847 DEBUG cinder.service [-] monkey_patch_modules : [] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.352 14847 DEBUG cinder.service [-] backup_name_template : backup-%s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.352 14847 DEBUG cinder.service [-] rabbit_retry_backoff : 2 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.352 14847 DEBUG cinder.service [-] rabbit_hosts : ['10.0.2.32'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.352 14847 DEBUG cinder.service [-] scheduler_driver : cinder.scheduler.filter_scheduler.FilterScheduler wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.352 14847 DEBUG cinder.service [-] run_external_periodic_tasks : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.353 14847 DEBUG cinder.service [-] disable_process_locking : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.353 14847 DEBUG cinder.service [-] use_syslog_rfc_format : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.353 14847 DEBUG cinder.service [-] until_refresh : 0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.353 14847 DEBUG cinder.service [-] snapshot_same_host : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.353 14847 DEBUG cinder.service [-] state_path : /opt/stack/data/cinder wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.354 14847 DEBUG cinder.service [-] glance_host : 10.0.2.32 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.354 14847 DEBUG cinder.service [-] ssl_ca_file : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.354 14847 DEBUG cinder.service [-] allocated_capacity_weight_multiplier : -1.0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.354 14847 DEBUG cinder.service [-] max_header_line : 16384 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.354 14847 DEBUG cinder.service [-] log_format : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.355 14847 DEBUG cinder.service [-] quota_gigabytes : 1000 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.355 14847 DEBUG cinder.service [-] volume_service_inithost_offload : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.355 14847 DEBUG cinder.service [-] enable_v1_api : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.355 14847 DEBUG cinder.service [-] logging_default_format_string : %(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [-] %(instance)s%(message)s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.355 14847 DEBUG cinder.service [-] osapi_volume_ext_list : [] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.356 14847 DEBUG cinder.service [-] backup_api_class : cinder.backup.api.API wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.356 14847 DEBUG cinder.service [-] fake_rabbit : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.356 14847 DEBUG cinder.service [-] log_date_format : %Y-%m-%d %H:%M:%S wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.356 14847 DEBUG cinder.service [-] rabbit_host : localhost wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.356 14847 DEBUG cinder.service [-] migration_create_volume_timeout_secs : 300 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.357 14847 DEBUG cinder.service [-] default_volume_type : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.357 14847 DEBUG cinder.service [-] use_syslog : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.357 14847 DEBUG cinder.service [-] no_snapshot_gb_quota : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.357 14847 DEBUG cinder.service [-] syslog_log_facility : LOG_USER wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.357 14847 DEBUG cinder.service [-] auth_strategy : keystone wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.357 14847 DEBUG cinder.service [-] rabbit_retry_interval : 1 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.358 14847 DEBUG cinder.service [-] config_file : ['/etc/cinder/cinder.conf'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.358 14847 DEBUG cinder.service [-] fatal_exception_format_errors : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.358 14847 DEBUG cinder.service [-] instance_uuid_format : [instance: %(uuid)s]  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.358 14847 DEBUG cinder.service [-] db_driver : cinder.db wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.358 14847 DEBUG cinder.service [-] transfer_api_class : cinder.transfer.api.API wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.358 14847 DEBUG cinder.service [-] volume_manager : cinder.volume.manager.VolumeManager wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.359 14847 DEBUG cinder.service [-] glance_api_insecure : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.359 14847 DEBUG cinder.service [-] api_paste_config : /etc/cinder/api-paste.ini wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.359 14847 DEBUG cinder.service [-] quota_volumes : 10 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.359 14847 DEBUG cinder.service [-] transport_url : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.359 14847 DEBUG cinder.service [-] rabbit_virtual_host : / wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.360 14847 DEBUG cinder.service [-] policy_default_rule : default wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.360 14847 DEBUG cinder.service [-] control_exchange : openstack wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.360 14847 DEBUG cinder.service [-] log_file : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.360 14847 DEBUG cinder.service [-] fc-zone-manager : <oslo.config.cfg.GroupAttr object at 0x7f80ee8a3550> wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.360 14847 DEBUG cinder.service [-] keymgr : <oslo.config.cfg.GroupAttr object at 0x7f80ee8a3610> wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.360 14847 DEBUG cinder.service [-] database : <oslo.config.cfg.GroupAttr object at 0x7f80ee8a35d0> wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:29:03.361 14847 DEBUG cinder.openstack.common.service [-] Full set of CONF: _wait_for_exit_or_signal /opt/stack/cinder/cinder/openstack/common/service.py:166
+2014-10-20 14:29:03.361 14847 DEBUG cinder.openstack.common.service [-] ******************************************************************************** log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2027
+2014-10-20 14:29:03.361 14847 DEBUG cinder.openstack.common.service [-] Configuration options gathered from: log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2028
+2014-10-20 14:29:03.361 14847 DEBUG cinder.openstack.common.service [-] command line args: ['--config-file', '/etc/cinder/cinder.conf'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2029
+2014-10-20 14:29:03.361 14847 DEBUG cinder.openstack.common.service [-] config files: ['/etc/cinder/cinder.conf'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2030
+2014-10-20 14:29:03.361 14847 DEBUG cinder.openstack.common.service [-] ================================================================================ log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2031
+2014-10-20 14:29:03.362 14847 DEBUG cinder.openstack.common.service [-] allocated_capacity_weight_multiplier = -1.0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.362 14847 DEBUG cinder.openstack.common.service [-] allowed_direct_url_schemes     = [] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.362 14847 DEBUG cinder.openstack.common.service [-] amqp_auto_delete               = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.362 14847 DEBUG cinder.openstack.common.service [-] amqp_durable_queues            = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.362 14847 DEBUG cinder.openstack.common.service [-] api_paste_config               = /etc/cinder/api-paste.ini log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.363 14847 DEBUG cinder.openstack.common.service [-] api_rate_limit                 = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.363 14847 DEBUG cinder.openstack.common.service [-] auth_strategy                  = keystone log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.363 14847 DEBUG cinder.openstack.common.service [-] backdoor_port                  = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.363 14847 DEBUG cinder.openstack.common.service [-] backup_api_class               = cinder.backup.api.API log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.363 14847 DEBUG cinder.openstack.common.service [-] backup_manager                 = cinder.backup.manager.BackupManager log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.363 14847 DEBUG cinder.openstack.common.service [-] backup_name_template           = backup-%s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.364 14847 DEBUG cinder.openstack.common.service [-] backup_topic                   = cinder-backup log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.364 14847 DEBUG cinder.openstack.common.service [-] capacity_weight_multiplier     = 1.0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.364 14847 DEBUG cinder.openstack.common.service [-] cloned_volume_same_az          = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.364 14847 DEBUG cinder.openstack.common.service [-] compute_api_class              = cinder.compute.nova.API log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.364 14847 DEBUG cinder.openstack.common.service [-] config_dir                     = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.364 14847 DEBUG cinder.openstack.common.service [-] config_file                    = ['/etc/cinder/cinder.conf'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.365 14847 DEBUG cinder.openstack.common.service [-] control_exchange               = openstack log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.365 14847 DEBUG cinder.openstack.common.service [-] db_backend                     = sqlalchemy log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.365 14847 DEBUG cinder.openstack.common.service [-] db_driver                      = cinder.db log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.365 14847 DEBUG cinder.openstack.common.service [-] debug                          = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.365 14847 DEBUG cinder.openstack.common.service [-] default_availability_zone      = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.366 14847 DEBUG cinder.openstack.common.service [-] default_log_levels             = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN', 'qpid=WARN', 'sqlalchemy=WARN', 'suds=INFO', 'oslo.messaging=INFO', 'iso8601=WARN', 'requests.packages.urllib3.connectionpool=WARN'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.366 14847 DEBUG cinder.openstack.common.service [-] default_volume_type            = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.366 14847 DEBUG cinder.openstack.common.service [-] disable_process_locking        = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.366 14847 DEBUG cinder.openstack.common.service [-] enable_new_services            = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.366 14847 DEBUG cinder.openstack.common.service [-] enable_v1_api                  = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.366 14847 DEBUG cinder.openstack.common.service [-] enable_v2_api                  = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.367 14847 DEBUG cinder.openstack.common.service [-] enabled_backends               = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.367 14847 DEBUG cinder.openstack.common.service [-] extra_capabilities             = {} log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.367 14847 DEBUG cinder.openstack.common.service [-] fake_rabbit                    = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.367 14847 DEBUG cinder.openstack.common.service [-] fatal_deprecations             = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.367 14847 DEBUG cinder.openstack.common.service [-] fatal_exception_format_errors  = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.367 14847 DEBUG cinder.openstack.common.service [-] glance_api_insecure            = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.368 14847 DEBUG cinder.openstack.common.service [-] glance_api_servers             = ['10.0.2.32:9292'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.368 14847 DEBUG cinder.openstack.common.service [-] glance_api_ssl_compression     = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.368 14847 DEBUG cinder.openstack.common.service [-] glance_api_version             = 1 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.368 14847 DEBUG cinder.openstack.common.service [-] glance_host                    = 10.0.2.32 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.368 14847 DEBUG cinder.openstack.common.service [-] glance_num_retries             = 0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.368 14847 DEBUG cinder.openstack.common.service [-] glance_port                    = 9292 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.368 14847 DEBUG cinder.openstack.common.service [-] glance_request_timeout         = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.368 14847 DEBUG cinder.openstack.common.service [-] host                           = devstack log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.369 14847 DEBUG cinder.openstack.common.service [-] instance_format                = [instance: %(uuid)s]  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.369 14847 DEBUG cinder.openstack.common.service [-] instance_uuid_format           = [instance: %(uuid)s]  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.369 14847 DEBUG cinder.openstack.common.service [-] kombu_reconnect_delay          = 1.0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.369 14847 DEBUG cinder.openstack.common.service [-] kombu_ssl_ca_certs             =  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.369 14847 DEBUG cinder.openstack.common.service [-] kombu_ssl_certfile             =  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.369 14847 DEBUG cinder.openstack.common.service [-] kombu_ssl_keyfile              =  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.370 14847 DEBUG cinder.openstack.common.service [-] kombu_ssl_version              =  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.370 14847 DEBUG cinder.openstack.common.service [-] lock_path                      = /opt/stack/data/cinder log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.370 14847 DEBUG cinder.openstack.common.service [-] log_config_append              = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.370 14847 DEBUG cinder.openstack.common.service [-] log_date_format                = %Y-%m-%d %H:%M:%S log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.370 14847 DEBUG cinder.openstack.common.service [-] log_dir                        = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.370 14847 DEBUG cinder.openstack.common.service [-] log_file                       = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.370 14847 DEBUG cinder.openstack.common.service [-] log_format                     = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.371 14847 DEBUG cinder.openstack.common.service [-] logging_context_format_string  = %(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s %(user_identity)s] %(instance)s%(message)s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.371 14847 DEBUG cinder.openstack.common.service [-] logging_debug_format_suffix    = %(funcName)s %(pathname)s:%(lineno)d log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.371 14847 DEBUG cinder.openstack.common.service [-] logging_default_format_string  = %(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [-] %(instance)s%(message)s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.371 14847 DEBUG cinder.openstack.common.service [-] logging_exception_prefix       = %(asctime)s.%(msecs)03d %(process)d TRACE %(name)s %(instance)s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.371 14847 DEBUG cinder.openstack.common.service [-] max_age                        = 0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.371 14847 DEBUG cinder.openstack.common.service [-] max_header_line                = 16384 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.372 14847 DEBUG cinder.openstack.common.service [-] migration_create_volume_timeout_secs = 300 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.372 14847 DEBUG cinder.openstack.common.service [-] monkey_patch                   = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.372 14847 DEBUG cinder.openstack.common.service [-] monkey_patch_modules           = [] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.372 14847 DEBUG cinder.openstack.common.service [-] my_ip                          = 10.0.2.32 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.372 14847 DEBUG cinder.openstack.common.service [-] no_snapshot_gb_quota           = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.372 14847 DEBUG cinder.openstack.common.service [-] notification_driver            = [] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.373 14847 DEBUG cinder.openstack.common.service [-] notification_topics            = ['notifications'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.373 14847 DEBUG cinder.openstack.common.service [-] osapi_volume_ext_list          = [] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.373 14847 DEBUG cinder.openstack.common.service [-] osapi_volume_extension         = ['cinder.api.contrib.standard_extensions'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.373 14847 DEBUG cinder.openstack.common.service [-] osapi_volume_listen            = 0.0.0.0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.373 14847 DEBUG cinder.openstack.common.service [-] osapi_volume_listen_port       = 8776 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.373 14847 DEBUG cinder.openstack.common.service [-] osapi_volume_workers           = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.374 14847 DEBUG cinder.openstack.common.service [-] periodic_fuzzy_delay           = 60 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.374 14847 DEBUG cinder.openstack.common.service [-] periodic_interval              = 60 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.374 14847 DEBUG cinder.openstack.common.service [-] policy_default_rule            = default log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.374 14847 DEBUG cinder.openstack.common.service [-] policy_file                    = policy.json log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.374 14847 DEBUG cinder.openstack.common.service [-] publish_errors                 = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.375 14847 DEBUG cinder.openstack.common.service [-] quota_driver                   = cinder.quota.DbQuotaDriver log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.375 14847 DEBUG cinder.openstack.common.service [-] quota_gigabytes                = 1000 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.375 14847 DEBUG cinder.openstack.common.service [-] quota_snapshots                = 10 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.375 14847 DEBUG cinder.openstack.common.service [-] quota_volumes                  = 10 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.375 14847 DEBUG cinder.openstack.common.service [-] rabbit_ha_queues               = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.375 14847 DEBUG cinder.openstack.common.service [-] rabbit_host                    = localhost log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.376 14847 DEBUG cinder.openstack.common.service [-] rabbit_hosts                   = ['10.0.2.32'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.376 14847 DEBUG cinder.openstack.common.service [-] rabbit_login_method            = AMQPLAIN log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.376 14847 DEBUG cinder.openstack.common.service [-] rabbit_max_retries             = 0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.376 14847 DEBUG cinder.openstack.common.service [-] rabbit_password                = **** log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.376 14847 DEBUG cinder.openstack.common.service [-] rabbit_port                    = 5672 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.376 14847 DEBUG cinder.openstack.common.service [-] rabbit_retry_backoff           = 2 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.377 14847 DEBUG cinder.openstack.common.service [-] rabbit_retry_interval          = 1 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.377 14847 DEBUG cinder.openstack.common.service [-] rabbit_use_ssl                 = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.377 14847 DEBUG cinder.openstack.common.service [-] rabbit_userid                  = guest log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.377 14847 DEBUG cinder.openstack.common.service [-] rabbit_virtual_host            = / log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.377 14847 DEBUG cinder.openstack.common.service [-] report_interval                = 10 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.377 14847 DEBUG cinder.openstack.common.service [-] reservation_expire             = 86400 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.377 14847 DEBUG cinder.openstack.common.service [-] rootwrap_config                = /etc/cinder/rootwrap.conf log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.378 14847 DEBUG cinder.openstack.common.service [-] rpc_backend                    = cinder.openstack.common.rpc.impl_kombu log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.378 14847 DEBUG cinder.openstack.common.service [-] rpc_conn_pool_size             = 30 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.378 14847 DEBUG cinder.openstack.common.service [-] rpc_response_timeout           = 60 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.378 14847 DEBUG cinder.openstack.common.service [-] run_external_periodic_tasks    = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.378 14847 DEBUG cinder.openstack.common.service [-] scheduler_default_filters      = ['AvailabilityZoneFilter', 'CapacityFilter', 'CapabilitiesFilter'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.378 14847 DEBUG cinder.openstack.common.service [-] scheduler_default_weighers     = ['CapacityWeigher'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.378 14847 DEBUG cinder.openstack.common.service [-] scheduler_driver               = cinder.scheduler.filter_scheduler.FilterScheduler log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.379 14847 DEBUG cinder.openstack.common.service [-] scheduler_host_manager         = cinder.scheduler.host_manager.HostManager log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.379 14847 DEBUG cinder.openstack.common.service [-] scheduler_json_config_location =  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.379 14847 DEBUG cinder.openstack.common.service [-] scheduler_manager              = cinder.scheduler.manager.SchedulerManager log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.379 14847 DEBUG cinder.openstack.common.service [-] scheduler_max_attempts         = 3 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.379 14847 DEBUG cinder.openstack.common.service [-] scheduler_topic                = cinder-scheduler log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.379 14847 DEBUG cinder.openstack.common.service [-] service_down_time              = 60 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.379 14847 DEBUG cinder.openstack.common.service [-] snapshot_name_template         = snapshot-%s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.379 14847 DEBUG cinder.openstack.common.service [-] snapshot_same_host             = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.380 14847 DEBUG cinder.openstack.common.service [-] ssl_ca_file                    = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.380 14847 DEBUG cinder.openstack.common.service [-] ssl_cert_file                  = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.380 14847 DEBUG cinder.openstack.common.service [-] ssl_key_file                   = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.380 14847 DEBUG cinder.openstack.common.service [-] state_path                     = /opt/stack/data/cinder log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.380 14847 DEBUG cinder.openstack.common.service [-] storage_availability_zone      = nova log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.380 14847 DEBUG cinder.openstack.common.service [-] syslog_log_facility            = LOG_USER log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.380 14847 DEBUG cinder.openstack.common.service [-] tcp_keepidle                   = 600 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.380 14847 DEBUG cinder.openstack.common.service [-] transfer_api_class             = cinder.transfer.api.API log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.381 14847 DEBUG cinder.openstack.common.service [-] transport_url                  = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.381 14847 DEBUG cinder.openstack.common.service [-] until_refresh                  = 0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.381 14847 DEBUG cinder.openstack.common.service [-] use_default_quota_class        = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.381 14847 DEBUG cinder.openstack.common.service [-] use_stderr                     = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.381 14847 DEBUG cinder.openstack.common.service [-] use_syslog                     = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.381 14847 DEBUG cinder.openstack.common.service [-] use_syslog_rfc_format          = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.381 14847 DEBUG cinder.openstack.common.service [-] verbose                        = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.381 14847 DEBUG cinder.openstack.common.service [-] volume_api_class               = cinder.volume.api.API log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.382 14847 DEBUG cinder.openstack.common.service [-] volume_driver                  = cinder.volume.drivers.lvm.LVMISCSIDriver log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.382 14847 DEBUG cinder.openstack.common.service [-] volume_manager                 = cinder.volume.manager.VolumeManager log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.382 14847 DEBUG cinder.openstack.common.service [-] volume_name_template           = volume-%s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.382 14847 DEBUG cinder.openstack.common.service [-] volume_service_inithost_offload = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.382 14847 DEBUG cinder.openstack.common.service [-] volume_topic                   = cinder-volume log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.382 14847 DEBUG cinder.openstack.common.service [-] volume_usage_audit_period      = month log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.382 14847 DEBUG cinder.openstack.common.service [-] zoning_mode                    = none log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:29:03.383 14847 DEBUG cinder.openstack.common.service [-] fc-zone-manager.fc_fabric_names = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:29:03.383 14847 DEBUG cinder.openstack.common.service [-] fc-zone-manager.fc_san_lookup_service = cinder.zonemanager.drivers.brocade.brcd_fc_san_lookup_service.BrcdFCSanLookupService log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:29:03.383 14847 DEBUG cinder.openstack.common.service [-] fc-zone-manager.zone_driver    = cinder.zonemanager.drivers.brocade.brcd_fc_zone_driver.BrcdFCZoneDriver log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:29:03.383 14847 DEBUG cinder.openstack.common.service [-] fc-zone-manager.zoning_policy  = initiator-target log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:29:03.384 14847 DEBUG cinder.openstack.common.service [-] keymgr.api_class               = cinder.keymgr.conf_key_mgr.ConfKeyManager log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:29:03.384 14847 DEBUG cinder.openstack.common.service [-] database.backend               = sqlalchemy log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:29:03.384 14847 DEBUG cinder.openstack.common.service [-] database.use_tpool             = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:29:03.384 14847 DEBUG cinder.openstack.common.service [-] ******************************************************************************** log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2050
+2014-10-20 14:29:03.384 14847 AUDIT cinder.service [-] Starting cinder-scheduler node (version 2014.1.4)
+2014-10-20 14:29:03.385 14847 INFO oslo.messaging._drivers.impl_rabbit [req-57901fff-4c5e-4809-8eeb-e245e0ad0a69 - - - - -] Connecting to AMQP server on 10.0.2.32:5672
+2014-10-20 14:29:03.394 14847 INFO oslo.messaging._drivers.impl_rabbit [req-57901fff-4c5e-4809-8eeb-e245e0ad0a69 - - - - -] Connected to AMQP server on 10.0.2.32:5672
+2014-10-20 14:29:03.397 14847 DEBUG cinder.openstack.common.lockutils [-] Got semaphore "dbapi_backend" for method "__get_backend"... inner /opt/stack/cinder/cinder/openstack/common/lockutils.py:191
+2014-10-20 14:29:03.559 14847 DEBUG cinder.service [-] Creating RPC server for service cinder-scheduler start /opt/stack/cinder/cinder/service.py:113
+2014-10-20 14:29:03.559 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('blocking = oslo.messaging._executors.impl_blocking:BlockingExecutor') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.559 14847 DEBUG stevedore.extension [-] found extension EntryPoint.parse('eventlet = oslo.messaging._executors.impl_eventlet:EventletExecutor') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:29:03.561 14847 INFO oslo.messaging._drivers.impl_rabbit [-] Connecting to AMQP server on 10.0.2.32:5672
+2014-10-20 14:29:03.567 14847 INFO oslo.messaging._drivers.impl_rabbit [-] Connected to AMQP server on 10.0.2.32:5672
+2014-10-20 14:29:07.387 14847 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:29:07.390 14847 DEBUG cinder.scheduler.host_manager [req-e92aa65e-e6d6-4744-93c5-63d25c8fc4a4 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:29:41.427 14847 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:29:41.427 14847 DEBUG cinder.scheduler.host_manager [req-2ef08b6b-512b-43e6-bf90-1e88eb6ae652 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:30:41.433 14847 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:30:41.435 14847 DEBUG cinder.scheduler.host_manager [req-be509c9c-0d25-4abe-b9bd-bc3b363206e4 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:31:03.647 14847 WARNING cinder.openstack.common.db.sqlalchemy.session [-] Got mysql server has gone away: (2006, 'MySQL server has gone away')
+2014-10-20 14:31:03.647 14847 ERROR cinder.service [-] model server went away
+2014-10-20 14:31:03.647 14847 TRACE cinder.service Traceback (most recent call last):
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/opt/stack/cinder/cinder/service.py", line 248, in report_state
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     service_ref = db.service_get(ctxt, self.service_id)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/opt/stack/cinder/cinder/db/api.py", line 89, in service_get
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     return IMPL.service_get(context, service_id)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/opt/stack/cinder/cinder/db/sqlalchemy/api.py", line 121, in wrapper
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     return f(*args, **kwargs)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/opt/stack/cinder/cinder/db/sqlalchemy/api.py", line 288, in service_get
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     return _service_get(context, service_id)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/opt/stack/cinder/cinder/db/sqlalchemy/api.py", line 121, in wrapper
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     return f(*args, **kwargs)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/opt/stack/cinder/cinder/db/sqlalchemy/api.py", line 278, in _service_get
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     filter_by(id=service_id).\
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2282, in first
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     ret = list(self[0:1])
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2149, in __getitem__
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     return list(res)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2353, in __iter__
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     return self._execute_and_instances(context)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2366, in _execute_and_instances
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     close_with_result=True)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2357, in _connection_from_session
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     **kw)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/session.py", line 799, in connection
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     close_with_result=close_with_result)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/session.py", line 805, in _connection_for_bind
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     return engine.contextual_connect(**kwargs)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/engine/base.py", line 1661, in contextual_connect
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     self.pool.connect(),
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/pool.py", line 272, in connect
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     return _ConnectionFairy(self).checkout()
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/pool.py", line 516, in checkout
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     self.connection = self._connection_record.get_connection()
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/pool.py", line 346, in get_connection
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     self.connection = self.__connect()
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/pool.py", line 379, in __connect
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     connection = self.__pool._creator()
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/engine/strategies.py", line 80, in connect
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     return dialect.connect(*cargs, **cparams)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/engine/default.py", line 283, in connect
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     return self.dbapi.connect(*cargs, **cparams)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/MySQLdb/__init__.py", line 81, in Connect
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     return Connection(*args, **kwargs)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/MySQLdb/connections.py", line 187, in __init__
+2014-10-20 14:31:03.647 14847 TRACE cinder.service     super(Connection, self).__init__(*args, **kwargs2)
+2014-10-20 14:31:03.647 14847 TRACE cinder.service OperationalError: (OperationalError) (2003, "Can't connect to MySQL server on '127.0.0.1' (111)") None None
+2014-10-20 14:31:03.647 14847 TRACE cinder.service 
+2014-10-20 14:31:06.469 14847 ERROR oslo.messaging._drivers.impl_rabbit [-] Failed to consume message from queue: [Errno 104] Connection reset by peer
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit Traceback (most recent call last):
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/local/lib/python2.7/dist-packages/oslo/messaging/_drivers/impl_rabbit.py", line 655, in ensure
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     return method()
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/local/lib/python2.7/dist-packages/oslo/messaging/_drivers/impl_rabbit.py", line 735, in _consume
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     return self.connection.drain_events(timeout=timeout)
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/kombu/connection.py", line 279, in drain_events
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     return self.transport.drain_events(self.connection, **kwargs)
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/kombu/transport/pyamqp.py", line 90, in drain_events
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     return connection.drain_events(**kwargs)
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/amqp/connection.py", line 303, in drain_events
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     return amqp_method(channel, args)
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/amqp/connection.py", line 506, in _close
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     self._x_close_ok()
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/amqp/connection.py", line 534, in _x_close_ok
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     self._send_method((10, 51))
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/amqp/abstract_channel.py", line 62, in _send_method
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     self.channel_id, method_sig, args, content,
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/amqp/method_framing.py", line 227, in write_method
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     write_frame(1, channel, payload)
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/amqp/transport.py", line 183, in write_frame
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     frame_type, channel, size, payload, 0xce,
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/eventlet/greenio.py", line 307, in sendall
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     tail = self.send(data, flags)
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/eventlet/greenio.py", line 293, in send
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit     total_sent += fd.send(data[total_sent:], flags)
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit error: [Errno 104] Connection reset by peer
+2014-10-20 14:31:06.469 14847 TRACE oslo.messaging._drivers.impl_rabbit 
+2014-10-20 14:31:06.473 14847 INFO oslo.messaging._drivers.impl_rabbit [-] Delaying reconnect for 1.0 seconds...
+2014-10-20 14:31:07.476 14847 INFO oslo.messaging._drivers.impl_rabbit [-] Connecting to AMQP server on 10.0.2.32:5672
+2014-10-20 14:31:07.480 14847 ERROR oslo.messaging._drivers.impl_rabbit [-] AMQP server on 10.0.2.32:5672 is unreachable: [Errno 111] ECONNREFUSED. Trying again in 1 seconds.
+2014-10-20 14:31:08.483 14847 INFO oslo.messaging._drivers.impl_rabbit [-] Delaying reconnect for 1.0 seconds...
+2014-10-20 14:31:09.485 14847 INFO oslo.messaging._drivers.impl_rabbit [-] Connecting to AMQP server on 10.0.2.32:5672
+2014-10-20 14:31:09.491 14847 ERROR oslo.messaging._drivers.impl_rabbit [-] AMQP server on 10.0.2.32:5672 is unreachable: [Errno 111] ECONNREFUSED. Trying again in 3 seconds.
+2014-10-20 14:31:12.492 14847 INFO oslo.messaging._drivers.impl_rabbit [-] Delaying reconnect for 1.0 seconds...
+2014-10-20 14:31:13.494 14847 INFO oslo.messaging._drivers.impl_rabbit [-] Connecting to AMQP server on 10.0.2.32:5672
+2014-10-20 14:31:13.499 14847 ERROR oslo.messaging._drivers.impl_rabbit [-] AMQP server on 10.0.2.32:5672 is unreachable: [Errno 111] ECONNREFUSED. Trying again in 5 seconds.
+root@devstack:~# /opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf
+2014-10-20 14:34:45.229 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('qpid = oslo.messaging._drivers.impl_qpid:QpidDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.255 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('amqp = oslo.messaging._drivers.protocols.amqp.driver:ProtonDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.256 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('kombu = oslo.messaging._drivers.impl_rabbit:RabbitDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.256 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('rabbit = oslo.messaging._drivers.impl_rabbit:RabbitDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.724 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('fake = oslo.messaging._drivers.impl_fake:FakeDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.731 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('zmq = oslo.messaging._drivers.impl_zmq:ZmqDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.732 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('cinder.openstack.common.notifier.no_op_notifier = oslo.messaging.notify._impl_noop:NoOpDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.743 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('cinder.openstack.common.notifier.log_notifier = oslo.messaging.notify._impl_log:LogDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.744 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('cinder.openstack.common.notifier.test_notifier = oslo.messaging.notify._impl_test:TestDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.744 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('cinder.openstack.common.notifier.rpc_notifier2 = oslo.messaging.notify._impl_messaging:MessagingV2Driver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.748 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('cinder.openstack.common.notifier.rpc_notifier = oslo.messaging.notify._impl_messaging:MessagingDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.749 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('nova.openstack.common.notifier.no_op_notifier = oslo.messaging.notify._impl_noop:NoOpDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.750 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('nova.openstack.common.notifier.test_notifier = oslo.messaging.notify._impl_test:TestDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.750 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('nova.openstack.common.notifier.rpc_notifier = oslo.messaging.notify._impl_messaging:MessagingDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.750 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('nova.openstack.common.notifier.log_notifier = oslo.messaging.notify._impl_log:LogDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.750 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('nova.openstack.common.notifier.rpc_notifier2 = oslo.messaging.notify._impl_messaging:MessagingV2Driver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.751 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('log = oslo.messaging.notify._impl_log:LogDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.752 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('messagingv2 = oslo.messaging.notify._impl_messaging:MessagingV2Driver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.752 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('noop = oslo.messaging.notify._impl_noop:NoOpDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.755 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('routing = oslo.messaging.notify._impl_routing:RoutingDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.755 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('test = oslo.messaging.notify._impl_test:TestDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:45.755 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('messaging = oslo.messaging.notify._impl_messaging:MessagingDriver') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:46.117 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('CapabilitiesFilter = cinder.openstack.common.scheduler.filters.capabilities_filter:CapabilitiesFilter') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:46.128 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('AvailabilityZoneFilter = cinder.openstack.common.scheduler.filters.availability_zone_filter:AvailabilityZoneFilter') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:46.131 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('CapacityFilter = cinder.scheduler.filters.capacity_filter:CapacityFilter') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:46.138 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('JsonFilter = cinder.openstack.common.scheduler.filters.json_filter:JsonFilter') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:46.139 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('RetryFilter = cinder.openstack.common.scheduler.filters.ignore_attempted_hosts_filter:IgnoreAttemptedHostsFilter') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:46.140 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('ChanceWeigher = cinder.scheduler.weights.chance:ChanceWeigher') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:46.154 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('CapacityWeigher = cinder.scheduler.weights.capacity:CapacityWeigher') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:46.159 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('AllocatedCapacityWeigher = cinder.scheduler.weights.capacity:AllocatedCapacityWeigher') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:46.164 2832 DEBUG cinder.service [-] Full set of CONF: wait /opt/stack/cinder/cinder/service.py:374
+2014-10-20 14:34:46.164 2832 DEBUG cinder.service [-] storage_availability_zone : nova wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.165 2832 DEBUG cinder.service [-] enable_v2_api : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.165 2832 DEBUG cinder.service [-] amqp_durable_queues : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.165 2832 DEBUG cinder.service [-] glance_port : 9292 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.168 2832 DEBUG cinder.service [-] glance_api_servers : ['10.0.2.32:9292'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.169 2832 DEBUG cinder.service [-] rabbit_password : FLAG SET  wait /opt/stack/cinder/cinder/service.py:382
+2014-10-20 14:34:46.171 2832 DEBUG cinder.service [-] rabbit_ha_queues : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.171 2832 DEBUG cinder.service [-] ssl_key_file : FLAG SET  wait /opt/stack/cinder/cinder/service.py:382
+2014-10-20 14:34:46.171 2832 DEBUG cinder.service [-] backdoor_port : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.172 2832 DEBUG cinder.service [-] max_age : 0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.172 2832 DEBUG cinder.service [-] enable_new_services : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.172 2832 DEBUG cinder.service [-] my_ip : 10.0.2.32 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.172 2832 DEBUG cinder.service [-] osapi_volume_listen_port : 8776 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.172 2832 DEBUG cinder.service [-] kombu_ssl_certfile :  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.180 2832 DEBUG cinder.service [-] osapi_volume_listen : 0.0.0.0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.181 2832 DEBUG cinder.service [-] scheduler_default_weighers : ['CapacityWeigher'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.181 2832 DEBUG cinder.service [-] quota_snapshots : 10 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.181 2832 DEBUG cinder.service [-] scheduler_json_config_location :  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.183 2832 DEBUG cinder.service [-] rootwrap_config : /etc/cinder/rootwrap.conf wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.183 2832 DEBUG cinder.service [-] glance_api_ssl_compression : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.183 2832 DEBUG cinder.service [-] notification_driver : [] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.184 2832 DEBUG cinder.service [-] compute_api_class : cinder.compute.nova.API wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.184 2832 DEBUG cinder.service [-] log_config_append : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.184 2832 DEBUG cinder.service [-] rabbit_port : 5672 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.184 2832 DEBUG cinder.service [-] rabbit_max_retries : 0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.195 2832 DEBUG cinder.service [-] cloned_volume_same_az : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.195 2832 DEBUG cinder.service [-] kombu_ssl_keyfile : FLAG SET  wait /opt/stack/cinder/cinder/service.py:382
+2014-10-20 14:34:46.196 2832 DEBUG cinder.service [-] capacity_weight_multiplier : 1.0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.197 2832 DEBUG cinder.service [-] snapshot_name_template : snapshot-%s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.197 2832 DEBUG cinder.service [-] quota_driver : cinder.quota.DbQuotaDriver wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.199 2832 DEBUG cinder.service [-] debug : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.199 2832 DEBUG cinder.service [-] periodic_interval : 60 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.207 2832 DEBUG cinder.service [-] volume_usage_audit_period : month wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.215 2832 DEBUG cinder.service [-] osapi_volume_workers : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.219 2832 DEBUG cinder.service [-] policy_file : policy.json wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.219 2832 DEBUG cinder.service [-] rabbit_userid : guest wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.221 2832 DEBUG cinder.service [-] volume_topic : cinder-volume wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.221 2832 DEBUG cinder.service [-] volume_name_template : volume-%s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.221 2832 DEBUG cinder.service [-] lock_path : /opt/stack/data/cinder wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.221 2832 DEBUG cinder.service [-] notification_topics : ['notifications'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.226 2832 DEBUG cinder.service [-] rabbit_login_method : AMQPLAIN wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.232 2832 DEBUG cinder.service [-] scheduler_default_filters : ['AvailabilityZoneFilter', 'CapacityFilter', 'CapabilitiesFilter'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.246 2832 DEBUG cinder.service [-] config_dir : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.248 2832 DEBUG cinder.service [-] use_stderr : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.248 2832 DEBUG cinder.service [-] fatal_deprecations : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.249 2832 DEBUG cinder.service [-] logging_context_format_string : %(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s %(user_identity)s] %(instance)s%(message)s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.249 2832 DEBUG cinder.service [-] enabled_backends : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.251 2832 DEBUG cinder.service [-] kombu_reconnect_delay : 1.0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.252 2832 DEBUG cinder.service [-] log_dir : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.252 2832 DEBUG cinder.service [-] logging_debug_format_suffix : %(funcName)s %(pathname)s:%(lineno)d wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.252 2832 DEBUG cinder.service [-] rpc_backend : cinder.openstack.common.rpc.impl_kombu wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.253 2832 DEBUG cinder.service [-] default_log_levels : ['amqp=WARN', 'amqplib=WARN', 'boto=WARN', 'qpid=WARN', 'sqlalchemy=WARN', 'suds=INFO', 'oslo.messaging=INFO', 'iso8601=WARN', 'requests.packages.urllib3.connectionpool=WARN'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.253 2832 DEBUG cinder.service [-] osapi_volume_extension : ['cinder.api.contrib.standard_extensions'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.254 2832 DEBUG cinder.service [-] amqp_auto_delete : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.255 2832 DEBUG cinder.service [-] backup_manager : cinder.backup.manager.BackupManager wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.255 2832 DEBUG cinder.service [-] rabbit_use_ssl : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.259 2832 DEBUG cinder.service [-] allowed_direct_url_schemes : [] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.260 2832 DEBUG cinder.service [-] api_rate_limit : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.261 2832 DEBUG cinder.service [-] host : devstack wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.264 2832 DEBUG cinder.service [-] ssl_cert_file : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.264 2832 DEBUG cinder.service [-] extra_capabilities : {} wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.265 2832 DEBUG cinder.service [-] glance_num_retries : 0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.268 2832 DEBUG cinder.service [-] db_backend : sqlalchemy wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.269 2832 DEBUG cinder.service [-] kombu_ssl_version :  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.269 2832 DEBUG cinder.service [-] volume_driver : cinder.volume.drivers.lvm.LVMISCSIDriver wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.271 2832 DEBUG cinder.service [-] reservation_expire : 86400 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.272 2832 DEBUG cinder.service [-] monkey_patch : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.272 2832 DEBUG cinder.service [-] rpc_conn_pool_size : 30 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.272 2832 DEBUG cinder.service [-] use_default_quota_class : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.273 2832 DEBUG cinder.service [-] default_availability_zone : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.273 2832 DEBUG cinder.service [-] zoning_mode : none wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.273 2832 DEBUG cinder.service [-] scheduler_topic : cinder-scheduler wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.274 2832 DEBUG cinder.service [-] verbose : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.275 2832 DEBUG cinder.service [-] periodic_fuzzy_delay : 60 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.276 2832 DEBUG cinder.service [-] glance_request_timeout : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.276 2832 DEBUG cinder.service [-] backup_topic : cinder-backup wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.277 2832 DEBUG cinder.service [-] tcp_keepidle : 600 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.277 2832 DEBUG cinder.service [-] scheduler_host_manager : cinder.scheduler.host_manager.HostManager wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.278 2832 DEBUG cinder.service [-] instance_format : [instance: %(uuid)s]  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.278 2832 DEBUG cinder.service [-] rpc_response_timeout : 60 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.279 2832 DEBUG cinder.service [-] glance_api_version : 1 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.279 2832 DEBUG cinder.service [-] service_down_time : 60 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.279 2832 DEBUG cinder.service [-] publish_errors : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.284 2832 DEBUG cinder.service [-] scheduler_max_attempts : 3 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.285 2832 DEBUG cinder.service [-] logging_exception_prefix : %(asctime)s.%(msecs)03d %(process)d TRACE %(name)s %(instance)s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.285 2832 DEBUG cinder.service [-] volume_api_class : cinder.volume.api.API wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.286 2832 DEBUG cinder.service [-] report_interval : 10 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.287 2832 DEBUG cinder.service [-] scheduler_manager : cinder.scheduler.manager.SchedulerManager wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.287 2832 DEBUG cinder.service [-] kombu_ssl_ca_certs :  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.288 2832 DEBUG cinder.service [-] monkey_patch_modules : [] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.288 2832 DEBUG cinder.service [-] backup_name_template : backup-%s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.289 2832 DEBUG cinder.service [-] rabbit_retry_backoff : 2 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.289 2832 DEBUG cinder.service [-] rabbit_hosts : ['10.0.2.32'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.291 2832 DEBUG cinder.service [-] scheduler_driver : cinder.scheduler.filter_scheduler.FilterScheduler wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.292 2832 DEBUG cinder.service [-] run_external_periodic_tasks : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.292 2832 DEBUG cinder.service [-] disable_process_locking : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.295 2832 DEBUG cinder.service [-] use_syslog_rfc_format : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.299 2832 DEBUG cinder.service [-] until_refresh : 0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.301 2832 DEBUG cinder.service [-] snapshot_same_host : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.301 2832 DEBUG cinder.service [-] state_path : /opt/stack/data/cinder wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.302 2832 DEBUG cinder.service [-] glance_host : 10.0.2.32 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.302 2832 DEBUG cinder.service [-] ssl_ca_file : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.302 2832 DEBUG cinder.service [-] allocated_capacity_weight_multiplier : -1.0 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.303 2832 DEBUG cinder.service [-] max_header_line : 16384 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.303 2832 DEBUG cinder.service [-] log_format : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.304 2832 DEBUG cinder.service [-] quota_gigabytes : 1000 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.308 2832 DEBUG cinder.service [-] volume_service_inithost_offload : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.308 2832 DEBUG cinder.service [-] enable_v1_api : True wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.309 2832 DEBUG cinder.service [-] logging_default_format_string : %(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [-] %(instance)s%(message)s wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.309 2832 DEBUG cinder.service [-] osapi_volume_ext_list : [] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.311 2832 DEBUG cinder.service [-] backup_api_class : cinder.backup.api.API wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.312 2832 DEBUG cinder.service [-] fake_rabbit : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.312 2832 DEBUG cinder.service [-] log_date_format : %Y-%m-%d %H:%M:%S wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.312 2832 DEBUG cinder.service [-] rabbit_host : localhost wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.313 2832 DEBUG cinder.service [-] migration_create_volume_timeout_secs : 300 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.314 2832 DEBUG cinder.service [-] default_volume_type : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.315 2832 DEBUG cinder.service [-] use_syslog : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.315 2832 DEBUG cinder.service [-] no_snapshot_gb_quota : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.315 2832 DEBUG cinder.service [-] syslog_log_facility : LOG_USER wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.324 2832 DEBUG cinder.service [-] auth_strategy : keystone wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.325 2832 DEBUG cinder.service [-] rabbit_retry_interval : 1 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.325 2832 DEBUG cinder.service [-] config_file : ['/etc/cinder/cinder.conf'] wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.326 2832 DEBUG cinder.service [-] fatal_exception_format_errors : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.326 2832 DEBUG cinder.service [-] instance_uuid_format : [instance: %(uuid)s]  wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.327 2832 DEBUG cinder.service [-] db_driver : cinder.db wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.327 2832 DEBUG cinder.service [-] transfer_api_class : cinder.transfer.api.API wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.327 2832 DEBUG cinder.service [-] volume_manager : cinder.volume.manager.VolumeManager wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.328 2832 DEBUG cinder.service [-] glance_api_insecure : False wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.328 2832 DEBUG cinder.service [-] api_paste_config : /etc/cinder/api-paste.ini wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.329 2832 DEBUG cinder.service [-] quota_volumes : 10 wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.329 2832 DEBUG cinder.service [-] transport_url : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.329 2832 DEBUG cinder.service [-] rabbit_virtual_host : / wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.331 2832 DEBUG cinder.service [-] policy_default_rule : default wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.331 2832 DEBUG cinder.service [-] control_exchange : openstack wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.332 2832 DEBUG cinder.service [-] log_file : None wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.332 2832 DEBUG cinder.service [-] fc-zone-manager : <oslo.config.cfg.GroupAttr object at 0x7f33763926d0> wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.332 2832 DEBUG cinder.service [-] keymgr : <oslo.config.cfg.GroupAttr object at 0x7f3376392790> wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.333 2832 DEBUG cinder.service [-] database : <oslo.config.cfg.GroupAttr object at 0x7f3376392750> wait /opt/stack/cinder/cinder/service.py:385
+2014-10-20 14:34:46.333 2832 DEBUG cinder.openstack.common.service [-] Full set of CONF: _wait_for_exit_or_signal /opt/stack/cinder/cinder/openstack/common/service.py:166
+2014-10-20 14:34:46.335 2832 DEBUG cinder.openstack.common.service [-] ******************************************************************************** log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2027
+2014-10-20 14:34:46.340 2832 DEBUG cinder.openstack.common.service [-] Configuration options gathered from: log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2028
+2014-10-20 14:34:46.341 2832 DEBUG cinder.openstack.common.service [-] command line args: ['--config-file', '/etc/cinder/cinder.conf'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2029
+2014-10-20 14:34:46.342 2832 DEBUG cinder.openstack.common.service [-] config files: ['/etc/cinder/cinder.conf'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2030
+2014-10-20 14:34:46.352 2832 DEBUG cinder.openstack.common.service [-] ================================================================================ log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2031
+2014-10-20 14:34:46.353 2832 DEBUG cinder.openstack.common.service [-] allocated_capacity_weight_multiplier = -1.0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.353 2832 DEBUG cinder.openstack.common.service [-] allowed_direct_url_schemes     = [] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.353 2832 DEBUG cinder.openstack.common.service [-] amqp_auto_delete               = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.354 2832 DEBUG cinder.openstack.common.service [-] amqp_durable_queues            = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.356 2832 DEBUG cinder.openstack.common.service [-] api_paste_config               = /etc/cinder/api-paste.ini log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.357 2832 DEBUG cinder.openstack.common.service [-] api_rate_limit                 = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.357 2832 DEBUG cinder.openstack.common.service [-] auth_strategy                  = keystone log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.357 2832 DEBUG cinder.openstack.common.service [-] backdoor_port                  = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.358 2832 DEBUG cinder.openstack.common.service [-] backup_api_class               = cinder.backup.api.API log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.359 2832 DEBUG cinder.openstack.common.service [-] backup_manager                 = cinder.backup.manager.BackupManager log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.359 2832 DEBUG cinder.openstack.common.service [-] backup_name_template           = backup-%s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.360 2832 DEBUG cinder.openstack.common.service [-] backup_topic                   = cinder-backup log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.360 2832 DEBUG cinder.openstack.common.service [-] capacity_weight_multiplier     = 1.0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.361 2832 DEBUG cinder.openstack.common.service [-] cloned_volume_same_az          = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.361 2832 DEBUG cinder.openstack.common.service [-] compute_api_class              = cinder.compute.nova.API log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.361 2832 DEBUG cinder.openstack.common.service [-] config_dir                     = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.364 2832 DEBUG cinder.openstack.common.service [-] config_file                    = ['/etc/cinder/cinder.conf'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.364 2832 DEBUG cinder.openstack.common.service [-] control_exchange               = openstack log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.365 2832 DEBUG cinder.openstack.common.service [-] db_backend                     = sqlalchemy log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.367 2832 DEBUG cinder.openstack.common.service [-] db_driver                      = cinder.db log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.369 2832 DEBUG cinder.openstack.common.service [-] debug                          = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.369 2832 DEBUG cinder.openstack.common.service [-] default_availability_zone      = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.371 2832 DEBUG cinder.openstack.common.service [-] default_log_levels             = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN', 'qpid=WARN', 'sqlalchemy=WARN', 'suds=INFO', 'oslo.messaging=INFO', 'iso8601=WARN', 'requests.packages.urllib3.connectionpool=WARN'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.372 2832 DEBUG cinder.openstack.common.service [-] default_volume_type            = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.372 2832 DEBUG cinder.openstack.common.service [-] disable_process_locking        = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.372 2832 DEBUG cinder.openstack.common.service [-] enable_new_services            = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.372 2832 DEBUG cinder.openstack.common.service [-] enable_v1_api                  = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.372 2832 DEBUG cinder.openstack.common.service [-] enable_v2_api                  = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.373 2832 DEBUG cinder.openstack.common.service [-] enabled_backends               = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.373 2832 DEBUG cinder.openstack.common.service [-] extra_capabilities             = {} log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.373 2832 DEBUG cinder.openstack.common.service [-] fake_rabbit                    = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.373 2832 DEBUG cinder.openstack.common.service [-] fatal_deprecations             = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.373 2832 DEBUG cinder.openstack.common.service [-] fatal_exception_format_errors  = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.375 2832 DEBUG cinder.openstack.common.service [-] glance_api_insecure            = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.376 2832 DEBUG cinder.openstack.common.service [-] glance_api_servers             = ['10.0.2.32:9292'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.376 2832 DEBUG cinder.openstack.common.service [-] glance_api_ssl_compression     = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.376 2832 DEBUG cinder.openstack.common.service [-] glance_api_version             = 1 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.376 2832 DEBUG cinder.openstack.common.service [-] glance_host                    = 10.0.2.32 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.376 2832 DEBUG cinder.openstack.common.service [-] glance_num_retries             = 0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.377 2832 DEBUG cinder.openstack.common.service [-] glance_port                    = 9292 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.377 2832 DEBUG cinder.openstack.common.service [-] glance_request_timeout         = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.377 2832 DEBUG cinder.openstack.common.service [-] host                           = devstack log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.387 2832 DEBUG cinder.openstack.common.service [-] instance_format                = [instance: %(uuid)s]  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.387 2832 DEBUG cinder.openstack.common.service [-] instance_uuid_format           = [instance: %(uuid)s]  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.387 2832 DEBUG cinder.openstack.common.service [-] kombu_reconnect_delay          = 1.0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.388 2832 DEBUG cinder.openstack.common.service [-] kombu_ssl_ca_certs             =  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.388 2832 DEBUG cinder.openstack.common.service [-] kombu_ssl_certfile             =  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.388 2832 DEBUG cinder.openstack.common.service [-] kombu_ssl_keyfile              =  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.388 2832 DEBUG cinder.openstack.common.service [-] kombu_ssl_version              =  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.388 2832 DEBUG cinder.openstack.common.service [-] lock_path                      = /opt/stack/data/cinder log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.389 2832 DEBUG cinder.openstack.common.service [-] log_config_append              = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.389 2832 DEBUG cinder.openstack.common.service [-] log_date_format                = %Y-%m-%d %H:%M:%S log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.389 2832 DEBUG cinder.openstack.common.service [-] log_dir                        = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.389 2832 DEBUG cinder.openstack.common.service [-] log_file                       = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.389 2832 DEBUG cinder.openstack.common.service [-] log_format                     = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.390 2832 DEBUG cinder.openstack.common.service [-] logging_context_format_string  = %(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s %(user_identity)s] %(instance)s%(message)s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.391 2832 DEBUG cinder.openstack.common.service [-] logging_debug_format_suffix    = %(funcName)s %(pathname)s:%(lineno)d log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.391 2832 DEBUG cinder.openstack.common.service [-] logging_default_format_string  = %(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [-] %(instance)s%(message)s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.391 2832 DEBUG cinder.openstack.common.service [-] logging_exception_prefix       = %(asctime)s.%(msecs)03d %(process)d TRACE %(name)s %(instance)s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.391 2832 DEBUG cinder.openstack.common.service [-] max_age                        = 0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.391 2832 DEBUG cinder.openstack.common.service [-] max_header_line                = 16384 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.391 2832 DEBUG cinder.openstack.common.service [-] migration_create_volume_timeout_secs = 300 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.392 2832 DEBUG cinder.openstack.common.service [-] monkey_patch                   = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.392 2832 DEBUG cinder.openstack.common.service [-] monkey_patch_modules           = [] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.392 2832 DEBUG cinder.openstack.common.service [-] my_ip                          = 10.0.2.32 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.392 2832 DEBUG cinder.openstack.common.service [-] no_snapshot_gb_quota           = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.392 2832 DEBUG cinder.openstack.common.service [-] notification_driver            = [] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.392 2832 DEBUG cinder.openstack.common.service [-] notification_topics            = ['notifications'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.393 2832 DEBUG cinder.openstack.common.service [-] osapi_volume_ext_list          = [] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.393 2832 DEBUG cinder.openstack.common.service [-] osapi_volume_extension         = ['cinder.api.contrib.standard_extensions'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.393 2832 DEBUG cinder.openstack.common.service [-] osapi_volume_listen            = 0.0.0.0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.393 2832 DEBUG cinder.openstack.common.service [-] osapi_volume_listen_port       = 8776 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.393 2832 DEBUG cinder.openstack.common.service [-] osapi_volume_workers           = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.394 2832 DEBUG cinder.openstack.common.service [-] periodic_fuzzy_delay           = 60 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.395 2832 DEBUG cinder.openstack.common.service [-] periodic_interval              = 60 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.395 2832 DEBUG cinder.openstack.common.service [-] policy_default_rule            = default log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.395 2832 DEBUG cinder.openstack.common.service [-] policy_file                    = policy.json log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.395 2832 DEBUG cinder.openstack.common.service [-] publish_errors                 = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.396 2832 DEBUG cinder.openstack.common.service [-] quota_driver                   = cinder.quota.DbQuotaDriver log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.396 2832 DEBUG cinder.openstack.common.service [-] quota_gigabytes                = 1000 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.396 2832 DEBUG cinder.openstack.common.service [-] quota_snapshots                = 10 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.396 2832 DEBUG cinder.openstack.common.service [-] quota_volumes                  = 10 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.396 2832 DEBUG cinder.openstack.common.service [-] rabbit_ha_queues               = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.397 2832 DEBUG cinder.openstack.common.service [-] rabbit_host                    = localhost log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.401 2832 DEBUG cinder.openstack.common.service [-] rabbit_hosts                   = ['10.0.2.32'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.401 2832 DEBUG cinder.openstack.common.service [-] rabbit_login_method            = AMQPLAIN log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.401 2832 DEBUG cinder.openstack.common.service [-] rabbit_max_retries             = 0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.401 2832 DEBUG cinder.openstack.common.service [-] rabbit_password                = **** log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.401 2832 DEBUG cinder.openstack.common.service [-] rabbit_port                    = 5672 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.402 2832 DEBUG cinder.openstack.common.service [-] rabbit_retry_backoff           = 2 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.402 2832 DEBUG cinder.openstack.common.service [-] rabbit_retry_interval          = 1 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.402 2832 DEBUG cinder.openstack.common.service [-] rabbit_use_ssl                 = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.402 2832 DEBUG cinder.openstack.common.service [-] rabbit_userid                  = guest log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.402 2832 DEBUG cinder.openstack.common.service [-] rabbit_virtual_host            = / log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.403 2832 DEBUG cinder.openstack.common.service [-] report_interval                = 10 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.403 2832 DEBUG cinder.openstack.common.service [-] reservation_expire             = 86400 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.403 2832 DEBUG cinder.openstack.common.service [-] rootwrap_config                = /etc/cinder/rootwrap.conf log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.403 2832 DEBUG cinder.openstack.common.service [-] rpc_backend                    = cinder.openstack.common.rpc.impl_kombu log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.403 2832 DEBUG cinder.openstack.common.service [-] rpc_conn_pool_size             = 30 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.403 2832 DEBUG cinder.openstack.common.service [-] rpc_response_timeout           = 60 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.404 2832 DEBUG cinder.openstack.common.service [-] run_external_periodic_tasks    = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.404 2832 DEBUG cinder.openstack.common.service [-] scheduler_default_filters      = ['AvailabilityZoneFilter', 'CapacityFilter', 'CapabilitiesFilter'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.404 2832 DEBUG cinder.openstack.common.service [-] scheduler_default_weighers     = ['CapacityWeigher'] log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.404 2832 DEBUG cinder.openstack.common.service [-] scheduler_driver               = cinder.scheduler.filter_scheduler.FilterScheduler log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.415 2832 DEBUG cinder.openstack.common.service [-] scheduler_host_manager         = cinder.scheduler.host_manager.HostManager log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.415 2832 DEBUG cinder.openstack.common.service [-] scheduler_json_config_location =  log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.415 2832 DEBUG cinder.openstack.common.service [-] scheduler_manager              = cinder.scheduler.manager.SchedulerManager log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.415 2832 DEBUG cinder.openstack.common.service [-] scheduler_max_attempts         = 3 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.416 2832 DEBUG cinder.openstack.common.service [-] scheduler_topic                = cinder-scheduler log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.416 2832 DEBUG cinder.openstack.common.service [-] service_down_time              = 60 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.416 2832 DEBUG cinder.openstack.common.service [-] snapshot_name_template         = snapshot-%s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.416 2832 DEBUG cinder.openstack.common.service [-] snapshot_same_host             = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.416 2832 DEBUG cinder.openstack.common.service [-] ssl_ca_file                    = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.417 2832 DEBUG cinder.openstack.common.service [-] ssl_cert_file                  = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.417 2832 DEBUG cinder.openstack.common.service [-] ssl_key_file                   = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.417 2832 DEBUG cinder.openstack.common.service [-] state_path                     = /opt/stack/data/cinder log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.417 2832 DEBUG cinder.openstack.common.service [-] storage_availability_zone      = nova log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.417 2832 DEBUG cinder.openstack.common.service [-] syslog_log_facility            = LOG_USER log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.418 2832 DEBUG cinder.openstack.common.service [-] tcp_keepidle                   = 600 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.418 2832 DEBUG cinder.openstack.common.service [-] transfer_api_class             = cinder.transfer.api.API log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.418 2832 DEBUG cinder.openstack.common.service [-] transport_url                  = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.418 2832 DEBUG cinder.openstack.common.service [-] until_refresh                  = 0 log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.419 2832 DEBUG cinder.openstack.common.service [-] use_default_quota_class        = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.419 2832 DEBUG cinder.openstack.common.service [-] use_stderr                     = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.419 2832 DEBUG cinder.openstack.common.service [-] use_syslog                     = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.419 2832 DEBUG cinder.openstack.common.service [-] use_syslog_rfc_format          = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.419 2832 DEBUG cinder.openstack.common.service [-] verbose                        = True log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.420 2832 DEBUG cinder.openstack.common.service [-] volume_api_class               = cinder.volume.api.API log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.420 2832 DEBUG cinder.openstack.common.service [-] volume_driver                  = cinder.volume.drivers.lvm.LVMISCSIDriver log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.420 2832 DEBUG cinder.openstack.common.service [-] volume_manager                 = cinder.volume.manager.VolumeManager log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.420 2832 DEBUG cinder.openstack.common.service [-] volume_name_template           = volume-%s log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.421 2832 DEBUG cinder.openstack.common.service [-] volume_service_inithost_offload = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.421 2832 DEBUG cinder.openstack.common.service [-] volume_topic                   = cinder-volume log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.421 2832 DEBUG cinder.openstack.common.service [-] volume_usage_audit_period      = month log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.421 2832 DEBUG cinder.openstack.common.service [-] zoning_mode                    = none log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2040
+2014-10-20 14:34:46.421 2832 DEBUG cinder.openstack.common.service [-] fc-zone-manager.fc_fabric_names = None log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:34:46.423 2832 DEBUG cinder.openstack.common.service [-] fc-zone-manager.fc_san_lookup_service = cinder.zonemanager.drivers.brocade.brcd_fc_san_lookup_service.BrcdFCSanLookupService log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:34:46.424 2832 DEBUG cinder.openstack.common.service [-] fc-zone-manager.zone_driver    = cinder.zonemanager.drivers.brocade.brcd_fc_zone_driver.BrcdFCZoneDriver log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:34:46.424 2832 DEBUG cinder.openstack.common.service [-] fc-zone-manager.zoning_policy  = initiator-target log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:34:46.424 2832 DEBUG cinder.openstack.common.service [-] keymgr.api_class               = cinder.keymgr.conf_key_mgr.ConfKeyManager log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:34:46.424 2832 DEBUG cinder.openstack.common.service [-] database.backend               = sqlalchemy log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:34:46.425 2832 DEBUG cinder.openstack.common.service [-] database.use_tpool             = False log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2048
+2014-10-20 14:34:46.425 2832 DEBUG cinder.openstack.common.service [-] ******************************************************************************** log_opt_values /usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py:2050
+2014-10-20 14:34:46.425 2832 AUDIT cinder.service [-] Starting cinder-scheduler node (version 2014.1.4)
+2014-10-20 14:34:46.427 2832 INFO oslo.messaging._drivers.impl_rabbit [req-11da3fba-10fd-4679-867a-426bc4ac1904 - - - - -] Connecting to AMQP server on 10.0.2.32:5672
+2014-10-20 14:34:46.462 2832 INFO oslo.messaging._drivers.impl_rabbit [req-11da3fba-10fd-4679-867a-426bc4ac1904 - - - - -] Connected to AMQP server on 10.0.2.32:5672
+2014-10-20 14:34:46.487 2832 DEBUG cinder.openstack.common.lockutils [-] Got semaphore "dbapi_backend" for method "__get_backend"... inner /opt/stack/cinder/cinder/openstack/common/lockutils.py:191
+2014-10-20 14:34:47.303 2832 DEBUG cinder.service [-] Creating RPC server for service cinder-scheduler start /opt/stack/cinder/cinder/service.py:113
+2014-10-20 14:34:47.304 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('blocking = oslo.messaging._executors.impl_blocking:BlockingExecutor') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:47.304 2832 DEBUG stevedore.extension [-] found extension EntryPoint.parse('eventlet = oslo.messaging._executors.impl_eventlet:EventletExecutor') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:34:47.326 2832 INFO oslo.messaging._drivers.impl_rabbit [-] Connecting to AMQP server on 10.0.2.32:5672
+2014-10-20 14:34:47.401 2832 INFO oslo.messaging._drivers.impl_rabbit [-] Connected to AMQP server on 10.0.2.32:5672
+2014-10-20 14:34:48.023 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:34:48.032 2832 DEBUG cinder.scheduler.host_manager [req-cf6f385f-fb08-48eb-b3e7-8084b9d7a5a4 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:35:37.159 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:35:37.159 2832 DEBUG cinder.scheduler.host_manager [req-16197e55-0a4d-4d46-85b5-74a27e6e9664 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:36:37.166 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:36:37.166 2832 DEBUG cinder.scheduler.host_manager [req-f079cb29-c34f-45d9-b9a1-437b9dea424f - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:37:37.176 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:37:37.177 2832 DEBUG cinder.scheduler.host_manager [req-6e0bfa8e-9d54-4bed-aca2-4ea16080b1aa - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:37:57.079 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': u'03e9981ad44743f7bd7a5d40dd3dfdfa', u'tenant': u'cbdef734a87c4c72a7248d5942013685', u'user_identity': u'03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -'}
+2014-10-20 14:37:57.080 2832 DEBUG stevedore.extension [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] found extension EntryPoint.parse('default = taskflow.engines.action_engine.engine:SingleThreadedActionEngine') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:37:57.227 2832 DEBUG stevedore.extension [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] found extension EntryPoint.parse('serial = taskflow.engines.action_engine.engine:SingleThreadedActionEngine') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:37:57.227 2832 DEBUG stevedore.extension [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] found extension EntryPoint.parse('parallel = taskflow.engines.action_engine.engine:MultiThreadedActionEngine') _load_plugins /usr/local/lib/python2.7/dist-packages/stevedore/extension.py:156
+2014-10-20 14:37:57.228 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.save_both' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.228 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.SingleThreadedStorage._save_task_detail' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.228 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] Starting to flatten 'taskflow.patterns.linear_flow.Flow: volume_create_scheduler; 2' _pre_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:154
+2014-10-20 14:37:57.228 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] Starting to flatten 'cinder.scheduler.flows.create_volume.ExtractSchedulerSpecTask;volume:create==1.0' _pre_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:154
+2014-10-20 14:37:57.229 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] Finished flattening 'cinder.scheduler.flows.create_volume.ExtractSchedulerSpecTask;volume:create==1.0' _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:159
+2014-10-20 14:37:57.229 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] Translated 'cinder.scheduler.flows.create_volume.ExtractSchedulerSpecTask;volume:create==1.0' into a graph: _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:164
+2014-10-20 14:37:57.229 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Name: cinder.scheduler.flows.create_volume.ExtractSchedulerSpecTask;volume:create _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.229 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Type: DiGraph _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.229 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Frozen: False _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.230 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Nodes: 1 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.230 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]    - cinder.scheduler.flows.create_volume.ExtractSchedulerSpecTask;volume:create==1.0 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.230 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Edges: 0 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.230 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Density: 0.000 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.230 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Cycles: 0 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.230 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] Starting to flatten 'cinder.scheduler.flows.create_volume.schedule_create_volume==1.0' _pre_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:154
+2014-10-20 14:37:57.231 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] Finished flattening 'cinder.scheduler.flows.create_volume.schedule_create_volume==1.0' _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:159
+2014-10-20 14:37:57.231 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] Translated 'cinder.scheduler.flows.create_volume.schedule_create_volume==1.0' into a graph: _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:164
+2014-10-20 14:37:57.231 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Name: cinder.scheduler.flows.create_volume.schedule_create_volume _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.231 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Type: DiGraph _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.231 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Frozen: False _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.231 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Nodes: 1 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.232 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]    - cinder.scheduler.flows.create_volume.schedule_create_volume==1.0 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.232 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Edges: 0 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.232 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Density: 0.000 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.232 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Cycles: 0 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.232 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] Finished flattening 'taskflow.patterns.linear_flow.Flow: volume_create_scheduler; 2' _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:159
+2014-10-20 14:37:57.233 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] Translated 'taskflow.patterns.linear_flow.Flow: volume_create_scheduler; 2' into a graph: _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:164
+2014-10-20 14:37:57.233 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Name: volume_create_scheduler _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.233 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Type: DiGraph _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.233 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Frozen: False _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.234 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Nodes: 2 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.234 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]    - cinder.scheduler.flows.create_volume.ExtractSchedulerSpecTask;volume:create==1.0 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.234 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]    - cinder.scheduler.flows.create_volume.schedule_create_volume==1.0 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.234 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Edges: 1 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.234 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]    cinder.scheduler.flows.create_volume.ExtractSchedulerSpecTask;volume:create==1.0 -> cinder.scheduler.flows.create_volume.schedule_create_volume==1.0 ({'flatten': True}) _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.235 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Density: 0.500 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.235 2832 DEBUG taskflow.utils.flow_utils [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -]  Cycles: 0 _post_item_flatten /usr/local/lib/python2.7/dist-packages/taskflow/utils/flow_utils.py:167
+2014-10-20 14:37:57.235 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.save_both' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.235 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.save_both' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.236 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.SingleThreadedStorage._save_flow_detail' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.236 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.SingleThreadedStorage._save_task_detail' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.236 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.SingleThreadedStorage._save_task_detail' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.237 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.SingleThreadedStorage._save_task_detail' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.237 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.SingleThreadedStorage._save_task_detail' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.237 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.SingleThreadedStorage._save_task_detail' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.237 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.SingleThreadedStorage._save_task_detail' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.241 2832 DEBUG cinder.scheduler.filter_scheduler [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] Filtered [host 'devstack': free_capacity_gb: 4.0] _get_weighted_candidates /opt/stack/cinder/cinder/scheduler/filter_scheduler.py:259
+2014-10-20 14:37:57.242 2832 DEBUG cinder.scheduler.filter_scheduler [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] Choosing devstack _choose_top_host /opt/stack/cinder/cinder/scheduler/filter_scheduler.py:276
+2014-10-20 14:37:57.267 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.SingleThreadedStorage._save_task_detail' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.267 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.SingleThreadedStorage._save_task_detail' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:37:57.268 2832 DEBUG taskflow.storage [req-f47b76b7-c9b2-4282-a1c1-e9b3f42c7f24 03e9981ad44743f7bd7a5d40dd3dfdfa cbdef734a87c4c72a7248d5942013685 - - -] No backend provided, not calling functor 'taskflow.storage.SingleThreadedStorage._save_flow_detail' _with_connection /usr/local/lib/python2.7/dist-packages/taskflow/storage.py:88
+2014-10-20 14:38:37.182 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:38:37.182 2832 DEBUG cinder.scheduler.host_manager [req-c016d234-658b-40a4-aed2-fc4a619fff20 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:39:37.188 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:39:37.188 2832 DEBUG cinder.scheduler.host_manager [req-c34c1602-5234-46c9-9b2c-fd83536bf252 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:40:37.199 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:40:37.199 2832 DEBUG cinder.scheduler.host_manager [req-100b2ba9-de8a-4a3e-9930-5d8680ee3fba - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:41:37.206 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:41:37.206 2832 DEBUG cinder.scheduler.host_manager [req-c2af5ed7-cb5e-4d9f-ba76-6a3d5280d32c - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:42:37.218 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:42:37.218 2832 DEBUG cinder.scheduler.host_manager [req-bb0deef8-7903-432b-a5ff-c024b92eb667 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:43:37.220 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:43:37.220 2832 DEBUG cinder.scheduler.host_manager [req-96c7d291-f256-4c9c-8268-280812eec1e4 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:44:37.229 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:44:37.230 2832 DEBUG cinder.scheduler.host_manager [req-7f6046fc-6b9e-4bda-ad37-d21826eed130 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:45:37.240 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:45:37.240 2832 DEBUG cinder.scheduler.host_manager [req-37810157-68a6-4ded-939a-584aaf3bd2f6 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:46:37.246 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:46:37.246 2832 DEBUG cinder.scheduler.host_manager [req-31f2df5e-561d-43d2-b047-1b4875d53538 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:47:07.928 2832 WARNING cinder.openstack.common.db.sqlalchemy.session [-] Got mysql server has gone away: (2006, 'MySQL server has gone away')
+2014-10-20 14:47:37.255 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:47:37.255 2832 DEBUG cinder.scheduler.host_manager [req-fe6ec62c-456d-4a7f-be5c-7ba44735e2b0 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:47:57.964 2832 DEBUG cinder.service [-] The service database object disappeared, Recreating it. report_state /opt/stack/cinder/cinder/service.py:250
+2014-10-20 14:48:37.256 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:48:37.256 2832 DEBUG cinder.scheduler.host_manager [req-d846eed1-4bff-4a01-bb85-6ac70ea69abf - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:49:21.226 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:49:21.227 2832 DEBUG cinder.scheduler.host_manager [req-0c369390-9bf2-4525-a9b5-6ce87caf064c - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:49:25.087 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:49:25.088 2832 DEBUG cinder.scheduler.host_manager [req-2efa2c02-c8a6-4186-9c4b-46dd93fd5d32 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+2014-10-20 14:49:37.267 2832 WARNING cinder.context [-] Arguments dropped when creating context: {u'user': None, u'tenant': None, u'user_identity': u'- - - - -'}
+2014-10-20 14:49:37.267 2832 DEBUG cinder.scheduler.host_manager [req-a927dc75-c3ca-4829-be78-ce9e3f5541f8 - - - - -] Received volume service update from devstack. update_service_capabilities /opt/stack/cinder/cinder/scheduler/host_manager.py:273
+
+Broadcast message from sysop@devstack
+	(/dev/pts/28) at 14:50 ...
+
+The system is going down for reboot NOW!
+2014-10-20 14:50:18.043 2832 WARNING cinder.openstack.common.db.sqlalchemy.session [-] Got mysql server has gone away: (2006, 'MySQL server has gone away')
+2014-10-20 14:50:18.044 2832 ERROR cinder.service [-] model server went away
+2014-10-20 14:50:18.044 2832 TRACE cinder.service Traceback (most recent call last):
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/opt/stack/cinder/cinder/service.py", line 248, in report_state
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     service_ref = db.service_get(ctxt, self.service_id)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/opt/stack/cinder/cinder/db/api.py", line 89, in service_get
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     return IMPL.service_get(context, service_id)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/opt/stack/cinder/cinder/db/sqlalchemy/api.py", line 121, in wrapper
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     return f(*args, **kwargs)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/opt/stack/cinder/cinder/db/sqlalchemy/api.py", line 288, in service_get
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     return _service_get(context, service_id)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/opt/stack/cinder/cinder/db/sqlalchemy/api.py", line 121, in wrapper
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     return f(*args, **kwargs)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/opt/stack/cinder/cinder/db/sqlalchemy/api.py", line 278, in _service_get
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     filter_by(id=service_id).\
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2282, in first
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     ret = list(self[0:1])
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2149, in __getitem__
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     return list(res)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2353, in __iter__
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     return self._execute_and_instances(context)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2366, in _execute_and_instances
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     close_with_result=True)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2357, in _connection_from_session
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     **kw)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/session.py", line 799, in connection
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     close_with_result=close_with_result)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/orm/session.py", line 805, in _connection_for_bind
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     return engine.contextual_connect(**kwargs)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/engine/base.py", line 1661, in contextual_connect
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     self.pool.connect(),
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/pool.py", line 272, in connect
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     return _ConnectionFairy(self).checkout()
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/pool.py", line 516, in checkout
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     self.connection = self._connection_record.get_connection()
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/pool.py", line 346, in get_connection
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     self.connection = self.__connect()
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/pool.py", line 379, in __connect
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     connection = self.__pool._creator()
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/engine/strategies.py", line 80, in connect
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     return dialect.connect(*cargs, **cparams)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/sqlalchemy/engine/default.py", line 283, in connect
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     return self.dbapi.connect(*cargs, **cparams)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/MySQLdb/__init__.py", line 81, in Connect
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     return Connection(*args, **kwargs)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service   File "/usr/lib/python2.7/dist-packages/MySQLdb/connections.py", line 187, in __init__
+2014-10-20 14:50:18.044 2832 TRACE cinder.service     super(Connection, self).__init__(*args, **kwargs2)
+2014-10-20 14:50:18.044 2832 TRACE cinder.service OperationalError: (OperationalError) (2003, "Can't connect to MySQL server on '127.0.0.1' (111)") None None
+2014-10-20 14:50:18.044 2832 TRACE cinder.service 
+2014-10-20 14:50:18.677 2832 ERROR oslo.messaging._drivers.impl_rabbit [-] Failed to consume message from queue: (0, 0): (320) CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit Traceback (most recent call last):
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/local/lib/python2.7/dist-packages/oslo/messaging/_drivers/impl_rabbit.py", line 655, in ensure
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit     return method()
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/local/lib/python2.7/dist-packages/oslo/messaging/_drivers/impl_rabbit.py", line 735, in _consume
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit     return self.connection.drain_events(timeout=timeout)
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/kombu/connection.py", line 279, in drain_events
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit     return self.transport.drain_events(self.connection, **kwargs)
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/kombu/transport/pyamqp.py", line 90, in drain_events
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit     return connection.drain_events(**kwargs)
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/amqp/connection.py", line 303, in drain_events
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit     return amqp_method(channel, args)
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit   File "/usr/lib/python2.7/dist-packages/amqp/connection.py", line 509, in _close
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit     (class_id, method_id), ConnectionError)
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit ConnectionForced: (0, 0): (320) CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'
+2014-10-20 14:50:18.677 2832 TRACE oslo.messaging._drivers.impl_rabbit 
+2014-10-20 14:50:18.680 2832 INFO oslo.messaging._drivers.impl_rabbit [-] Delaying reconnect for 1.0 seconds...
+2014-10-20 14:50:19.682 2832 INFO oslo.messaging._drivers.impl_rabbit [-] Connecting to AMQP server on 10.0.2.32:5672
+2014-10-20 14:50:19.687 2832 ERROR oslo.messaging._drivers.impl_rabbit [-] AMQP server on 10.0.2.32:5672 is unreachable: [Errno 111] ECONNREFUSED. Trying again in 1 seconds.
+2014-10-20 14:50:20.688 2832 INFO oslo.messaging._drivers.impl_rabbit [-] Delaying reconnect for 1.0 seconds...
+2014-10-20 14:50:21.690 2832 INFO oslo.messaging._drivers.impl_rabbit [-] Connecting to AMQP server on 10.0.2.32:5672
+2014-10-20 14:50:21.694 2832 ERROR oslo.messaging._drivers.impl_rabbit [-] AMQP server on 10.0.2.32:5672 is unreachable: [Errno 111] ECONNREFUSED. Trying again in 3 seconds.
+2014-10-20 14:50:24.695 2832 INFO oslo.messaging._drivers.impl_rabbit [-] Delaying reconnect for 1.0 seconds...

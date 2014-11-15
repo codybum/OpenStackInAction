@@ -1,0 +1,23 @@
+2014-10-20 18:45:48.373 | stack.sh log /opt/stack/logs/stack.sh.log.2014-10-20-144548
+2014-10-20 18:45:48.373 | Installing package prerequisites
+2014-10-20 18:45:59.199 | Installing OpenStack project source
+2014-10-20 18:46:58.444 | Installing Tempest
+2014-10-20 18:46:58.823 | Starting RabbitMQ
+2014-10-20 18:46:59.183 | Configuring and starting MySQL
+2014-10-20 18:46:59.294 | Enabling MySQL query logging
+2014-10-20 18:47:05.609 | Starting Keystone
+2014-10-20 18:47:43.699 | Configuring and starting Horizon
+2014-10-20 18:47:48.333 | Configuring Glance
+2014-10-20 18:47:50.343 | Configuring Neutron
+2014-10-20 18:47:55.872 | Configuring Cinder
+2014-10-20 18:47:57.546 | Configuring Nova
+2014-10-20 18:48:04.567 | Starting Glance
+2014-10-20 18:48:11.185 | Uploading images
+2014-10-20 18:48:15.752 | Starting Nova API
+2014-10-20 18:48:18.868 | Starting Neutron
+2014-10-20 18:48:34.336 | Creating initial neutron network elements
+2014-10-20 18:48:49.524 | Starting Nova
+2014-10-20 18:49:14.290 | Starting Cinder
+2014-10-20 18:49:23.784 | Configuring Heat
+2014-10-20 18:49:25.478 | Starting Heat
+2014-10-20 18:49:52.349 | Initializing Tempest
