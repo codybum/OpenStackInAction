@@ -1,0 +1,8 @@
+include AUTHORS
+include LICENSE
+include README.rst
+include ChangeLog
+include tox.ini
+include .testr.conf
+recursive-include doc *
+recursive-include tools *

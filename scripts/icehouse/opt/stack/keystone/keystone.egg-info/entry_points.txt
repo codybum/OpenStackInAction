@@ -1,0 +1,3 @@
+[oslo.config.opts]
+keystone = keystone.common.config:list_opts
+

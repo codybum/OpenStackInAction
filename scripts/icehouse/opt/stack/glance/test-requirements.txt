@@ -1,0 +1,27 @@
+# Hacking already pins down pep8, pyflakes and flake8
+hacking>=0.8.0,<0.9
+
+# For translations processing
+Babel>=1.3
+
+# Needed for testing
+coverage>=3.6
+discover
+fixtures>=0.3.14
+mox>=0.5.3
+mock>=1.0
+sphinx>=1.1.2,<1.1.999
+requests>=1.1
+testrepository>=0.0.18
+testtools>=0.9.34
+psutil>=1.1.1
+
+# Optional packages that should be installed when testing
+MySQL-python
+psycopg2
+pysendfile==2.0.0
+qpid-python
+xattr>=0.4
+
+# Documentation
+oslosphinx

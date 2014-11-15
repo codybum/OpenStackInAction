@@ -1,0 +1,14 @@
+cyrus-sasl-devel
+openldap2-devel
+python-Paste
+python-PasteDeploy
+python-PasteScript
+python-Routes
+python-SQLAlchemy
+python-WebOb
+python-devel
+python-greenlet
+python-lxml
+python-mysql
+python-pysqlite
+sqlite3

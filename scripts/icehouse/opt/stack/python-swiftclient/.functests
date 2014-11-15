@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+export OS_TEST_PATH='tests.functional'
+python setup.py testr --coverage --testr-args="--concurrency=1"
+
+RET=$?
+coverage report -m
+rm -f .coverage
+exit $RET

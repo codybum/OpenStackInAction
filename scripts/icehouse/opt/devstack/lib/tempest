@@ -1,0 +1,451 @@
+# lib/tempest
+# Install and configure Tempest
+
+# Dependencies:
+#
+# - ``functions`` file
+# - ``lib/nova`` service is running
+# - Global vars that are assumed to be defined:
+#   - ``DEST``, ``FILES``
+#   - ``ADMIN_PASSWORD``
+#   - ``DEFAULT_IMAGE_NAME``
+#   - ``S3_SERVICE_PORT``
+#   - ``SERVICE_HOST``
+#   - ``BASE_SQL_CONN`` ``lib/database`` declares
+#   - ``PUBLIC_NETWORK_NAME``
+#   - ``Q_USE_NAMESPACE``
+#   - ``Q_ROUTER_NAME``
+#   - ``Q_L3_ENABLED``
+#   - ``VIRT_DRIVER``
+#   - ``LIBVIRT_TYPE``
+#   - ``KEYSTONE_SERVICE_PROTOCOL``, ``KEYSTONE_SERVICE_HOST`` from lib/keystone
+#
+# Optional Dependencies:
+#
+# - ``ALT_*`` (similar vars exists in keystone_data.sh)
+# - ``LIVE_MIGRATION_AVAILABLE``
+# - ``USE_BLOCK_MIGRATION_FOR_LIVE_MIGRATION``
+# - ``DEFAULT_INSTANCE_TYPE``
+# - ``DEFAULT_INSTANCE_USER``
+# - ``CINDER_MULTI_LVM_BACKEND``
+# - ``HEAT_CREATE_TEST_IMAGE``
+#
+# ``stack.sh`` calls the entry points in this order:
+#
+# - install_tempest
+# - configure_tempest
+# - init_tempest
+
+# Save trace setting
+XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+
+# Defaults
+# --------
+
+# Set up default directories
+TEMPEST_DIR=$DEST/tempest
+TEMPEST_CONFIG_DIR=${TEMPEST_CONFIG_DIR:-$TEMPEST_DIR/etc}
+TEMPEST_CONFIG=$TEMPEST_CONFIG_DIR/tempest.conf
+TEMPEST_STATE_PATH=${TEMPEST_STATE_PATH:=$DATA_DIR/tempest}
+
+NOVA_SOURCE_DIR=$DEST/nova
+
+BUILD_INTERVAL=1
+BUILD_TIMEOUT=196
+
+
+BOTO_MATERIALS_PATH="$FILES/images/s3-materials/cirros-0.3.1"
+
+# Cinder/Volume variables
+TEMPEST_VOLUME_DRIVER=${TEMPEST_VOLUME_DRIVER:-default}
+TEMPEST_VOLUME_VENDOR=${TEMPEST_VOLUME_VENDOR:-"Open Source"}
+TEMPEST_STORAGE_PROTOCOL=${TEMPEST_STORAGE_PROTOCOL:-iSCSI}
+
+# Neutron/Network variables
+IPV6_ENABLED=$(trueorfalse True $IPV6_ENABLED)
+
+# Functions
+# ---------
+
+# configure_tempest() - Set config files, create data dirs, etc
+function configure_tempest {
+    setup_develop $TEMPEST_DIR
+    local image_lines
+    local images
+    local num_images
+    local image_uuid
+    local image_uuid_alt
+    local errexit
+    local password
+    local line
+    local flavors
+    local available_flavors
+    local flavors_ref
+    local flavor_lines
+    local public_network_id
+    local public_router_id
+    local tenant_networks_reachable
+    local boto_instance_type="m1.tiny"
+    local ssh_connect_method="fixed"
+
+    # TODO(afazekas):
+    # sudo python setup.py deploy
+
+    # This function exits on an error so that errors don't compound and you see
+    # only the first error that occurred.
+    errexit=$(set +o | grep errexit)
+    set -o errexit
+
+    # Save IFS
+    ifs=$IFS
+
+    # Glance should already contain images to be used in tempest
+    # testing. Here we simply look for images stored in Glance
+    # and set the appropriate variables for use in the tempest config
+    # We ignore ramdisk and kernel images, look for the default image
+    # ``DEFAULT_IMAGE_NAME``. If not found, we set the ``image_uuid`` to the
+    # first image returned and set ``image_uuid_alt`` to the second,
+    # if there is more than one returned...
+    # ... Also ensure we only take active images, so we don't get snapshots in process
+    declare -a images
+
+    while read -r IMAGE_NAME IMAGE_UUID; do
+        if [ "$IMAGE_NAME" = "$DEFAULT_IMAGE_NAME" ]; then
+            image_uuid="$IMAGE_UUID"
+            image_uuid_alt="$IMAGE_UUID"
+        fi
+        images+=($IMAGE_UUID)
+    done < <(glance image-list --status=active | awk -F'|' '!/^(+--)|ID|aki|ari/ { print $3,$2 }')
+
+    case "${#images[*]}" in
+        0)
+            echo "Found no valid images to use!"
+            exit 1
+            ;;
+        1)
+            if [ -z "$image_uuid" ]; then
+                image_uuid=${images[0]}
+                image_uuid_alt=${images[0]}
+            fi
+            ;;
+        *)
+            if [ -z "$image_uuid" ]; then
+                image_uuid=${images[0]}
+                image_uuid_alt=${images[1]}
+            fi
+            ;;
+    esac
+
+    # Create tempest.conf from tempest.conf.sample
+    # copy every time, because the image UUIDS are going to change
+    if [[ ! -d $TEMPEST_CONFIG_DIR ]]; then
+        sudo mkdir -p $TEMPEST_CONFIG_DIR
+    fi
+    sudo chown $STACK_USER $TEMPEST_CONFIG_DIR
+    cp $TEMPEST_DIR/etc/tempest.conf.sample $TEMPEST_CONFIG
+    chmod 644 $TEMPEST_CONFIG
+
+    password=${ADMIN_PASSWORD:-secrete}
+
+    # See files/keystone_data.sh and stack.sh where admin, demo and alt_demo
+    # user and tenant are set up...
+    ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+    ADMIN_TENANT_NAME=${ADMIN_TENANT_NAME:-admin}
+    ADMIN_DOMAIN_NAME=${ADMIN_DOMAIN_NAME:-Default}
+    TEMPEST_USERNAME=${TEMPEST_USERNAME:-demo}
+    TEMPEST_TENANT_NAME=${TEMPEST_TENANT_NAME:-demo}
+    ALT_USERNAME=${ALT_USERNAME:-alt_demo}
+    ALT_TENANT_NAME=${ALT_TENANT_NAME:-alt_demo}
+
+    # If the ``DEFAULT_INSTANCE_TYPE`` not declared, use the new behavior
+    # Tempest creates instane types for himself
+    if  [[ -z "$DEFAULT_INSTANCE_TYPE" ]]; then
+        available_flavors=$(nova flavor-list)
+        if [[ ! ( $available_flavors =~ 'm1.nano' ) ]]; then
+            if is_arch "ppc64"; then
+                # qemu needs at least 128MB of memory to boot on ppc64
+                nova flavor-create m1.nano 42 128 0 1
+            else
+                nova flavor-create m1.nano 42 64 0 1
+            fi
+        fi
+        flavor_ref=42
+        boto_instance_type=m1.nano
+        if [[ ! ( $available_flavors =~ 'm1.micro' ) ]]; then
+            if is_arch "ppc64"; then
+                nova flavor-create m1.micro 84 256 0 1
+            else
+                nova flavor-create m1.micro 84 128 0 1
+            fi
+        fi
+        flavor_ref_alt=84
+    else
+        # Check Nova for existing flavors and, if set, look for the
+        # ``DEFAULT_INSTANCE_TYPE`` and use that.
+        boto_instance_type=$DEFAULT_INSTANCE_TYPE
+        flavor_lines=`nova flavor-list`
+        IFS=$'\r\n'
+        flavors=""
+        for line in $flavor_lines; do
+            f=$(echo $line | awk "/ $DEFAULT_INSTANCE_TYPE / { print \$2 }")
+            flavors="$flavors $f"
+        done
+
+        for line in $flavor_lines; do
+            flavors="$flavors `echo $line | grep -v "^\(|\s*ID\|+--\)" | cut -d' ' -f2`"
+        done
+
+        IFS=" "
+        flavors=($flavors)
+        num_flavors=${#flavors[*]}
+        echo "Found $num_flavors flavors"
+        if [[ $num_flavors -eq 0 ]]; then
+            echo "Found no valid flavors to use!"
+            exit 1
+        fi
+        flavor_ref=${flavors[0]}
+        flavor_ref_alt=$flavor_ref
+
+        # ensure flavor_ref and flavor_ref_alt have different values
+        # some resize instance in tempest tests depends on this.
+        for f in ${flavors[@]:1}; do
+            if [[ $f -ne $flavor_ref ]]; then
+                flavor_ref_alt=$f
+                break
+            fi
+        done
+    fi
+
+    if [ "$Q_USE_NAMESPACE" != "False" ]; then
+        tenant_networks_reachable=false
+        if ! is_service_enabled n-net; then
+            ssh_connect_method="floating"
+        fi
+    else
+        tenant_networks_reachable=true
+    fi
+
+    ssh_connect_method=${TEMPEST_SSH_CONNECT_METHOD:-$ssh_connect_method}
+
+    if [ "$Q_L3_ENABLED" = "True" ]; then
+        public_network_id=$(neutron net-list | grep $PUBLIC_NETWORK_NAME | \
+            awk '{print $2}')
+        if [ "$Q_USE_NAMESPACE" == "False" ]; then
+            # If namespaces are disabled, devstack will create a single
+            # public router that tempest should be configured to use.
+            public_router_id=$(neutron router-list | awk "/ $Q_ROUTER_NAME / \
+                { print \$2 }")
+        fi
+    fi
+
+    # Oslo
+    iniset $TEMPEST_CONFIG DEFAULT lock_path $TEMPEST_STATE_PATH
+    mkdir -p $TEMPEST_STATE_PATH
+    iniset $TEMPEST_CONFIG DEFAULT use_stderr False
+    iniset $TEMPEST_CONFIG DEFAULT log_file tempest.log
+    iniset $TEMPEST_CONFIG DEFAULT debug True
+
+    # Timeouts
+    iniset $TEMPEST_CONFIG compute build_timeout $BUILD_TIMEOUT
+    iniset $TEMPEST_CONFIG volume build_timeout $BUILD_TIMEOUT
+    iniset $TEMPEST_CONFIG boto build_timeout $BUILD_TIMEOUT
+    iniset $TEMPEST_CONFIG compute build_interval $BUILD_INTERVAL
+    iniset $TEMPEST_CONFIG volume build_interval $BUILD_INTERVAL
+    iniset $TEMPEST_CONFIG boto build_interval $BUILD_INTERVAL
+    iniset $TEMPEST_CONFIG boto http_socket_timeout 5
+
+    # Identity
+    iniset $TEMPEST_CONFIG identity uri "$KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:5000/v2.0/"
+    iniset $TEMPEST_CONFIG identity uri_v3 "$KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:5000/v3/"
+    iniset $TEMPEST_CONFIG identity username $TEMPEST_USERNAME
+    iniset $TEMPEST_CONFIG identity password "$password"
+    iniset $TEMPEST_CONFIG identity tenant_name $TEMPEST_TENANT_NAME
+    iniset $TEMPEST_CONFIG identity alt_username $ALT_USERNAME
+    iniset $TEMPEST_CONFIG identity alt_password "$password"
+    iniset $TEMPEST_CONFIG identity alt_tenant_name $ALT_TENANT_NAME
+    iniset $TEMPEST_CONFIG identity admin_username $ADMIN_USERNAME
+    iniset $TEMPEST_CONFIG identity admin_password "$password"
+    iniset $TEMPEST_CONFIG identity admin_tenant_name $ADMIN_TENANT_NAME
+    iniset $TEMPEST_CONFIG identity admin_domain_name $ADMIN_DOMAIN_NAME
+    iniset $TEMPEST_CONFIG identity auth_version ${TEMPEST_AUTH_VERSION:-v2}
+
+    # Image
+    # for the gate we want to be able to override this variable so we aren't
+    # doing an HTTP fetch over the wide internet for this test
+    if [[ ! -z "$TEMPEST_HTTP_IMAGE" ]]; then
+        iniset $TEMPEST_CONFIG image http_image $TEMPEST_HTTP_IMAGE
+    fi
+
+    # Compute
+    iniset $TEMPEST_CONFIG compute allow_tenant_isolation ${TEMPEST_ALLOW_TENANT_ISOLATION:-True}
+    iniset $TEMPEST_CONFIG compute ssh_user ${DEFAULT_INSTANCE_USER:-cirros} # DEPRECATED
+    iniset $TEMPEST_CONFIG compute network_for_ssh $PRIVATE_NETWORK_NAME
+    iniset $TEMPEST_CONFIG compute ip_version_for_ssh 4
+    iniset $TEMPEST_CONFIG compute ssh_timeout $BUILD_TIMEOUT
+    iniset $TEMPEST_CONFIG compute image_ref $image_uuid
+    iniset $TEMPEST_CONFIG compute image_ssh_user ${DEFAULT_INSTANCE_USER:-cirros}
+    iniset $TEMPEST_CONFIG compute image_ref_alt $image_uuid_alt
+    iniset $TEMPEST_CONFIG compute image_alt_ssh_user ${DEFAULT_INSTANCE_USER:-cirros}
+    iniset $TEMPEST_CONFIG compute flavor_ref $flavor_ref
+    iniset $TEMPEST_CONFIG compute flavor_ref_alt $flavor_ref_alt
+    iniset $TEMPEST_CONFIG compute ssh_connect_method $ssh_connect_method
+
+    # Compute Features
+    iniset $TEMPEST_CONFIG compute-feature-enabled resize True
+    iniset $TEMPEST_CONFIG compute-feature-enabled live_migration ${LIVE_MIGRATION_AVAILABLE:-False}
+    iniset $TEMPEST_CONFIG compute-feature-enabled change_password False
+    iniset $TEMPEST_CONFIG compute-feature-enabled block_migration_for_live_migration ${USE_BLOCK_MIGRATION_FOR_LIVE_MIGRATION:-False}
+
+    # Compute admin
+    iniset $TEMPEST_CONFIG "compute-admin" username $ADMIN_USERNAME
+    iniset $TEMPEST_CONFIG "compute-admin" password "$password"
+    iniset $TEMPEST_CONFIG "compute-admin" tenant_name $ADMIN_TENANT_NAME
+
+    # Network
+    iniset $TEMPEST_CONFIG network api_version 2.0
+    iniset $TEMPEST_CONFIG network tenant_networks_reachable "$tenant_networks_reachable"
+    iniset $TEMPEST_CONFIG network public_network_id "$public_network_id"
+    iniset $TEMPEST_CONFIG network public_router_id "$public_router_id"
+    iniset $TEMPEST_CONFIG network default_network "$FIXED_RANGE"
+    iniset $TEMPEST_CONFIG network-feature-enabled ipv6 "$IPV6_ENABLED"
+
+    # boto
+    iniset $TEMPEST_CONFIG boto ec2_url "http://$SERVICE_HOST:8773/services/Cloud"
+    iniset $TEMPEST_CONFIG boto s3_url "http://$SERVICE_HOST:${S3_SERVICE_PORT:-3333}"
+    iniset $TEMPEST_CONFIG boto s3_materials_path "$BOTO_MATERIALS_PATH"
+    iniset $TEMPEST_CONFIG boto ari_manifest cirros-0.3.1-x86_64-initrd.manifest.xml
+    iniset $TEMPEST_CONFIG boto ami_manifest cirros-0.3.1-x86_64-blank.img.manifest.xml
+    iniset $TEMPEST_CONFIG boto aki_manifest cirros-0.3.1-x86_64-vmlinuz.manifest.xml
+    iniset $TEMPEST_CONFIG boto instance_type "$boto_instance_type"
+    iniset $TEMPEST_CONFIG boto http_socket_timeout 30
+    iniset $TEMPEST_CONFIG boto ssh_user ${DEFAULT_INSTANCE_USER:-cirros}
+
+    # Orchestration Tests
+    if is_service_enabled heat; then
+        if [[ ! -z "$HEAT_CFN_IMAGE_URL" ]]; then
+            iniset $TEMPEST_CONFIG orchestration image_ref $(basename "$HEAT_CFN_IMAGE_URL" ".qcow2")
+        fi
+        # build a specialized heat flavor
+        available_flavors=$(nova flavor-list)
+        if [[ ! ( $available_flavors =~ 'm1.heat' ) ]]; then
+            nova flavor-create m1.heat 451 512 0 1
+        fi
+        iniset $TEMPEST_CONFIG orchestration instance_type "m1.heat"
+        iniset $TEMPEST_CONFIG orchestration build_timeout 900
+    fi
+
+    # Scenario
+    iniset $TEMPEST_CONFIG scenario img_dir "$FILES/images/cirros-0.3.1-x86_64-uec"
+
+    # Large Ops Number
+    iniset $TEMPEST_CONFIG scenario large_ops_number ${TEMPEST_LARGE_OPS_NUMBER:-0}
+
+    # Volume
+    if ! is_service_enabled c-bak; then
+        iniset $TEMPEST_CONFIG volume-feature-enabled backup False
+    fi
+    CINDER_MULTI_LVM_BACKEND=$(trueorfalse False $CINDER_MULTI_LVM_BACKEND)
+    if [ $CINDER_MULTI_LVM_BACKEND == "True" ]; then
+        iniset $TEMPEST_CONFIG volume-feature-enabled multi_backend "True"
+        iniset $TEMPEST_CONFIG volume backend1_name "LVM_iSCSI"
+        iniset $TEMPEST_CONFIG volume backend2_name "LVM_iSCSI_2"
+    fi
+
+    if [ $TEMPEST_VOLUME_DRIVER != "default" ]; then
+        iniset $TEMPEST_CONFIG volume vendor_name $TEMPEST_VOLUME_VENDOR
+        iniset $TEMPEST_CONFIG volume storage_protocol $TEMPEST_STORAGE_PROTOCOL
+    fi
+
+    # Dashboard
+    iniset $TEMPEST_CONFIG dashboard dashboard_url "http://$SERVICE_HOST/"
+    iniset $TEMPEST_CONFIG dashboard login_url "http://$SERVICE_HOST/auth/login/"
+
+    # cli
+    iniset $TEMPEST_CONFIG cli cli_dir $NOVA_BIN_DIR
+
+    # Networking
+    iniset $TEMPEST_CONFIG network-feature-enabled api_extensions "${NETWORK_API_EXTENSIONS:-all}"
+
+    # Baremetal
+    if [ "$VIRT_DRIVER" = "ironic" ] ; then
+        iniset $TEMPEST_CONFIG baremetal driver_enabled True
+    fi
+
+    # service_available
+    for service in ${TEMPEST_SERVICES//,/ }; do
+        if is_service_enabled $service ; then
+            iniset $TEMPEST_CONFIG service_available $service "True"
+        else
+            iniset $TEMPEST_CONFIG service_available $service "False"
+        fi
+    done
+
+    # Restore IFS
+    IFS=$ifs
+    #Restore errexit
+    $errexit
+}
+
+# create_tempest_accounts() - Set up common required tempest accounts
+
+# Project              User         Roles
+# ------------------------------------------------------------------
+# alt_demo             alt_demo     Member
+
+# Migrated from keystone_data.sh
+function create_tempest_accounts {
+    if is_service_enabled tempest; then
+        # Tempest has some tests that validate various authorization checks
+        # between two regular users in separate tenants
+        openstack project create \
+            alt_demo
+        openstack user create \
+            --project alt_demo \
+            --password "$ADMIN_PASSWORD" \
+            alt_demo
+        openstack role add \
+            --project alt_demo \
+            --user alt_demo \
+            Member
+    fi
+}
+
+# install_tempest() - Collect source and prepare
+function install_tempest {
+    git_clone $TEMPEST_REPO $TEMPEST_DIR $TEMPEST_BRANCH
+    pip_install "tox<1.7"
+}
+
+# init_tempest() - Initialize ec2 images
+function init_tempest {
+    local base_image_name=cirros-0.3.1-x86_64
+    # /opt/stack/devstack/files/images/cirros-0.3.1-x86_64-uec
+    local image_dir="$FILES/images/${base_image_name}-uec"
+    local kernel="$image_dir/${base_image_name}-vmlinuz"
+    local ramdisk="$image_dir/${base_image_name}-initrd"
+    local disk_image="$image_dir/${base_image_name}-blank.img"
+    # if the cirros uec downloaded and the system is uec capable
+    if [ -f "$kernel" -a -f "$ramdisk" -a -f "$disk_image" -a  "$VIRT_DRIVER" != "openvz" \
+        -a \( "$LIBVIRT_TYPE" != "lxc" -o "$VIRT_DRIVER" != "libvirt" \) ]; then
+        echo "Prepare aki/ari/ami Images"
+        ( #new namespace
+            # tenant:demo ; user: demo
+            source $TOP_DIR/accrc/demo/demo
+            euca-bundle-image -r x86_64 -i "$kernel" --kernel true -d "$BOTO_MATERIALS_PATH"
+            euca-bundle-image -r x86_64 -i "$ramdisk" --ramdisk true -d "$BOTO_MATERIALS_PATH"
+            euca-bundle-image -r x86_64 -i "$disk_image" -d "$BOTO_MATERIALS_PATH"
+        ) 2>&1 </dev/null | cat
+    else
+        echo "Boto materials are not prepared"
+    fi
+}
+
+# Restore xtrace
+$XTRACE
+
+# Tell emacs to use shell-script-mode
+## Local variables:
+## mode: shell-script
+## End:

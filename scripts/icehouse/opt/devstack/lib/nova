@@ -1,0 +1,807 @@
+# lib/nova
+# Functions to control the configuration and operation of the **Nova** service
+
+# Dependencies:
+#
+# - ``functions`` file
+# - ``DEST``, ``DATA_DIR``, ``STACK_USER`` must be defined
+# - ``SERVICE_{TENANT_NAME|PASSWORD}`` must be defined
+# - ``LIBVIRT_TYPE`` must be defined
+# - ``INSTANCE_NAME_PREFIX``, ``VOLUME_NAME_PREFIX`` must be defined
+# - ``KEYSTONE_TOKEN_FORMAT`` must be defined
+
+# ``stack.sh`` calls the entry points in this order:
+#
+# - install_nova
+# - configure_nova
+# - create_nova_conf
+# - init_nova
+# - start_nova
+# - stop_nova
+# - cleanup_nova
+
+# Save trace setting
+XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+
+# Defaults
+# --------
+
+# Set up default directories
+NOVA_DIR=$DEST/nova
+NOVACLIENT_DIR=$DEST/python-novaclient
+NOVA_STATE_PATH=${NOVA_STATE_PATH:=$DATA_DIR/nova}
+# INSTANCES_PATH is the previous name for this
+NOVA_INSTANCES_PATH=${NOVA_INSTANCES_PATH:=${INSTANCES_PATH:=$NOVA_STATE_PATH/instances}}
+NOVA_AUTH_CACHE_DIR=${NOVA_AUTH_CACHE_DIR:-/var/cache/nova}
+
+NOVA_CONF_DIR=/etc/nova
+NOVA_CONF=$NOVA_CONF_DIR/nova.conf
+NOVA_CELLS_CONF=$NOVA_CONF_DIR/nova-cells.conf
+NOVA_FAKE_CONF=$NOVA_CONF_DIR/nova-fake.conf
+NOVA_CELLS_DB=${NOVA_CELLS_DB:-nova_cell}
+
+NOVA_API_PASTE_INI=${NOVA_API_PASTE_INI:-$NOVA_CONF_DIR/api-paste.ini}
+
+# Public facing bits
+NOVA_SERVICE_HOST=${NOVA_SERVICE_HOST:-$SERVICE_HOST}
+NOVA_SERVICE_PORT=${NOVA_SERVICE_PORT:-8774}
+NOVA_SERVICE_PORT_INT=${NOVA_SERVICE_PORT_INT:-18774}
+NOVA_SERVICE_PROTOCOL=${NOVA_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
+
+# Support entry points installation of console scripts
+if [[ -d $NOVA_DIR/bin ]]; then
+    NOVA_BIN_DIR=$NOVA_DIR/bin
+else
+    NOVA_BIN_DIR=$(get_python_exec_prefix)
+fi
+
+# Set the paths of certain binaries
+NOVA_ROOTWRAP=$(get_rootwrap_location nova)
+
+# Allow rate limiting to be turned off for testing, like for Tempest
+# NOTE: Set API_RATE_LIMIT="False" to turn OFF rate limiting
+API_RATE_LIMIT=${API_RATE_LIMIT:-"True"}
+
+# Option to enable/disable config drive
+# NOTE: Set FORCE_CONFIG_DRIVE="False" to turn OFF config drive
+FORCE_CONFIG_DRIVE=${FORCE_CONFIG_DRIVE:-"always"}
+
+# Nova supports pluggable schedulers.  The default ``FilterScheduler``
+# should work in most cases.
+SCHEDULER=${SCHEDULER:-nova.scheduler.filter_scheduler.FilterScheduler}
+
+QEMU_CONF=/etc/libvirt/qemu.conf
+
+# Set default defaults here as some hypervisor drivers override these
+PUBLIC_INTERFACE_DEFAULT=br100
+FLAT_NETWORK_BRIDGE_DEFAULT=br100
+# set the GUEST_INTERFACE_DEFAULT to some interface on the box so that
+# the default isn't completely crazy. This will match eth*, em*, or
+# the new p* interfaces, then basically picks the first
+# alphabetically. It's probably wrong, however it's less wrong than
+# always using 'eth0' which doesn't exist on new Linux distros at all.
+GUEST_INTERFACE_DEFAULT=$(ip link \
+    | grep 'state UP' \
+    | awk '{print $2}' \
+    | sed 's/://' \
+    | grep ^[ep] \
+    | head -1)
+
+# Get hypervisor configuration
+# ----------------------------
+
+NOVA_PLUGINS=$TOP_DIR/lib/nova_plugins
+if is_service_enabled nova && [[ -r $NOVA_PLUGINS/hypervisor-$VIRT_DRIVER ]]; then
+    # Load plugin
+    source $NOVA_PLUGINS/hypervisor-$VIRT_DRIVER
+fi
+
+
+# Nova Network Configuration
+# --------------------------
+
+NETWORK_MANAGER=${NETWORK_MANAGER:-${NET_MAN:-FlatDHCPManager}}
+PUBLIC_INTERFACE=${PUBLIC_INTERFACE:-$PUBLIC_INTERFACE_DEFAULT}
+VLAN_INTERFACE=${VLAN_INTERFACE:-$GUEST_INTERFACE_DEFAULT}
+FLAT_NETWORK_BRIDGE=${FLAT_NETWORK_BRIDGE:-$FLAT_NETWORK_BRIDGE_DEFAULT}
+EC2_DMZ_HOST=${EC2_DMZ_HOST:-$SERVICE_HOST}
+
+# If you are using the FlatDHCP network mode on multiple hosts, set the
+# ``FLAT_INTERFACE`` variable but make sure that the interface doesn't already
+# have an IP or you risk breaking things.
+#
+# **DHCP Warning**:  If your flat interface device uses DHCP, there will be a
+# hiccup while the network is moved from the flat interface to the flat network
+# bridge.  This will happen when you launch your first instance.  Upon launch
+# you will lose all connectivity to the node, and the VM launch will probably
+# fail.
+#
+# If you are running on a single node and don't need to access the VMs from
+# devices other than that node, you can set ``FLAT_INTERFACE=``
+# This will stop nova from bridging any interfaces into ``FLAT_NETWORK_BRIDGE``.
+FLAT_INTERFACE=${FLAT_INTERFACE:-$GUEST_INTERFACE_DEFAULT}
+
+# ``MULTI_HOST`` is a mode where each compute node runs its own network node.  This
+# allows network operations and routing for a VM to occur on the server that is
+# running the VM - removing a SPOF and bandwidth bottleneck.
+MULTI_HOST=`trueorfalse False $MULTI_HOST`
+
+# Test floating pool and range are used for testing.  They are defined
+# here until the admin APIs can replace nova-manage
+TEST_FLOATING_POOL=${TEST_FLOATING_POOL:-test}
+TEST_FLOATING_RANGE=${TEST_FLOATING_RANGE:-192.168.253.0/29}
+
+# Tell Tempest this project is present
+TEMPEST_SERVICES+=,nova
+
+
+# Functions
+# ---------
+
+# Test if any Nova services are enabled
+# is_nova_enabled
+function is_nova_enabled {
+    [[ ,${ENABLED_SERVICES} =~ ,"n-" ]] && return 0
+    return 1
+}
+
+# Test if any Nova Cell services are enabled
+# is_nova_enabled
+function is_n-cell_enabled {
+    [[ ,${ENABLED_SERVICES} =~ ,"n-cell" ]] && return 0
+    return 1
+}
+
+# Helper to clean iptables rules
+function clean_iptables {
+    # Delete rules
+    sudo iptables -S -v | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" | grep "\-A" |  sed "s/-A/-D/g" | awk '{print "sudo iptables",$0}' | bash
+    # Delete nat rules
+    sudo iptables -S -v -t nat | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" |  grep "\-A" | sed "s/-A/-D/g" | awk '{print "sudo iptables -t nat",$0}' | bash
+    # Delete chains
+    sudo iptables -S -v | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" | grep "\-N" |  sed "s/-N/-X/g" | awk '{print "sudo iptables",$0}' | bash
+    # Delete nat chains
+    sudo iptables -S -v -t nat | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" |  grep "\-N" | sed "s/-N/-X/g" | awk '{print "sudo iptables -t nat",$0}' | bash
+}
+
+# cleanup_nova() - Remove residual data files, anything left over from previous
+# runs that a clean run would need to clean up
+function cleanup_nova {
+    if is_service_enabled n-cpu; then
+        # Clean iptables from previous runs
+        clean_iptables
+
+        # Destroy old instances
+        instances=`sudo virsh list --all | grep $INSTANCE_NAME_PREFIX | sed "s/.*\($INSTANCE_NAME_PREFIX[0-9a-fA-F]*\).*/\1/g"`
+        if [ ! "$instances" = "" ]; then
+            echo $instances | xargs -n1 sudo virsh destroy || true
+            echo $instances | xargs -n1 sudo virsh undefine --managed-save || true
+        fi
+
+        # Logout and delete iscsi sessions
+        tgts=$(sudo iscsiadm --mode node | grep $VOLUME_NAME_PREFIX | cut -d ' ' -f2)
+        for target in $tgts; do
+            sudo iscsiadm --mode node -T $target --logout || true
+        done
+        sudo iscsiadm --mode node --op delete || true
+
+        # Clean out the instances directory.
+        sudo rm -rf $NOVA_INSTANCES_PATH/*
+    fi
+
+    sudo rm -rf $NOVA_STATE_PATH $NOVA_AUTH_CACHE_DIR
+
+    # NOTE(dtroyer): This really should be called from here but due to the way
+    #                nova abuses the _cleanup() function we're moving it
+    #                directly into cleanup.sh until this can be fixed.
+    #if is_service_enabled n-cpu && [[ -r $NOVA_PLUGINS/hypervisor-$VIRT_DRIVER ]]; then
+    #    cleanup_nova_hypervisor
+    #fi
+}
+
+# configure_nova_rootwrap() - configure Nova's rootwrap
+function configure_nova_rootwrap {
+    # Deploy new rootwrap filters files (owned by root).
+    # Wipe any existing rootwrap.d files first
+    if [[ -d $NOVA_CONF_DIR/rootwrap.d ]]; then
+        sudo rm -rf $NOVA_CONF_DIR/rootwrap.d
+    fi
+    # Deploy filters to /etc/nova/rootwrap.d
+    sudo mkdir -m 755 $NOVA_CONF_DIR/rootwrap.d
+    sudo cp $NOVA_DIR/etc/nova/rootwrap.d/*.filters $NOVA_CONF_DIR/rootwrap.d
+    sudo chown -R root:root $NOVA_CONF_DIR/rootwrap.d
+    sudo chmod 644 $NOVA_CONF_DIR/rootwrap.d/*
+    # Set up rootwrap.conf, pointing to /etc/nova/rootwrap.d
+    sudo cp $NOVA_DIR/etc/nova/rootwrap.conf $NOVA_CONF_DIR/
+    sudo sed -e "s:^filters_path=.*$:filters_path=$NOVA_CONF_DIR/rootwrap.d:" -i $NOVA_CONF_DIR/rootwrap.conf
+    sudo chown root:root $NOVA_CONF_DIR/rootwrap.conf
+    sudo chmod 0644 $NOVA_CONF_DIR/rootwrap.conf
+    # Specify rootwrap.conf as first parameter to nova-rootwrap
+    ROOTWRAP_SUDOER_CMD="$NOVA_ROOTWRAP $NOVA_CONF_DIR/rootwrap.conf *"
+
+    # Set up the rootwrap sudoers for nova
+    TEMPFILE=`mktemp`
+    echo "$STACK_USER ALL=(root) NOPASSWD: $ROOTWRAP_SUDOER_CMD" >$TEMPFILE
+    chmod 0440 $TEMPFILE
+    sudo chown root:root $TEMPFILE
+    sudo mv $TEMPFILE /etc/sudoers.d/nova-rootwrap
+}
+
+# configure_nova() - Set config files, create data dirs, etc
+function configure_nova {
+    # Put config files in ``/etc/nova`` for everyone to find
+    if [[ ! -d $NOVA_CONF_DIR ]]; then
+        sudo mkdir -p $NOVA_CONF_DIR
+    fi
+    sudo chown $STACK_USER $NOVA_CONF_DIR
+
+    cp -p $NOVA_DIR/etc/nova/policy.json $NOVA_CONF_DIR
+
+    configure_nova_rootwrap
+
+    if is_service_enabled n-api; then
+        # Remove legacy paste config if present
+        rm -f $NOVA_DIR/bin/nova-api-paste.ini
+
+        # Get the sample configuration file in place
+        cp $NOVA_DIR/etc/nova/api-paste.ini $NOVA_CONF_DIR
+
+        # Comment out the keystone configs in Nova's api-paste.ini.
+        # We are using nova.conf to configure this instead.
+        inicomment $NOVA_API_PASTE_INI filter:authtoken auth_host
+        inicomment $NOVA_API_PASTE_INI filter:authtoken auth_protocol
+        inicomment $NOVA_API_PASTE_INI filter:authtoken admin_tenant_name
+        inicomment $NOVA_API_PASTE_INI filter:authtoken cafile
+        inicomment $NOVA_API_PASTE_INI filter:authtoken admin_user
+        inicomment $NOVA_API_PASTE_INI filter:authtoken admin_password
+        inicomment $NOVA_API_PASTE_INI filter:authtoken signing_dir
+    fi
+
+    if is_service_enabled n-cpu; then
+        # Force IP forwarding on, just on case
+        sudo sysctl -w net.ipv4.ip_forward=1
+
+        if [[ "$VIRT_DRIVER" = 'libvirt' ]]; then
+            # Check for kvm (hardware based virtualization).  If unable to initialize
+            # kvm, we drop back to the slower emulation mode (qemu).  Note: many systems
+            # come with hardware virtualization disabled in BIOS.
+            if [[ "$LIBVIRT_TYPE" == "kvm" ]]; then
+                sudo modprobe kvm || true
+                if [ ! -e /dev/kvm ]; then
+                    echo "WARNING: Switching to QEMU"
+                    LIBVIRT_TYPE=qemu
+                    if which selinuxenabled 2>&1 > /dev/null && selinuxenabled; then
+                        # https://bugzilla.redhat.com/show_bug.cgi?id=753589
+                        sudo setsebool virt_use_execmem on
+                    fi
+                fi
+            fi
+
+            # Install and configure **LXC** if specified.  LXC is another approach to
+            # splitting a system into many smaller parts.  LXC uses cgroups and chroot
+            # to simulate multiple systems.
+            if [[ "$LIBVIRT_TYPE" == "lxc" ]]; then
+                if is_ubuntu; then
+                    if [[ ! "$DISTRO" > natty ]]; then
+                        cgline="none /cgroup cgroup cpuacct,memory,devices,cpu,freezer,blkio 0 0"
+                        sudo mkdir -p /cgroup
+                        if ! grep -q cgroup /etc/fstab; then
+                            echo "$cgline" | sudo tee -a /etc/fstab
+                        fi
+                        if ! mount -n | grep -q cgroup; then
+                            sudo mount /cgroup
+                        fi
+                    fi
+                fi
+            fi
+        fi
+
+        # Instance Storage
+        # ----------------
+
+        # Nova stores each instance in its own directory.
+        sudo mkdir -p $NOVA_INSTANCES_PATH
+        sudo chown -R $STACK_USER $NOVA_INSTANCES_PATH
+
+        # You can specify a different disk to be mounted and used for backing the
+        # virtual machines.  If there is a partition labeled nova-instances we
+        # mount it (ext filesystems can be labeled via e2label).
+        if [ -L /dev/disk/by-label/nova-instances ]; then
+            if ! mount -n | grep -q $NOVA_INSTANCES_PATH; then
+                sudo mount -L nova-instances $NOVA_INSTANCES_PATH
+                sudo chown -R $STACK_USER $NOVA_INSTANCES_PATH
+            fi
+        fi
+    fi
+
+    # Rebuild the config file from scratch
+    create_nova_conf
+
+    if is_service_enabled n-cpu && [[ -r $NOVA_PLUGINS/hypervisor-$VIRT_DRIVER ]]; then
+        # Configure hypervisor plugin
+        configure_nova_hypervisor
+    fi
+}
+
+# create_nova_accounts() - Set up common required nova accounts
+
+# Project              User         Roles
+# ------------------------------------------------------------------
+# SERVICE_TENANT_NAME  nova         admin
+# SERVICE_TENANT_NAME  nova         ResellerAdmin (if Swift is enabled)
+
+# Migrated from keystone_data.sh
+create_nova_accounts() {
+
+    SERVICE_TENANT=$(openstack project list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
+    ADMIN_ROLE=$(openstack role list | awk "/ admin / { print \$2 }")
+
+    # Nova
+    if [[ "$ENABLED_SERVICES" =~ "n-api" ]]; then
+        NOVA_USER=$(openstack user create \
+            nova \
+            --password "$SERVICE_PASSWORD" \
+            --project $SERVICE_TENANT \
+            --email nova@example.com \
+            | grep " id " | get_field 2)
+        openstack role add \
+            $ADMIN_ROLE \
+            --project $SERVICE_TENANT \
+            --user $NOVA_USER
+        if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
+            NOVA_SERVICE=$(openstack service create \
+                nova \
+                --type=compute \
+                --description="Nova Compute Service" \
+                | grep " id " | get_field 2)
+            openstack endpoint create \
+                $NOVA_SERVICE \
+                --region RegionOne \
+                --publicurl "$NOVA_SERVICE_PROTOCOL://$NOVA_SERVICE_HOST:$NOVA_SERVICE_PORT/v2/\$(tenant_id)s" \
+                --adminurl "$NOVA_SERVICE_PROTOCOL://$NOVA_SERVICE_HOST:$NOVA_SERVICE_PORT/v2/\$(tenant_id)s" \
+                --internalurl "$NOVA_SERVICE_PROTOCOL://$NOVA_SERVICE_HOST:$NOVA_SERVICE_PORT/v2/\$(tenant_id)s"
+            NOVA_V3_SERVICE=$(openstack service create \
+                novav3 \
+                --type=computev3 \
+                --description="Nova Compute Service V3" \
+                | grep " id " | get_field 2)
+            openstack endpoint create \
+                $NOVA_V3_SERVICE \
+                --region RegionOne \
+                --publicurl "$NOVA_SERVICE_PROTOCOL://$NOVA_SERVICE_HOST:$NOVA_SERVICE_PORT/v3" \
+                --adminurl "$NOVA_SERVICE_PROTOCOL://$NOVA_SERVICE_HOST:$NOVA_SERVICE_PORT/v3" \
+                --internalurl "$NOVA_SERVICE_PROTOCOL://$NOVA_SERVICE_HOST:$NOVA_SERVICE_PORT/v3"
+        fi
+    fi
+
+    if is_service_enabled n-api; then
+        # Swift
+        if is_service_enabled swift; then
+            # Nova needs ResellerAdmin role to download images when accessing
+            # swift through the s3 api.
+            openstack role add \
+                --project $SERVICE_TENANT_NAME \
+                --user nova \
+                ResellerAdmin
+        fi
+
+        # EC2
+        if [[ "$KEYSTONE_CATALOG_BACKEND" = "sql" ]]; then
+            openstack service create \
+                --type ec2 \
+                --description "EC2 Compatibility Layer" \
+                ec2
+            openstack endpoint create \
+                --region RegionOne \
+                --publicurl "http://$SERVICE_HOST:8773/services/Cloud" \
+                --adminurl "http://$SERVICE_HOST:8773/services/Admin" \
+                --internalurl "http://$SERVICE_HOST:8773/services/Cloud" \
+                ec2
+        fi
+    fi
+
+    # S3
+    if is_service_enabled n-obj swift3; then
+        if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
+            openstack service create \
+                --type s3 \
+                --description "S3" \
+                s3
+            openstack endpoint create \
+                --region RegionOne \
+                --publicurl "http://$SERVICE_HOST:$S3_SERVICE_PORT" \
+                --adminurl "http://$SERVICE_HOST:$S3_SERVICE_PORT" \
+                --internalurl "http://$SERVICE_HOST:$S3_SERVICE_PORT" \
+                s3
+        fi
+    fi
+}
+
+# create_nova_conf() - Create a new nova.conf file
+function create_nova_conf {
+    # Remove legacy ``nova.conf``
+    rm -f $NOVA_DIR/bin/nova.conf
+
+    # (Re)create ``nova.conf``
+    rm -f $NOVA_CONF
+    iniset $NOVA_CONF DEFAULT verbose "True"
+    iniset $NOVA_CONF DEFAULT debug "$ENABLE_DEBUG_LOG_LEVEL"
+    iniset $NOVA_CONF DEFAULT auth_strategy "keystone"
+    iniset $NOVA_CONF DEFAULT allow_resize_to_same_host "True"
+    iniset $NOVA_CONF DEFAULT api_paste_config "$NOVA_API_PASTE_INI"
+    iniset $NOVA_CONF DEFAULT rootwrap_config "$NOVA_CONF_DIR/rootwrap.conf"
+    iniset $NOVA_CONF DEFAULT scheduler_driver "$SCHEDULER"
+    iniset $NOVA_CONF DEFAULT dhcpbridge_flagfile "$NOVA_CONF"
+    iniset $NOVA_CONF DEFAULT force_dhcp_release "True"
+    iniset $NOVA_CONF DEFAULT fixed_range ""
+    iniset $NOVA_CONF DEFAULT default_floating_pool "$PUBLIC_NETWORK_NAME"
+    iniset $NOVA_CONF DEFAULT s3_host "$SERVICE_HOST"
+    iniset $NOVA_CONF DEFAULT s3_port "$S3_SERVICE_PORT"
+    iniset $NOVA_CONF DEFAULT osapi_compute_extension "nova.api.openstack.compute.contrib.standard_extensions"
+    iniset $NOVA_CONF DEFAULT my_ip "$HOST_IP"
+    iniset $NOVA_CONF DEFAULT osapi_compute_workers "4"
+    iniset $NOVA_CONF DEFAULT ec2_workers "4"
+    iniset $NOVA_CONF DEFAULT metadata_workers "4"
+    iniset $NOVA_CONF conductor workers "4"
+    iniset $NOVA_CONF DEFAULT sql_connection `database_connection_url nova`
+    iniset $NOVA_CONF DEFAULT instance_name_template "${INSTANCE_NAME_PREFIX}%08x"
+    iniset $NOVA_CONF osapi_v3 enabled "True"
+
+    if is_fedora || is_suse; then
+        # nova defaults to /usr/local/bin, but fedora and suse pip like to
+        # install things in /usr/bin
+        iniset $NOVA_CONF DEFAULT bindir "/usr/bin"
+    fi
+
+    if is_service_enabled n-api; then
+        if is_service_enabled n-api-meta; then
+            # If running n-api-meta as a separate service
+            NOVA_ENABLED_APIS=$(echo $NOVA_ENABLED_APIS | sed "s/,metadata//")
+        fi
+        iniset $NOVA_CONF DEFAULT enabled_apis "$NOVA_ENABLED_APIS"
+        if is_service_enabled tls-proxy; then
+            # Set the service port for a proxy to take the original
+            iniset $NOVA_CONF DEFAULT osapi_compute_listen_port "$NOVA_SERVICE_PORT_INT"
+        fi
+
+        # Add keystone authtoken configuration
+
+        iniset $NOVA_CONF keystone_authtoken auth_host $KEYSTONE_AUTH_HOST
+        iniset $NOVA_CONF keystone_authtoken auth_port $KEYSTONE_AUTH_PORT
+        iniset $NOVA_CONF keystone_authtoken auth_protocol $KEYSTONE_AUTH_PROTOCOL
+        iniset $NOVA_CONF keystone_authtoken admin_tenant_name $SERVICE_TENANT_NAME
+        iniset $NOVA_CONF keystone_authtoken cafile $KEYSTONE_SSL_CA
+        iniset $NOVA_CONF keystone_authtoken admin_user nova
+        iniset $NOVA_CONF keystone_authtoken admin_password $SERVICE_PASSWORD
+    fi
+
+    iniset $NOVA_CONF keystone_authtoken signing_dir $NOVA_AUTH_CACHE_DIR
+
+    if is_service_enabled cinder; then
+        iniset $NOVA_CONF DEFAULT volume_api_class "nova.volume.cinder.API"
+    fi
+    if [ -n "$NOVA_STATE_PATH" ]; then
+        iniset $NOVA_CONF DEFAULT state_path "$NOVA_STATE_PATH"
+        iniset $NOVA_CONF DEFAULT lock_path "$NOVA_STATE_PATH"
+    fi
+    if [ -n "$NOVA_INSTANCES_PATH" ]; then
+        iniset $NOVA_CONF DEFAULT instances_path "$NOVA_INSTANCES_PATH"
+    fi
+    if [ "$MULTI_HOST" != "False" ]; then
+        iniset $NOVA_CONF DEFAULT multi_host "True"
+        iniset $NOVA_CONF DEFAULT send_arp_for_ha "True"
+    fi
+    if [ "$SYSLOG" != "False" ]; then
+        iniset $NOVA_CONF DEFAULT use_syslog "True"
+    fi
+    if [ "$API_RATE_LIMIT" != "True" ]; then
+        iniset $NOVA_CONF DEFAULT api_rate_limit "False"
+    fi
+    if [ "$FORCE_CONFIG_DRIVE" != "False" ]; then
+        iniset $NOVA_CONF DEFAULT force_config_drive "$FORCE_CONFIG_DRIVE"
+    fi
+    # Format logging
+    if [ "$LOG_COLOR" == "True" ] && [ "$SYSLOG" == "False" ]; then
+        setup_colorized_logging $NOVA_CONF DEFAULT
+    else
+        # Show user_name and project_name instead of user_id and project_id
+        iniset $NOVA_CONF DEFAULT logging_context_format_string "%(asctime)s.%(msecs)03d %(levelname)s %(name)s [%(request_id)s %(user_name)s %(project_name)s] %(instance)s%(message)s"
+    fi
+    if is_service_enabled ceilometer; then
+        iniset $NOVA_CONF DEFAULT instance_usage_audit "True"
+        iniset $NOVA_CONF DEFAULT instance_usage_audit_period "hour"
+        iniset $NOVA_CONF DEFAULT notify_on_state_change "vm_and_task_state"
+        iniset $NOVA_CONF DEFAULT notification_driver "messaging"
+    fi
+
+    # Provide some transition from ``EXTRA_FLAGS`` to ``EXTRA_OPTS``
+    if [[ -z "$EXTRA_OPTS" && -n "$EXTRA_FLAGS" ]]; then
+        EXTRA_OPTS=$EXTRA_FLAGS
+    fi
+
+    # Define extra nova conf flags by defining the array ``EXTRA_OPTS``.
+    # For Example: ``EXTRA_OPTS=(foo=true bar=2)``
+    for I in "${EXTRA_OPTS[@]}"; do
+        # Replace the first '=' with ' ' for iniset syntax
+        iniset $NOVA_CONF DEFAULT ${I/=/ }
+    done
+
+    # All nova-compute workers need to know the vnc configuration options
+    # These settings don't hurt anything if n-xvnc and n-novnc are disabled
+    if is_service_enabled n-cpu; then
+        NOVNCPROXY_URL=${NOVNCPROXY_URL:-"http://$SERVICE_HOST:6080/vnc_auto.html"}
+        iniset $NOVA_CONF DEFAULT novncproxy_base_url "$NOVNCPROXY_URL"
+        XVPVNCPROXY_URL=${XVPVNCPROXY_URL:-"http://$SERVICE_HOST:6081/console"}
+        iniset $NOVA_CONF DEFAULT xvpvncproxy_base_url "$XVPVNCPROXY_URL"
+        SPICEHTML5PROXY_URL=${SPICEHTML5PROXY_URL:-"http://$SERVICE_HOST:6082/spice_auto.html"}
+        iniset $NOVA_CONF spice html5proxy_base_url "$SPICEHTML5PROXY_URL"
+    fi
+
+    if is_service_enabled n-novnc || is_service_enabled n-xvnc; then
+        # Address on which instance vncservers will listen on compute hosts.
+        # For multi-host, this should be the management ip of the compute host.
+        VNCSERVER_LISTEN=${VNCSERVER_LISTEN=127.0.0.1}
+        VNCSERVER_PROXYCLIENT_ADDRESS=${VNCSERVER_PROXYCLIENT_ADDRESS=127.0.0.1}
+        iniset $NOVA_CONF DEFAULT vnc_enabled true
+        iniset $NOVA_CONF DEFAULT vncserver_listen "$VNCSERVER_LISTEN"
+        iniset $NOVA_CONF DEFAULT vncserver_proxyclient_address "$VNCSERVER_PROXYCLIENT_ADDRESS"
+    else
+        iniset $NOVA_CONF DEFAULT vnc_enabled false
+    fi
+
+    if is_service_enabled n-spice; then
+        # Address on which instance spiceservers will listen on compute hosts.
+        # For multi-host, this should be the management ip of the compute host.
+        SPICESERVER_PROXYCLIENT_ADDRESS=${SPICESERVER_PROXYCLIENT_ADDRESS=127.0.0.1}
+        SPICESERVER_LISTEN=${SPICESERVER_LISTEN=127.0.0.1}
+        iniset $NOVA_CONF spice enabled true
+        iniset $NOVA_CONF spice server_listen "$SPICESERVER_LISTEN"
+        iniset $NOVA_CONF spice server_proxyclient_address "$SPICESERVER_PROXYCLIENT_ADDRESS"
+    else
+        iniset $NOVA_CONF spice enabled false
+    fi
+
+    iniset $NOVA_CONF DEFAULT ec2_dmz_host "$EC2_DMZ_HOST"
+    iniset_rpc_backend nova $NOVA_CONF DEFAULT
+    iniset $NOVA_CONF DEFAULT glance_api_servers "$GLANCE_HOSTPORT"
+}
+
+function init_nova_cells {
+    if is_service_enabled n-cell; then
+        cp $NOVA_CONF $NOVA_CELLS_CONF
+        iniset $NOVA_CELLS_CONF DEFAULT sql_connection `database_connection_url $NOVA_CELLS_DB`
+        iniset $NOVA_CELLS_CONF DEFAULT rabbit_virtual_host child_cell
+        iniset $NOVA_CELLS_CONF DEFAULT dhcpbridge_flagfile $NOVA_CELLS_CONF
+        iniset $NOVA_CELLS_CONF cells enable True
+        iniset $NOVA_CELLS_CONF cells cell_type compute
+        iniset $NOVA_CELLS_CONF cells name child
+
+        iniset $NOVA_CONF cells enable True
+        iniset $NOVA_CONF cells cell_type api
+        iniset $NOVA_CONF cells name region
+
+        if is_service_enabled n-api-meta; then
+            NOVA_ENABLED_APIS=$(echo $NOVA_ENABLED_APIS | sed "s/,metadata//")
+            iniset $NOVA_CONF DEFAULT enabled_apis $NOVA_ENABLED_APIS
+            iniset $NOVA_CELLS_CONF DEFAULT enabled_apis metadata
+        fi
+
+        $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CELLS_CONF db sync
+        $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CELLS_CONF cell create --name=region --cell_type=parent --username=guest --hostname=$RABBIT_HOST --port=5672 --password=$RABBIT_PASSWORD --virtual_host=/ --woffset=0 --wscale=1
+        $NOVA_BIN_DIR/nova-manage cell create --name=child --cell_type=child --username=guest --hostname=$RABBIT_HOST --port=5672 --password=$RABBIT_PASSWORD --virtual_host=child_cell --woffset=0 --wscale=1
+    fi
+}
+
+# create_nova_cache_dir() - Part of the init_nova() process
+function create_nova_cache_dir {
+    # Create cache dir
+    sudo mkdir -p $NOVA_AUTH_CACHE_DIR
+    sudo chown $STACK_USER $NOVA_AUTH_CACHE_DIR
+    rm -f $NOVA_AUTH_CACHE_DIR/*
+}
+
+function create_nova_conf_nova_network {
+    iniset $NOVA_CONF DEFAULT network_manager "nova.network.manager.$NETWORK_MANAGER"
+    iniset $NOVA_CONF DEFAULT public_interface "$PUBLIC_INTERFACE"
+    iniset $NOVA_CONF DEFAULT vlan_interface "$VLAN_INTERFACE"
+    iniset $NOVA_CONF DEFAULT flat_network_bridge "$FLAT_NETWORK_BRIDGE"
+    if [ -n "$FLAT_INTERFACE" ]; then
+        iniset $NOVA_CONF DEFAULT flat_interface "$FLAT_INTERFACE"
+    fi
+}
+
+# create_nova_keys_dir() - Part of the init_nova() process
+function create_nova_keys_dir {
+    # Create keys dir
+    sudo mkdir -p ${NOVA_STATE_PATH}/keys
+    sudo chown -R $STACK_USER ${NOVA_STATE_PATH}
+}
+
+# init_nova() - Initialize databases, etc.
+function init_nova {
+    # All nova components talk to a central database.
+    # Only do this step once on the API node for an entire cluster.
+    if is_service_enabled $DATABASE_BACKENDS && is_service_enabled n-api; then
+        # (Re)create nova database
+        # Explicitly use latin1: to avoid lp#829209, nova expects the database to
+        # use latin1 by default, and then upgrades the database to utf8 (see the
+        # 082_essex.py in nova)
+        recreate_database nova latin1
+
+        # Migrate nova database
+        $NOVA_BIN_DIR/nova-manage db sync
+
+        if is_service_enabled n-cell; then
+            recreate_database $NOVA_CELLS_DB latin1
+        fi
+
+        # (Re)create nova baremetal database
+        if is_baremetal; then
+            recreate_database nova_bm latin1
+            $NOVA_BIN_DIR/nova-baremetal-manage db sync
+        fi
+    fi
+
+    create_nova_cache_dir
+    create_nova_keys_dir
+}
+
+# install_novaclient() - Collect source and prepare
+function install_novaclient {
+    git_clone $NOVACLIENT_REPO $NOVACLIENT_DIR $NOVACLIENT_BRANCH
+    setup_develop $NOVACLIENT_DIR
+    sudo install -D -m 0644 -o $STACK_USER {$NOVACLIENT_DIR/tools/,/etc/bash_completion.d/}nova.bash_completion
+}
+
+# install_nova() - Collect source and prepare
+function install_nova {
+    if is_service_enabled n-cpu && [[ -r $NOVA_PLUGINS/hypervisor-$VIRT_DRIVER ]]; then
+        install_nova_hypervisor
+    fi
+
+    if is_service_enabled n-novnc; then
+        # a websockets/html5 or flash powered VNC console for vm instances
+        NOVNC_FROM_PACKAGE=`trueorfalse False $NOVNC_FROM_PACKAGE`
+        if [ "$NOVNC_FROM_PACKAGE" = "True" ]; then
+            NOVNC_WEB_DIR=/usr/share/novnc
+            install_package novnc
+        else
+            NOVNC_WEB_DIR=$DEST/noVNC
+            git_clone $NOVNC_REPO $NOVNC_WEB_DIR $NOVNC_BRANCH
+        fi
+    fi
+
+    if is_service_enabled n-spice; then
+        # a websockets/html5 or flash powered SPICE console for vm instances
+        SPICE_FROM_PACKAGE=`trueorfalse True $SPICE_FROM_PACKAGE`
+        if [ "$SPICE_FROM_PACKAGE" = "True" ]; then
+            SPICE_WEB_DIR=/usr/share/spice-html5
+            install_package spice-html5
+        else
+            SPICE_WEB_DIR=$DEST/spice-html5
+            git_clone $SPICE_REPO $SPICE_WEB_DIR $SPICE_BRANCH
+        fi
+    fi
+
+    git_clone $NOVA_REPO $NOVA_DIR $NOVA_BRANCH
+    setup_develop $NOVA_DIR
+    sudo install -D -m 0644 -o $STACK_USER {$NOVA_DIR/tools/,/etc/bash_completion.d/}nova-manage.bash_completion
+}
+
+# start_nova_api() - Start the API process ahead of other things
+function start_nova_api {
+    # Get right service port for testing
+    local service_port=$NOVA_SERVICE_PORT
+    if is_service_enabled tls-proxy; then
+        service_port=$NOVA_SERVICE_PORT_INT
+    fi
+
+    run_process n-api "$NOVA_BIN_DIR/nova-api"
+    echo "Waiting for nova-api to start..."
+    if ! wait_for_service $SERVICE_TIMEOUT http://$SERVICE_HOST:$service_port; then
+        die $LINENO "nova-api did not start"
+    fi
+
+    # Start proxies if enabled
+    if is_service_enabled tls-proxy; then
+        start_tls_proxy '*' $NOVA_SERVICE_PORT $NOVA_SERVICE_HOST $NOVA_SERVICE_PORT_INT &
+    fi
+}
+
+# start_nova_compute() - Start the compute process
+function start_nova_compute {
+    if is_service_enabled n-cell; then
+        local compute_cell_conf=$NOVA_CELLS_CONF
+    else
+        local compute_cell_conf=$NOVA_CONF
+    fi
+
+    if [[ "$VIRT_DRIVER" = 'libvirt' ]]; then
+        # The group **$LIBVIRT_GROUP** is added to the current user in this script.
+        # sg' will be used in run_process to execute nova-compute as a member of the
+        # **$LIBVIRT_GROUP** group.
+        run_process n-cpu "$NOVA_BIN_DIR/nova-compute --config-file $compute_cell_conf" $LIBVIRT_GROUP
+    elif [[ "$VIRT_DRIVER" = 'fake' ]]; then
+        for i in `seq 1 $NUMBER_FAKE_NOVA_COMPUTE`; do
+            # Avoid process redirection of fake host configurations by
+            # creating or modifying real configurations. Each fake
+            # gets its own configuration and own log file.
+            local fake_conf="${NOVA_FAKE_CONF}-${i}"
+            iniset $fake_conf DEFAULT nhost "${HOSTNAME}${i}"
+            run_process "n-cpu-${i}" "$NOVA_BIN_DIR/nova-compute --config-file $compute_cell_conf --config-file $fake_conf"
+        done
+    else
+        if is_service_enabled n-cpu && [[ -r $NOVA_PLUGINS/hypervisor-$VIRT_DRIVER ]]; then
+            start_nova_hypervisor
+        fi
+        run_process n-cpu "$NOVA_BIN_DIR/nova-compute --config-file $compute_cell_conf"
+    fi
+}
+
+# start_nova() - Start running processes, including screen
+function start_nova_rest {
+    local api_cell_conf=$NOVA_CONF
+    if is_service_enabled n-cell; then
+        local compute_cell_conf=$NOVA_CELLS_CONF
+    else
+        local compute_cell_conf=$NOVA_CONF
+    fi
+
+    # ``run_process`` checks ``is_service_enabled``, it is not needed here
+    run_process n-cond "$NOVA_BIN_DIR/nova-conductor --config-file $compute_cell_conf"
+    run_process n-cell-region "$NOVA_BIN_DIR/nova-cells --config-file $api_cell_conf"
+    run_process n-cell-child "$NOVA_BIN_DIR/nova-cells --config-file $compute_cell_conf"
+
+    run_process n-crt "$NOVA_BIN_DIR/nova-cert --config-file $api_cell_conf"
+    run_process n-net "$NOVA_BIN_DIR/nova-network --config-file $compute_cell_conf"
+    run_process n-sch "$NOVA_BIN_DIR/nova-scheduler --config-file $compute_cell_conf"
+    run_process n-api-meta "$NOVA_BIN_DIR/nova-api-metadata --config-file $compute_cell_conf"
+
+    run_process n-novnc "$NOVA_BIN_DIR/nova-novncproxy --config-file $api_cell_conf --web $NOVNC_WEB_DIR"
+    run_process n-xvnc "$NOVA_BIN_DIR/nova-xvpvncproxy --config-file $api_cell_conf"
+    run_process n-spice "$NOVA_BIN_DIR/nova-spicehtml5proxy --config-file $api_cell_conf --web $SPICE_WEB_DIR"
+    run_process n-cauth "$NOVA_BIN_DIR/nova-consoleauth --config-file $api_cell_conf"
+
+    # Starting the nova-objectstore only if swift3 service is not enabled.
+    # Swift will act as s3 objectstore.
+    is_service_enabled swift3 || \
+        run_process n-obj "$NOVA_BIN_DIR/nova-objectstore --config-file $api_cell_conf"
+}
+
+function start_nova {
+    start_nova_compute
+    start_nova_rest
+}
+
+function stop_nova_compute {
+    stop_process n-cpu
+    if is_service_enabled n-cpu && [[ -r $NOVA_PLUGINS/hypervisor-$VIRT_DRIVER ]]; then
+        stop_nova_hypervisor
+    fi
+}
+
+function stop_nova_rest {
+    # Kill the nova screen windows
+    # Some services are listed here twice since more than one instance
+    # of a service may be running in certain configs.
+    for serv in n-api n-crt n-net n-sch n-novnc n-xvnc n-cauth n-spice n-cond n-cell n-cell n-api-meta n-obj; do
+        stop_process $serv
+    done
+}
+
+# stop_nova() - Stop running processes (non-screen)
+function stop_nova {
+    stop_nova_rest
+    stop_nova_compute
+}
+
+
+# Restore xtrace
+$XTRACE
+
+# Tell emacs to use shell-script-mode
+## Local variables:
+## mode: shell-script
+## End:

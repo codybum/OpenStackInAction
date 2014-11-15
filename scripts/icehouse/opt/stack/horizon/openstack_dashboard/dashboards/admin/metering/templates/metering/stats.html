@@ -1,0 +1,191 @@
+{% load i18n %}
+{% load url from future %}
+
+<div id="samples_url" url="{% url "horizon:admin:metering:samples" %}"></div>
+<div id="ceilometer-stats">
+  <form class="form-horizontal"
+        id="linechart_general_form">
+
+    <div class="control-group">
+      <label for="meter" class="control-label">{% trans "Metric" %}:&nbsp;</label>
+      <div class="controls line_chart_time_picker">
+        <select data-line-chart-command="select_box_change"
+                name="meter" id="meter" class="span2 example">
+
+          {% if nova_meters %}
+            <optgroup label='{% trans "Compute (Nova)" %}'>
+              {% for meter in nova_meters %}
+                <option title="{{ meter.description }}"  value="{{ meter.name }}" data-unit="{{ meter.unit }}">
+                  {{ meter.label }}
+                </option>
+              {% endfor %}
+            </optgroup>
+          {% endif %}
+
+          {% if neutron_meters %}
+            <optgroup label='{% trans "Network (Neutron)" %}'>
+              {% for meter in neutron_meters %}
+                <option title="{{ meter.description }}"  value="{{ meter.name }}" data-unit="{{ meter.unit }}">
+                  {{ meter.label }}
+                </option>
+              {% endfor %}
+            </optgroup>
+          {% endif %}
+
+          {% if glance_meters %}
+            <optgroup label='{% trans "Image (Glance)" %}'>
+              {% for meter in glance_meters %}
+                <option title="{{ meter.description }}"  value="{{ meter.name }}" data-unit="{{ meter.unit }}">
+                  {{ meter.label }}
+                </option>
+              {% endfor %}
+            </optgroup>
+          {% endif %}
+
+          {% if cinder_meters %}
+            <optgroup label='{% trans "Volume (Cinder)" %}'>
+              {% for meter in cinder_meters %}
+                <option title="{{ meter.description }}"  value="{{ meter.name }}" data-unit="{{ meter.unit }}">
+                  {{ meter.label }}
+                </option>
+              {% endfor %}
+            </optgroup>
+          {% endif %}
+
+          {% if swift_meters %}
+            <optgroup label='{% trans "Object Storage (Swift)" %}'>
+              {% for meter in swift_meters %}
+                <option title="{{ meter.description }}"  value="{{ meter.name }}" data-unit="{{ meter.unit }}">
+                  {{ meter.label }}
+                </option>
+              {% endfor %}
+            </optgroup>
+          {% endif %}
+
+          {% if kwapi_meters %}
+            <optgroup label='{% trans "Energy (Kwapi)" %}'>
+              {% for meter in kwapi_meters %}
+                <option title="{{ meter.description }}"  value="{{ meter.name }}" data-unit="{{ meter.unit }}">
+                  {{ meter.label }}
+                </option>
+              {% endfor %}
+            </optgroup>
+          {% endif %}
+        </select>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label for="group_by" class="control-label">{% trans "Group by" %}:&nbsp;</label>
+      <div class="controls">
+        <select data-line-chart-command="select_box_change"
+                id="group_by" name="group_by" class="span2">
+          <option value="" selected="selected">{% trans "--" %}</option>
+          <option selected="selected" value="project" selected>{% trans "Project" %}</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-group">
+      <label for="stats_attr" class="control-label">{% trans "Value" %}:&nbsp;</label>
+      <div class="controls">
+        <select data-line-chart-command="select_box_change"
+                id="stats_attr" name="stats_attr" class="span2">
+
+          <option selected="selected" value="avg">{% trans "Avg." %}</option>
+          <option value="min">{% trans "Min." %}</option>
+          <option value="max">{% trans "Max." %}</option>
+          <option value="sum">{% trans "Sum." %}</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-group">
+      <label for="date_options" class="control-label">{% trans "Period" %}:&nbsp;</label>
+      <div class="controls">
+        <select data-line-chart-command="select_box_change"
+                id="date_options" name="date_options" class="span2">
+          <option value="1">{% trans "Last day" %}</option>
+          <option value="7" selected="selected">{% trans "Last week" %}</option>
+          <option value="{% now 'j' %}">{% trans "Month to date" %}</option>
+          <option value="15">{% trans "Last 15 days" %}</option>
+          <option value="30">{% trans "Last 30 days" %}</option>
+          <option value="365">{% trans "Last year" %}</option>
+          <option value="other">{% trans "Other" %}</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-group" id="date_from">
+      <label for="date_from" class="control-label">{% trans "From" %}:&nbsp;</label>
+      <div class="controls">
+        <input data-line-chart-command="date_picker_change"
+               type="text" id="date_from" name="date_from" class="span2 example"/>
+      </div>
+    </div>
+    <div class="control-group" id="date_to">
+      <label for="date_to" class="control-label">{% trans "To" %}:&nbsp;</label>
+      <div class="controls">
+        <input data-line-chart-command="date_picker_change"
+               type="text" name="date_to" class="span2 example"/>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<div class="info row-fluid detail">
+  <div class="span12">
+    <h4>{% trans "Statistics of all resources" %}</h4>
+    <hr class="header_rule" />
+    <div class="info row-fluid detail">
+      <div class="span9 chart_container">
+          <div class="chart"
+               data-chart-type="line_chart"
+               data-url="{% url 'horizon:admin:metering:samples'%}"
+               data-form-selector='#linechart_general_form'
+               data-legend-selector="#legend"
+               data-smoother-selector="#smoother"
+               data-slider-selector="#slider">
+          </div>
+          <div id="slider"></div>
+        </div>
+        <div class="span3 legend_container">
+          <div id="smoother" title="Smoothing"></div>
+          <div id="legend"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  if (typeof horizon.d3_line_chart !== 'undefined') {
+    horizon.d3_line_chart.init("div[data-chart-type='line_chart']",
+      {'auto_resize': true});
+  }
+
+  if (typeof $ !== 'undefined') {
+    show_hide_datepickers();
+  } else {
+    addHorizonLoadEvent(function() {
+      show_hide_datepickers();
+    });
+  }
+
+  function show_hide_datepickers() {
+    $("#date_options").change(function(evt) {
+        // Enhancing behaviour of selectbox, on 'other' value selected, I don't
+        // want to refresh, but show hide the date fields
+        if ($(this).find("option:selected").val() == "other"){
+          evt.stopPropagation();
+          $("#date_from .controls input, #date_to .controls input").val('');
+          $("#date_from, #date_to").show();
+        } else {
+          $("#date_from, #date_to").hide();
+        }
+    });
+    if ($("#date_options").find("option:selected").val() == "other"){
+      $("#date_from, #date_to").show();
+    } else {
+      $("#date_from, #date_to").hide();
+    }
+  }
+</script>

@@ -1,0 +1,271 @@
+# lib/glance
+# Functions to control the configuration and operation of the **Glance** service
+
+# Dependencies:
+#
+# - ``functions`` file
+# - ``DEST``, ``DATA_DIR``, ``STACK_USER`` must be defined
+# - ``SERVICE_{TENANT_NAME|PASSWORD}`` must be defined
+# - ``SERVICE_HOST``
+# - ``KEYSTONE_TOKEN_FORMAT`` must be defined
+
+# ``stack.sh`` calls the entry points in this order:
+#
+# - install_glance
+# - configure_glance
+# - init_glance
+# - start_glance
+# - stop_glance
+# - cleanup_glance
+
+# Save trace setting
+XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+
+# Defaults
+# --------
+
+# Set up default directories
+GLANCE_DIR=$DEST/glance
+GLANCECLIENT_DIR=$DEST/python-glanceclient
+GLANCE_CACHE_DIR=${GLANCE_CACHE_DIR:=$DATA_DIR/glance/cache}
+GLANCE_IMAGE_DIR=${GLANCE_IMAGE_DIR:=$DATA_DIR/glance/images}
+GLANCE_AUTH_CACHE_DIR=${GLANCE_AUTH_CACHE_DIR:-/var/cache/glance}
+
+GLANCE_CONF_DIR=${GLANCE_CONF_DIR:-/etc/glance}
+GLANCE_REGISTRY_CONF=$GLANCE_CONF_DIR/glance-registry.conf
+GLANCE_API_CONF=$GLANCE_CONF_DIR/glance-api.conf
+GLANCE_REGISTRY_PASTE_INI=$GLANCE_CONF_DIR/glance-registry-paste.ini
+GLANCE_API_PASTE_INI=$GLANCE_CONF_DIR/glance-api-paste.ini
+GLANCE_CACHE_CONF=$GLANCE_CONF_DIR/glance-cache.conf
+GLANCE_POLICY_JSON=$GLANCE_CONF_DIR/policy.json
+GLANCE_SCHEMA_JSON=$GLANCE_CONF_DIR/schema-image.json
+
+# Support entry points installation of console scripts
+if [[ -d $GLANCE_DIR/bin ]]; then
+    GLANCE_BIN_DIR=$GLANCE_DIR/bin
+else
+    GLANCE_BIN_DIR=$(get_python_exec_prefix)
+fi
+
+# Glance connection info.  Note the port must be specified.
+GLANCE_HOSTPORT=${GLANCE_HOSTPORT:-$SERVICE_HOST:9292}
+
+# Tell Tempest this project is present
+TEMPEST_SERVICES+=,glance
+
+
+# Functions
+# ---------
+
+# Test if any Glance services are enabled
+# is_glance_enabled
+function is_glance_enabled {
+    [[ ,${ENABLED_SERVICES} =~ ,"g-" ]] && return 0
+    return 1
+}
+
+# cleanup_glance() - Remove residual data files, anything left over from previous
+# runs that a clean run would need to clean up
+function cleanup_glance {
+    # kill instances (nova)
+    # delete image files (glance)
+    sudo rm -rf $GLANCE_CACHE_DIR $GLANCE_IMAGE_DIR $GLANCE_AUTH_CACHE_DIR
+}
+
+# configure_glance() - Set config files, create data dirs, etc
+function configure_glance {
+    if [[ ! -d $GLANCE_CONF_DIR ]]; then
+        sudo mkdir -p $GLANCE_CONF_DIR
+    fi
+    sudo chown $STACK_USER $GLANCE_CONF_DIR
+
+    # Copy over our glance configurations and update them
+    cp $GLANCE_DIR/etc/glance-registry.conf $GLANCE_REGISTRY_CONF
+    iniset $GLANCE_REGISTRY_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
+    inicomment $GLANCE_REGISTRY_CONF DEFAULT log_file
+    local dburl=`database_connection_url glance`
+    iniset $GLANCE_REGISTRY_CONF DEFAULT sql_connection $dburl
+    iniset $GLANCE_REGISTRY_CONF DEFAULT use_syslog $SYSLOG
+    iniset $GLANCE_REGISTRY_CONF paste_deploy flavor keystone
+    iniset $GLANCE_REGISTRY_CONF keystone_authtoken auth_host $KEYSTONE_AUTH_HOST
+    iniset $GLANCE_REGISTRY_CONF keystone_authtoken auth_port $KEYSTONE_AUTH_PORT
+    iniset $GLANCE_REGISTRY_CONF keystone_authtoken auth_protocol $KEYSTONE_AUTH_PROTOCOL
+    iniset $GLANCE_REGISTRY_CONF keystone_authtoken cafile $KEYSTONE_SSL_CA
+    configure_API_version $GLANCE_REGISTRY_CONF $IDENTITY_API_VERSION
+    iniset $GLANCE_REGISTRY_CONF keystone_authtoken admin_tenant_name $SERVICE_TENANT_NAME
+    iniset $GLANCE_REGISTRY_CONF keystone_authtoken admin_user glance
+    iniset $GLANCE_REGISTRY_CONF keystone_authtoken admin_password $SERVICE_PASSWORD
+    iniset $GLANCE_REGISTRY_CONF keystone_authtoken signing_dir $GLANCE_AUTH_CACHE_DIR/registry
+
+    cp $GLANCE_DIR/etc/glance-api.conf $GLANCE_API_CONF
+    iniset $GLANCE_API_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
+    inicomment $GLANCE_API_CONF DEFAULT log_file
+    iniset $GLANCE_API_CONF DEFAULT sql_connection $dburl
+    iniset $GLANCE_API_CONF DEFAULT use_syslog $SYSLOG
+    iniset $GLANCE_API_CONF DEFAULT filesystem_store_datadir $GLANCE_IMAGE_DIR/
+    iniset $GLANCE_API_CONF DEFAULT image_cache_dir $GLANCE_CACHE_DIR/
+    iniset $GLANCE_API_CONF paste_deploy flavor keystone+cachemanagement
+    iniset $GLANCE_API_CONF keystone_authtoken auth_host $KEYSTONE_AUTH_HOST
+    iniset $GLANCE_API_CONF keystone_authtoken auth_port $KEYSTONE_AUTH_PORT
+    iniset $GLANCE_API_CONF keystone_authtoken auth_protocol $KEYSTONE_AUTH_PROTOCOL
+    iniset $GLANCE_API_CONF keystone_authtoken cafile $KEYSTONE_SSL_CA
+    configure_API_version $GLANCE_API_CONF $IDENTITY_API_VERSION
+    iniset $GLANCE_API_CONF keystone_authtoken admin_tenant_name $SERVICE_TENANT_NAME
+    iniset $GLANCE_API_CONF keystone_authtoken admin_user glance
+    iniset $GLANCE_API_CONF keystone_authtoken admin_password $SERVICE_PASSWORD
+    if is_service_enabled qpid || [ -n "$RABBIT_HOST" ] && [ -n "$RABBIT_PASSWORD" ]; then
+        iniset $GLANCE_API_CONF DEFAULT notification_driver messaging
+    fi
+    iniset_rpc_backend glance $GLANCE_API_CONF DEFAULT
+    iniset $GLANCE_API_CONF keystone_authtoken signing_dir $GLANCE_AUTH_CACHE_DIR/api
+    if [ "$VIRT_DRIVER" = 'xenserver' ]; then
+        iniset $GLANCE_API_CONF DEFAULT container_formats "ami,ari,aki,bare,ovf,tgz"
+        iniset $GLANCE_API_CONF DEFAULT disk_formats "ami,ari,aki,vhd,raw,iso"
+    fi
+
+    # Store the images in swift if enabled.
+    if is_service_enabled s-proxy; then
+        iniset $GLANCE_API_CONF DEFAULT default_store swift
+        iniset $GLANCE_API_CONF DEFAULT swift_store_auth_address $KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:$KEYSTONE_SERVICE_PORT/v2.0/
+        iniset $GLANCE_API_CONF DEFAULT swift_store_user $SERVICE_TENANT_NAME:glance-swift
+        iniset $GLANCE_API_CONF DEFAULT swift_store_key $SERVICE_PASSWORD
+        iniset $GLANCE_API_CONF DEFAULT swift_store_create_container_on_put True
+
+        iniset $GLANCE_API_CONF DEFAULT known_stores "glance.store.filesystem.Store, glance.store.http.Store, glance.store.swift.Store"
+    fi
+
+    cp -p $GLANCE_DIR/etc/glance-registry-paste.ini $GLANCE_REGISTRY_PASTE_INI
+
+    cp -p $GLANCE_DIR/etc/glance-api-paste.ini $GLANCE_API_PASTE_INI
+
+    cp $GLANCE_DIR/etc/glance-cache.conf $GLANCE_CACHE_CONF
+    iniset $GLANCE_CACHE_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
+    inicomment $GLANCE_CACHE_CONF DEFAULT log_file
+    iniset $GLANCE_CACHE_CONF DEFAULT use_syslog $SYSLOG
+    iniset $GLANCE_CACHE_CONF DEFAULT filesystem_store_datadir $GLANCE_IMAGE_DIR/
+    iniset $GLANCE_CACHE_CONF DEFAULT image_cache_dir $GLANCE_CACHE_DIR/
+    iniuncomment $GLANCE_CACHE_CONF DEFAULT auth_url
+    iniset $GLANCE_CACHE_CONF DEFAULT auth_url $KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
+    iniuncomment $GLANCE_CACHE_CONF DEFAULT auth_tenant_name
+    iniset $GLANCE_CACHE_CONF DEFAULT admin_tenant_name $SERVICE_TENANT_NAME
+    iniuncomment $GLANCE_CACHE_CONF DEFAULT auth_user
+    iniset $GLANCE_CACHE_CONF DEFAULT admin_user glance
+    iniuncomment $GLANCE_CACHE_CONF DEFAULT auth_password
+    iniset $GLANCE_CACHE_CONF DEFAULT admin_password $SERVICE_PASSWORD
+
+    cp -p $GLANCE_DIR/etc/policy.json $GLANCE_POLICY_JSON
+    cp -p $GLANCE_DIR/etc/schema-image.json $GLANCE_SCHEMA_JSON
+}
+
+# create_glance_accounts() - Set up common required glance accounts
+
+# Project              User         Roles
+# ------------------------------------------------------------------
+# SERVICE_TENANT_NAME  glance       service
+# SERVICE_TENANT_NAME  glance-swift ResellerAdmin (if Swift is enabled)
+
+function create_glance_accounts {
+    if is_service_enabled g-api; then
+        openstack user create \
+            --password "$SERVICE_PASSWORD" \
+            --project $SERVICE_TENANT_NAME \
+            glance
+        openstack role add \
+            --project $SERVICE_TENANT_NAME \
+            --user glance \
+            service
+        # required for swift access
+        if is_service_enabled s-proxy; then
+            openstack user create \
+                --password "$SERVICE_PASSWORD" \
+                --project $SERVICE_TENANT_NAME \
+                glance-swift
+            openstack role add \
+                --project $SERVICE_TENANT_NAME \
+                --user glance-swift \
+                ResellerAdmin
+        fi
+        if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
+            openstack service create \
+                --type image \
+                --description "Glance Image Service" \
+                glance
+            openstack endpoint create \
+                --region RegionOne \
+                --publicurl "http://$GLANCE_HOSTPORT" \
+                --adminurl "http://$GLANCE_HOSTPORT" \
+                --internalurl "http://$GLANCE_HOSTPORT" \
+                glance
+        fi
+    fi
+}
+
+# create_glance_cache_dir() - Part of the init_glance() process
+function create_glance_cache_dir {
+    # Create cache dir
+    sudo mkdir -p $GLANCE_AUTH_CACHE_DIR/api
+    sudo chown $STACK_USER $GLANCE_AUTH_CACHE_DIR/api
+    rm -f $GLANCE_AUTH_CACHE_DIR/api/*
+    sudo mkdir -p $GLANCE_AUTH_CACHE_DIR/registry
+    sudo chown $STACK_USER $GLANCE_AUTH_CACHE_DIR/registry
+    rm -f $GLANCE_AUTH_CACHE_DIR/registry/*
+}
+
+# init_glance() - Initialize databases, etc.
+function init_glance {
+    # Delete existing images
+    rm -rf $GLANCE_IMAGE_DIR
+    mkdir -p $GLANCE_IMAGE_DIR
+
+    # Delete existing cache
+    rm -rf $GLANCE_CACHE_DIR
+    mkdir -p $GLANCE_CACHE_DIR
+
+    # (Re)create glance database
+    recreate_database glance utf8
+
+    # Migrate glance database
+    $GLANCE_BIN_DIR/glance-manage db_sync
+
+    create_glance_cache_dir
+}
+
+# install_glanceclient() - Collect source and prepare
+function install_glanceclient {
+    git_clone $GLANCECLIENT_REPO $GLANCECLIENT_DIR $GLANCECLIENT_BRANCH
+    setup_develop $GLANCECLIENT_DIR
+}
+
+# install_glance() - Collect source and prepare
+function install_glance {
+    git_clone $GLANCE_REPO $GLANCE_DIR $GLANCE_BRANCH
+    setup_develop $GLANCE_DIR
+}
+
+# start_glance() - Start running processes, including screen
+function start_glance {
+    run_process g-reg "$GLANCE_BIN_DIR/glance-registry --config-file=$GLANCE_CONF_DIR/glance-registry.conf"
+    run_process g-api "$GLANCE_BIN_DIR/glance-api --config-file=$GLANCE_CONF_DIR/glance-api.conf"
+    echo "Waiting for g-api ($GLANCE_HOSTPORT) to start..."
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- http://$GLANCE_HOSTPORT; do sleep 1; done"; then
+        die $LINENO "g-api did not start"
+    fi
+}
+
+# stop_glance() - Stop running processes
+function stop_glance {
+    # Kill the Glance screen windows
+    stop_process g-api
+    stop_process g-reg
+}
+
+
+# Restore xtrace
+$XTRACE
+
+# Tell emacs to use shell-script-mode
+## Local variables:
+## mode: shell-script
+## End:

@@ -1,0 +1,49 @@
+Heat testing
+------------
+
+All tests are to be placed in the heat/tests directory. The directory
+is organized by test type (unit, functional, etc). Within each type
+directory one may create another directory for additional test files as
+well as a separate __init__.py, which should be blank.
+
+An example directory structure illustrating the above:
+
+heat/tests
+|-- examples
+|   |-- __init__.py
+|   |-- test1.py
+|   |-- test2.py
+|   |-- test3.py
+|-- __init__.py
+`-- unit
+    |-- __init__.py
+    |-- test_template_convert.py
+
+If a given test has no overlapping requirements (variables or same
+routines) a new test does not need to create a subdirectory under the
+test type.
+
+Implementing a test
+-------------------
+
+Testrepository - http://pypi.python.org/pypi/testrepository is used to
+find and run tests, parallelize their runs, and record timing/results.
+
+If new dependencies are introduced upon the development of a test, the
+tools/test-requires file needs to be updated so that the virtual
+environment will be able to successfully execute all tests.
+
+Running the tests
+-----------------
+
+During development, the simplest way to run tests is to simply invoke
+testr directly.
+
+$ testr run
+
+To run the tests with a clean virtual env in the same manner as the
+OpenStack testing infrastructure does so, use tox.
+
+$ tox -epy27 # test suite on python 2.7
+$ tox -epy26 # test suite on python 2.6
+$ tox -epep8 # run full source code checker

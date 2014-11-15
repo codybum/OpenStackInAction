@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = neutronclient
+omit = neutronclient/openstack/*,neutronclient/tests/*
+
+[report]
+ignore-errors = True

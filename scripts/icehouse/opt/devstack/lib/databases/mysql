@@ -1,0 +1,164 @@
+# lib/databases/mysql
+# Functions to control the configuration and operation of the **MySQL** database backend
+
+# Dependencies:
+#
+# - DATABASE_{HOST,USER,PASSWORD} must be defined
+
+# Save trace setting
+MY_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+
+register_database mysql
+
+
+# Functions
+# ---------
+
+# Get rid of everything enough to cleanly change database backends
+function cleanup_database_mysql {
+    if is_ubuntu; then
+        # Get ruthless with mysql
+        stop_service $MYSQL
+        apt_get purge -y mysql*
+        sudo rm -rf /var/lib/mysql
+        sudo rm -rf /etc/mysql
+        return
+    elif is_fedora; then
+        if [[ $DISTRO =~ (rhel7) ]]; then
+            MYSQL=mariadb
+        else
+            MYSQL=mysqld
+        fi
+    elif is_suse; then
+        MYSQL=mysql
+    else
+        return
+    fi
+    stop_service $MYSQL
+}
+
+function recreate_database_mysql {
+    local db=$1
+    local charset=$2
+    mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST -e "DROP DATABASE IF EXISTS $db;"
+    mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST -e "CREATE DATABASE $db CHARACTER SET $charset;"
+}
+
+function configure_database_mysql {
+    echo_summary "Configuring and starting MySQL"
+
+    if is_ubuntu; then
+        MY_CONF=/etc/mysql/my.cnf
+        MYSQL=mysql
+    elif is_fedora; then
+        if [[ $DISTRO =~ (rhel7) ]]; then
+            MYSQL=mariadb
+        else
+            MYSQL=mysqld
+        fi
+        MY_CONF=/etc/my.cnf
+    elif is_suse; then
+        MY_CONF=/etc/my.cnf
+        MYSQL=mysql
+    else
+        exit_distro_not_supported "mysql configuration"
+    fi
+
+    # Start mysql-server
+    if is_fedora || is_suse; then
+        # service is not started by default
+        start_service $MYSQL
+    fi
+
+    # Set the root password - only works the first time. For Ubuntu, we already
+    # did that with debconf before installing the package.
+    if ! is_ubuntu; then
+        sudo mysqladmin -u root password $DATABASE_PASSWORD || true
+    fi
+
+    # Update the DB to give user ‘$DATABASE_USER’@’%’ full control of the all databases:
+    sudo mysql -uroot -p$DATABASE_PASSWORD -h127.0.0.1 -e "GRANT ALL PRIVILEGES ON *.* TO '$DATABASE_USER'@'%' identified by '$DATABASE_PASSWORD';"
+
+    # Now update ``my.cnf`` for some local needs and restart the mysql service
+
+    # Change ‘bind-address’ from localhost (127.0.0.1) to any (0.0.0.0) and
+    # set default db type to InnoDB
+    sudo bash -c "source $TOP_DIR/functions && \
+        iniset $MY_CONF mysqld bind-address 0.0.0.0 && \
+        iniset $MY_CONF mysqld default-storage-engine InnoDB"
+
+
+    if [[ "$DATABASE_QUERY_LOGGING" == "True" ]]; then
+        echo_summary "Enabling MySQL query logging"
+
+        sudo sed -e '/log.slow.queries/d' \
+            -e '/long.query.time/d' \
+            -e '/log.queries.not.using.indexes/d' \
+            -i $MY_CONF
+
+        # Turn on slow query log, log all queries (any query taking longer than
+        # 0 seconds) and log all non-indexed queries
+        sudo bash -c "source $TOP_DIR/functions && \
+            iniset $MY_CONF mysqld slow-query-log 1 && \
+            iniset $MY_CONF mysqld slow-query-log-file /var/log/mysql/mysql-slow.log && \
+            iniset $MY_CONF mysqld long-query-time 0 && \
+            iniset $MY_CONF mysqld log-queries-not-using-indexes 1"
+
+    fi
+
+    restart_service $MYSQL
+}
+
+function install_database_mysql {
+    if is_ubuntu; then
+        # Seed configuration with mysql password so that apt-get install doesn't
+        # prompt us for a password upon install.
+        cat <<MYSQL_PRESEED | sudo debconf-set-selections
+mysql-server-5.1 mysql-server/root_password password $DATABASE_PASSWORD
+mysql-server-5.1 mysql-server/root_password_again password $DATABASE_PASSWORD
+mysql-server-5.1 mysql-server/start_on_boot boolean true
+MYSQL_PRESEED
+    fi
+
+    # while ``.my.cnf`` is not needed for OpenStack to function, it is useful
+    # as it allows you to access the mysql databases via ``mysql nova`` instead
+    # of having to specify the username/password each time.
+    if [[ ! -e $HOME/.my.cnf ]]; then
+        cat <<EOF >$HOME/.my.cnf
+[client]
+user=$DATABASE_USER
+password=$DATABASE_PASSWORD
+host=$DATABASE_HOST
+EOF
+        chmod 0600 $HOME/.my.cnf
+    fi
+    # Install mysql-server
+    if is_ubuntu || is_fedora; then
+        if [[ $DISTRO =~ (rhel7) ]]; then
+            install_package mariadb-server
+        else
+            install_package mysql-server
+        fi
+    elif is_suse; then
+        if ! is_package_installed mariadb; then
+            install_package mysql-community-server
+        fi
+    else
+        exit_distro_not_supported "mysql installation"
+    fi
+}
+
+function database_connection_url_mysql {
+    local db=$1
+    echo "$BASE_SQL_CONN/$db?charset=utf8"
+}
+
+
+# Restore xtrace
+$MY_XTRACE
+
+# Local variables:
+# mode: shell-script
+# End:

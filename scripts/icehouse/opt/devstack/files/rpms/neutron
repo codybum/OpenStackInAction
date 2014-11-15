@@ -1,0 +1,23 @@
+MySQL-python
+dnsmasq-utils # for dhcp_release
+ebtables
+iptables
+iputils
+mysql-server # NOPRIME
+openvswitch # NOPRIME
+python-boto
+python-eventlet
+python-greenlet
+python-iso8601
+python-kombu
+#rhel6 gets via pip
+python-paste        # dist:f19,f20,rhel7
+python-paste-deploy # dist:f19,f20,rhel7
+python-qpid
+python-routes
+python-sqlalchemy
+python-suds
+rabbitmq-server # NOPRIME
+qpid-cpp-server        # NOPRIME
+sqlite
+sudo

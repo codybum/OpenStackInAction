@@ -1,0 +1,2 @@
+openstack_dashboard
+horizon

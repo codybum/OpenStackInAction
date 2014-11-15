@@ -1,0 +1,10 @@
+Flow => RUNNING
+Task __main__.call_jim => RUNNING
+Calling jim.
+Context = [('jim_number', 555), ('joe_number', 444)]
+Task __main__.call_jim => SUCCESS
+Task __main__.call_joe => RUNNING
+Calling joe.
+Context = [('jim_number', 555), ('joe_number', 444)]
+Task __main__.call_joe => SUCCESS
+Flow => SUCCESS

@@ -1,0 +1,11 @@
+iptables
+libguestfs
+libvirt
+libvirt-python
+net-tools
+openssh-clients
+openvswitch
+python-libguestfs
+syslinux
+tftp-server
+xinetd

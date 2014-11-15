@@ -1,0 +1,63 @@
+# Catalan translations for django_openstack_auth.
+# Copyright (C) 2014 ORGANIZATION
+# This file is distributed under the same license as the
+# django_openstack_auth project.
+#
+# Translators:
+msgid ""
+msgstr ""
+"Project-Id-Version:  Horizon\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-07-16 06:06+0000\n"
+"PO-Revision-Date: 2014-03-21 08:11+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Catalan "
+"(http://www.transifex.com/projects/p/horizon/language/ca/)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+
+#: openstack_auth/backend.py:41
+msgid "The authentication token issued by the Identity service has expired."
+msgstr ""
+"La autentificació ha trobat un problema pel servei d'identitat hagi "
+"expirat."
+
+#: openstack_auth/backend.py:98
+msgid "Invalid user name or password."
+msgstr "Nom d'usuari o contrasenya no vàlids."
+
+#: openstack_auth/backend.py:103
+msgid "An error occurred authenticating. Please try again later."
+msgstr "S'ha produït un error d'autenticació. Si us plau, prova de nou més tard."
+
+#: openstack_auth/backend.py:125
+msgid "Unable to retrieve authorized projects."
+msgstr "No es poden recuperar els projectes autoritzats."
+
+#: openstack_auth/backend.py:130
+msgid "You are not authorized for any projects."
+msgstr "No esta autoritzat per a cap projecte."
+
+#: openstack_auth/backend.py:150
+msgid "Unable to authenticate to any available projects."
+msgstr "No es pot autenticar als projectes disponibles."
+
+#: openstack_auth/forms.py:48
+msgid "Region"
+msgstr "Regió"
+
+#: openstack_auth/forms.py:50
+msgid "User Name"
+msgstr "Nom d'usuari"
+
+#: openstack_auth/forms.py:52
+msgid "Password"
+msgstr "Contrasenya"
+
+#: openstack_auth/forms.py:61
+msgid "Domain"
+msgstr "Domini "
+

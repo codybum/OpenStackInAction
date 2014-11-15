@@ -1,0 +1,263 @@
+[openstack.identity.v3]
+project_create = openstackclient.identity.v3.project:CreateProject
+role_remove = openstackclient.identity.v3.role:RemoveRole
+project_list = openstackclient.identity.v3.project:ListProject
+role_list = openstackclient.identity.v3.role:ListRole
+policy_list = openstackclient.identity.v3.policy:ListPolicy
+role_set = openstackclient.identity.v3.role:SetRole
+service_list = openstackclient.identity.v3.service:ListService
+role_add = openstackclient.identity.v3.role:AddRole
+federation_protocol_delete = openstackclient.identity.v3.federation_protocol:DeleteProtocol
+credential_create = openstackclient.identity.v3.credential:CreateCredential
+identity_provider_show = openstackclient.identity.v3.identity_provider:ShowIdentityProvider
+consumer_show = openstackclient.identity.v3.consumer:ShowConsumer
+group_list = openstackclient.identity.v3.group:ListGroup
+domain_set = openstackclient.identity.v3.domain:SetDomain
+group_set = openstackclient.identity.v3.group:SetGroup
+mapping_show = openstackclient.identity.v3.mapping:ShowMapping
+domain_delete = openstackclient.identity.v3.domain:DeleteDomain
+request_token_create = openstackclient.identity.v3.token:CreateRequestToken
+policy_delete = openstackclient.identity.v3.policy:DeletePolicy
+role_delete = openstackclient.identity.v3.role:DeleteRole
+consumer_create = openstackclient.identity.v3.consumer:CreateConsumer
+credential_show = openstackclient.identity.v3.credential:ShowCredential
+group_add_user = openstackclient.identity.v3.group:AddUserToGroup
+endpoint_set = openstackclient.identity.v3.endpoint:SetEndpoint
+user_create = openstackclient.identity.v3.user:CreateUser
+identity_provider_set = openstackclient.identity.v3.identity_provider:SetIdentityProvider
+endpoint_delete = openstackclient.identity.v3.endpoint:DeleteEndpoint
+project_set = openstackclient.identity.v3.project:SetProject
+group_create = openstackclient.identity.v3.group:CreateGroup
+policy_set = openstackclient.identity.v3.policy:SetPolicy
+domain_create = openstackclient.identity.v3.domain:CreateDomain
+policy_create = openstackclient.identity.v3.policy:CreatePolicy
+federation_protocol_list = openstackclient.identity.v3.federation_protocol:ListProtocols
+service_show = openstackclient.identity.v3.service:ShowService
+token_issue = openstackclient.identity.v3.token:IssueToken
+group_show = openstackclient.identity.v3.group:ShowGroup
+user_password_set = openstackclient.identity.v3.user:SetPasswordUser
+endpoint_show = openstackclient.identity.v3.endpoint:ShowEndpoint
+group_remove_user = openstackclient.identity.v3.group:RemoveUserFromGroup
+federation_protocol_set = openstackclient.identity.v3.federation_protocol:SetProtocol
+user_delete = openstackclient.identity.v3.user:DeleteUser
+credential_set = openstackclient.identity.v3.credential:SetCredential
+mapping_set = openstackclient.identity.v3.mapping:SetMapping
+service_create = openstackclient.identity.v3.service:CreateService
+group_delete = openstackclient.identity.v3.group:DeleteGroup
+federation_protocol_create = openstackclient.identity.v3.federation_protocol:CreateProtocol
+project_show = openstackclient.identity.v3.project:ShowProject
+project_delete = openstackclient.identity.v3.project:DeleteProject
+endpoint_list = openstackclient.identity.v3.endpoint:ListEndpoint
+access_token_create = openstackclient.identity.v3.token:CreateAccessToken
+identity_provider_create = openstackclient.identity.v3.identity_provider:CreateIdentityProvider
+policy_show = openstackclient.identity.v3.policy:ShowPolicy
+credential_delete = openstackclient.identity.v3.credential:DeleteCredential
+consumer_set = openstackclient.identity.v3.consumer:SetConsumer
+consumer_list = openstackclient.identity.v3.consumer:ListConsumer
+domain_show = openstackclient.identity.v3.domain:ShowDomain
+mapping_delete = openstackclient.identity.v3.mapping:DeleteMapping
+mapping_list = openstackclient.identity.v3.mapping:ListMapping
+identity_provider_delete = openstackclient.identity.v3.identity_provider:DeleteIdentityProvider
+mapping_create = openstackclient.identity.v3.mapping:CreateMapping
+consumer_delete = openstackclient.identity.v3.consumer:DeleteConsumer
+user_show = openstackclient.identity.v3.user:ShowUser
+user_set = openstackclient.identity.v3.user:SetUser
+domain_list = openstackclient.identity.v3.domain:ListDomain
+credential_list = openstackclient.identity.v3.credential:ListCredential
+role_assignment_list = openstackclient.identity.v3.role_assignment:ListRoleAssignment
+group_contains_user = openstackclient.identity.v3.group:CheckUserInGroup
+service_delete = openstackclient.identity.v3.service:DeleteService
+service_set = openstackclient.identity.v3.service:SetService
+endpoint_create = openstackclient.identity.v3.endpoint:CreateEndpoint
+identity_provider_list = openstackclient.identity.v3.identity_provider:ListIdentityProvider
+federation_protocol_show = openstackclient.identity.v3.federation_protocol:ShowProtocol
+role_create = openstackclient.identity.v3.role:CreateRole
+user_list = openstackclient.identity.v3.user:ListUser
+request_token_authorize = openstackclient.identity.v3.token:AuthorizeRequestToken
+role_show = openstackclient.identity.v3.role:ShowRole
+
+[openstack.cli.base]
+compute = openstackclient.compute.client
+network = openstackclient.network.client
+image = openstackclient.image.client
+volume = openstackclient.volume.client
+identity = openstackclient.identity.client
+object_store = openstackclient.object.client
+
+[openstack.cli]
+module_list = openstackclient.common.module:ListModule
+command_list = openstackclient.common.module:ListCommand
+
+[openstack.compute.v2]
+security_group_create = openstackclient.compute.v2.security_group:CreateSecurityGroup
+security_group_rule_list = openstackclient.compute.v2.security_group:ListSecurityGroupRule
+keypair_list = openstackclient.compute.v2.keypair:ListKeypair
+keypair_delete = openstackclient.compute.v2.keypair:DeleteKeypair
+host_list = openstackclient.compute.v2.host:ListHost
+keypair_create = openstackclient.compute.v2.keypair:CreateKeypair
+server_pause = openstackclient.compute.v2.server:PauseServer
+server_reboot = openstackclient.compute.v2.server:RebootServer
+server_migrate = openstackclient.compute.v2.server:MigrateServer
+server_set = openstackclient.compute.v2.server:SetServer
+host_show = openstackclient.compute.v2.host:ShowHost
+server_unrescue = openstackclient.compute.v2.server:UnrescueServer
+server_add_volume = openstackclient.compute.v2.server:AddServerVolume
+server_unlock = openstackclient.compute.v2.server:UnlockServer
+security_group_set = openstackclient.compute.v2.security_group:SetSecurityGroup
+compute_agent_create = openstackclient.compute.v2.agent:CreateAgent
+server_rescue = openstackclient.compute.v2.server:RescueServer
+server_add_security_group = openstackclient.compute.v2.server:AddServerSecurityGroup
+console_log_show = openstackclient.compute.v2.console:ShowConsoleLog
+compute_agent_delete = openstackclient.compute.v2.agent:DeleteAgent
+server_ssh = openstackclient.compute.v2.server:SshServer
+server_lock = openstackclient.compute.v2.server:LockServer
+server_unset = openstackclient.compute.v2.server:UnsetServer
+server_show = openstackclient.compute.v2.server:ShowServer
+server_suspend = openstackclient.compute.v2.server:SuspendServer
+keypair_show = openstackclient.compute.v2.keypair:ShowKeypair
+server_image_create = openstackclient.compute.v2.server:CreateServerImage
+flavor_list = openstackclient.compute.v2.flavor:ListFlavor
+server_remove_volume = openstackclient.compute.v2.server:RemoveServerVolume
+security_group_delete = openstackclient.compute.v2.security_group:DeleteSecurityGroup
+aggregate_add_host = openstackclient.compute.v2.aggregate:AddAggregateHost
+aggregate_remove_host = openstackclient.compute.v2.aggregate:RemoveAggregateHost
+server_remove_security_group = openstackclient.compute.v2.server:RemoveServerSecurityGroup
+ip_floating_remove = openstackclient.compute.v2.floatingip:RemoveFloatingIP
+aggregate_create = openstackclient.compute.v2.aggregate:CreateAggregate
+hypervisor_show = openstackclient.compute.v2.hypervisor:ShowHypervisor
+ip_floating_list = openstackclient.compute.v2.floatingip:ListFloatingIP
+aggregate_delete = openstackclient.compute.v2.aggregate:DeleteAggregate
+security_group_rule_create = openstackclient.compute.v2.security_group:CreateSecurityGroupRule
+compute_agent_set = openstackclient.compute.v2.agent:SetAgent
+server_rebuild = openstackclient.compute.v2.server:RebuildServer
+flavor_delete = openstackclient.compute.v2.flavor:DeleteFlavor
+server_delete = openstackclient.compute.v2.server:DeleteServer
+server_resume = openstackclient.compute.v2.server:ResumeServer
+hypervisor_list = openstackclient.compute.v2.hypervisor:ListHypervisor
+flavor_create = openstackclient.compute.v2.flavor:CreateFlavor
+console_url_show = openstackclient.compute.v2.console:ShowConsoleURL
+ip_fixed_add = openstackclient.compute.v2.fixedip:AddFixedIP
+server_create = openstackclient.compute.v2.server:CreateServer
+aggregate_show = openstackclient.compute.v2.aggregate:ShowAggregate
+compute_agent_list = openstackclient.compute.v2.agent:ListAgent
+flavor_show = openstackclient.compute.v2.flavor:ShowFlavor
+ip_fixed_remove = openstackclient.compute.v2.fixedip:RemoveFixedIP
+ip_floating_create = openstackclient.compute.v2.floatingip:CreateFloatingIP
+server_list = openstackclient.compute.v2.server:ListServer
+ip_floating_pool_list = openstackclient.compute.v2.floatingippool:ListFloatingIPPool
+ip_floating_add = openstackclient.compute.v2.floatingip:AddFloatingIP
+security_group_show = openstackclient.compute.v2.security_group:ShowSecurityGroup
+server_resize = openstackclient.compute.v2.server:ResizeServer
+ip_floating_delete = openstackclient.compute.v2.floatingip:DeleteFloatingIP
+compute_service_set = openstackclient.compute.v2.service:SetService
+security_group_list = openstackclient.compute.v2.security_group:ListSecurityGroup
+project_usage_list = openstackclient.compute.v2.usage:ListUsage
+aggregate_set = openstackclient.compute.v2.aggregate:SetAggregate
+aggregate_list = openstackclient.compute.v2.aggregate:ListAggregate
+server_unpause = openstackclient.compute.v2.server:UnpauseServer
+compute_service_list = openstackclient.compute.v2.service:ListService
+security_group_rule_delete = openstackclient.compute.v2.security_group:DeleteSecurityGroupRule
+
+[openstack.image.v1]
+image_set = openstackclient.image.v1.image:SetImage
+image_delete = openstackclient.image.v1.image:DeleteImage
+image_create = openstackclient.image.v1.image:CreateImage
+image_list = openstackclient.image.v1.image:ListImage
+image_show = openstackclient.image.v1.image:ShowImage
+image_save = openstackclient.image.v1.image:SaveImage
+
+[openstack.volume.v1]
+volume_unset = openstackclient.volume.v1.volume:UnsetVolume
+snapshot_set = openstackclient.volume.v1.snapshot:SetSnapshot
+volume_type_delete = openstackclient.volume.v1.type:DeleteVolumeType
+snapshot_show = openstackclient.volume.v1.snapshot:ShowSnapshot
+snapshot_list = openstackclient.volume.v1.snapshot:ListSnapshot
+volume_type_set = openstackclient.volume.v1.type:SetVolumeType
+backup_create = openstackclient.volume.v1.backup:CreateBackup
+backup_delete = openstackclient.volume.v1.backup:DeleteBackup
+volume_list = openstackclient.volume.v1.volume:ListVolume
+backup_restore = openstackclient.volume.v1.backup:RestoreBackup
+volume_delete = openstackclient.volume.v1.volume:DeleteVolume
+backup_list = openstackclient.volume.v1.backup:ListBackup
+volume_type_create = openstackclient.volume.v1.type:CreateVolumeType
+snapshot_create = openstackclient.volume.v1.snapshot:CreateSnapshot
+volume_show = openstackclient.volume.v1.volume:ShowVolume
+volume_type_list = openstackclient.volume.v1.type:ListVolumeType
+volume_create = openstackclient.volume.v1.volume:CreateVolume
+backup_show = openstackclient.volume.v1.backup:ShowBackup
+volume_type_unset = openstackclient.volume.v1.type:UnsetVolumeType
+snapshot_delete = openstackclient.volume.v1.snapshot:DeleteSnapshot
+volume_set = openstackclient.volume.v1.volume:SetVolume
+
+[openstack.image.v2]
+image_show = openstackclient.image.v2.image:ShowImage
+image_save = openstackclient.image.v2.image:SaveImage
+image_list = openstackclient.image.v2.image:ListImage
+image_delete = openstackclient.image.v2.image:DeleteImage
+
+[openstack.identity.v2_0]
+project_create = openstackclient.identity.v2_0.project:CreateProject
+project_list = openstackclient.identity.v2_0.project:ListProject
+ec2_credentials_list = openstackclient.identity.v2_0.ec2creds:ListEC2Creds
+service_list = openstackclient.identity.v2_0.service:ListService
+role_remove = openstackclient.identity.v2_0.role:RemoveRole
+project_show = openstackclient.identity.v2_0.project:ShowProject
+role_show = openstackclient.identity.v2_0.role:ShowRole
+endpoint_delete = openstackclient.identity.v2_0.endpoint:DeleteEndpoint
+project_set = openstackclient.identity.v2_0.project:SetProject
+service_create = openstackclient.identity.v2_0.service:CreateService
+service_show = openstackclient.identity.v2_0.service:ShowService
+endpoint_show = openstackclient.identity.v2_0.endpoint:ShowEndpoint
+ec2_credentials_create = openstackclient.identity.v2_0.ec2creds:CreateEC2Creds
+catalog_list = openstackclient.identity.v2_0.catalog:ListCatalog
+ec2_credentials_delete = openstackclient.identity.v2_0.ec2creds:DeleteEC2Creds
+service_delete = openstackclient.identity.v2_0.service:DeleteService
+token_issue = openstackclient.identity.v2_0.token:IssueToken
+project_delete = openstackclient.identity.v2_0.project:DeleteProject
+endpoint_list = openstackclient.identity.v2_0.endpoint:ListEndpoint
+role_list = openstackclient.identity.v2_0.role:ListRole
+user_create = openstackclient.identity.v2_0.user:CreateUser
+user_delete = openstackclient.identity.v2_0.user:DeleteUser
+user_show = openstackclient.identity.v2_0.user:ShowUser
+user_set = openstackclient.identity.v2_0.user:SetUser
+role_add = openstackclient.identity.v2_0.role:AddRole
+role_delete = openstackclient.identity.v2_0.role:DeleteRole
+catalog_show = openstackclient.identity.v2_0.catalog:ShowCatalog
+token_revoke = openstackclient.identity.v2_0.token:RevokeToken
+endpoint_create = openstackclient.identity.v2_0.endpoint:CreateEndpoint
+user_role_list = openstackclient.identity.v2_0.role:ListUserRole
+role_create = openstackclient.identity.v2_0.role:CreateRole
+user_list = openstackclient.identity.v2_0.user:ListUser
+ec2_credentials_show = openstackclient.identity.v2_0.ec2creds:ShowEC2Creds
+
+[openstack.common]
+extension_list = openstackclient.common.extension:ListExtension
+quota_set = openstackclient.common.quota:SetQuota
+quota_show = openstackclient.common.quota:ShowQuota
+limits_show = openstackclient.common.limits:ShowLimits
+
+[openstack.object_store.v1]
+object_create = openstackclient.object.v1.object:CreateObject
+object_list = openstackclient.object.v1.object:ListObject
+object_delete = openstackclient.object.v1.object:DeleteObject
+container_list = openstackclient.object.v1.container:ListContainer
+object_show = openstackclient.object.v1.object:ShowObject
+container_delete = openstackclient.object.v1.container:DeleteContainer
+container_create = openstackclient.object.v1.container:CreateContainer
+container_show = openstackclient.object.v1.container:ShowContainer
+container_save = openstackclient.object.v1.container:SaveContainer
+object_save = openstackclient.object.v1.object:SaveObject
+
+[console_scripts]
+openstack = openstackclient.shell:main
+
+[openstack.network.v2]
+network_set = openstackclient.network.v2.network:SetNetwork
+network_show = openstackclient.network.v2.network:ShowNetwork
+network_list = openstackclient.network.v2.network:ListNetwork
+network_delete = openstackclient.network.v2.network:DeleteNetwork
+network_create = openstackclient.network.v2.network:CreateNetwork
+
+[keystoneclient.auth.plugin]
+token_endpoint = openstackclient.api.auth:TokenEndpoint
+

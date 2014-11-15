@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load url from future %}
+{% block title %}{% trans "Network Topology" %}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Network Topology") %}
+{% endblock page_header %}
+
+{% block main %}
+
+<noscript>
+{% trans "This pane needs javascript support." %}
+</noscript>
+
+{% include "project/network_topology/client_side/_balloon_container.html" %}
+{% include "project/network_topology/client_side/_balloon_device.html" %}
+{% include "project/network_topology/client_side/_balloon_port.html" %}
+
+<div class="topologyNavi">
+  <div class="toggleView btn-group" data-toggle="buttons-radio">
+    <button type="button" class="btn small" data-value="small"><i class="icon-th"></i>{%trans "Small" %}</button>
+    <button type="button" class="btn normal" data-value="normal"><i class="icon-th-large"></i>{%trans "Normal" %}</button>
+  </div>
+  
+  <div class="launchButtons">
+  <a href="{% url 'horizon:project:network_topology:launchinstance' %}" id="instances__action_launch" class="btn btn-small btn-launch ajax-modal">{%trans "Launch Instance" %}</a>
+  <a href="{% url 'horizon:project:network_topology:createnetwork' %}" id="networks__action_create" class="btn btn-small ajax-modal btn-create">{%trans "Create Network" %}</a>
+  <a href="{% url 'horizon:project:network_topology:createrouter' %}" id="Routers__action_create" class="btn btn-small ajax-modal btn-create">{%trans "Create Router" %}</a>
+  </div>
+</div>
+
+<div id="topologyCanvasContainer">
+  <div class="nodata">{% blocktrans %}There are no networks, routers, or connected instances to display.{% endblocktrans %}</div>
+  {% include "project/network_topology/_svg_element.html" %}
+</div>
+<span data-networktopology="{% url 'horizon:project:network_topology:json' %}" id="networktopology"></span>
+<div id="topologyMessages"></div>
+
+<script type="text/javascript">
+  if (typeof horizon.network_topology !== 'undefined') {
+    horizon.network_topology.init();
+  } else {
+    addHorizonLoadEvent(function () {
+      horizon.network_topology.init();
+    });
+  }
+</script>
+{% endblock %}

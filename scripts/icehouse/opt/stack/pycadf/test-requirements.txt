@@ -1,0 +1,20 @@
+# The order of packages is significant, because pip processes them in the order
+# of appearance. Changing the order has an impact on the overall integration
+# process, which may cause wedges in the gate later.
+# Hacking already pins down pep8, pyflakes and flake8
+hacking>=0.9.2,<0.10
+
+coverage>=3.6
+discover
+fixtures>=0.3.14
+mock>=1.0
+mox>=0.5.3
+oslotest>=1.1.0  # Apache-2.0
+python-subunit>=0.0.18
+testrepository>=0.0.18
+testscenarios>=0.4
+testtools>=0.9.34
+
+# this is required for the docs build jobs
+oslosphinx>=2.2.0  # Apache-2.0
+sphinx>=1.1.2,!=1.2.0,!=1.3b1,<1.3

@@ -1,0 +1,12 @@
+python-greenlet
+libxslt-devel       # dist:f20
+python-lxml         #dist:f19,f20
+python-paste        #dist:f19,f20
+python-paste-deploy #dist:f19,f20
+python-paste-script #dist:f19,f20
+python-routes
+python-sqlalchemy
+python-webob
+sqlite
+
+# Deps installed via pip for RHEL

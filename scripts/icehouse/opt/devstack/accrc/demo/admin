@@ -1,0 +1,17 @@
+# you can source this file
+export EC2_ACCESS_KEY="d3a0f0f3bbc14ed2a605d5da6124ef87"
+export EC2_SECRET_KEY="46aad05c2bc749c395713025c7dfbd64"
+export EC2_URL="http://10.0.2.32:8773/services/Cloud"
+export S3_URL="http://10.0.2.32:3333"
+# OpenStack USER ID = 106cdeff30eb4054bdfecb808f83ed27
+export OS_USERNAME="admin"
+# OpenStack Tenant ID = 6dbf5f1aaf6e467c8af7899d5647f794
+export OS_TENANT_NAME="demo"
+export OS_AUTH_URL="http://10.0.2.32:35357/v2.0"
+export OS_CACERT=""
+export EC2_CERT="/opt/devstack/accrc/demo/admin-cert.pem"
+export EC2_PRIVATE_KEY="/opt/devstack/accrc/demo/admin-pk.pem"
+export EC2_USER_ID=42 #not checked by nova (can be a 12-digit id)
+export EUCALYPTUS_CERT="/opt/devstack/accrc/cacert.pem"
+export NOVA_CERT="/opt/devstack/accrc/cacert.pem"
+export OS_PASSWORD="devstack"

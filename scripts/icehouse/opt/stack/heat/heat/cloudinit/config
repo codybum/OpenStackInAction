@@ -1,0 +1,5 @@
+${add_custom_user}
+
+# Capture all subprocess output into a logfile
+# Useful for troubleshooting cloud-init issues
+output: {all: '| tee -a /var/log/cloud-init-output.log'}

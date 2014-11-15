@@ -1,0 +1,86 @@
+# common functions for ovs based plugin
+# -------------------------------------
+
+# Save trace setting
+OVSB_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+OVS_BRIDGE=${OVS_BRIDGE:-br-int}
+PUBLIC_BRIDGE=${PUBLIC_BRIDGE:-br-ex}
+
+function is_neutron_ovs_base_plugin {
+    # Yes, we use OVS.
+    return 0
+}
+
+function _neutron_ovs_base_setup_bridge {
+    local bridge=$1
+    neutron-ovs-cleanup
+    sudo ovs-vsctl --no-wait -- --may-exist add-br $bridge
+    sudo ovs-vsctl --no-wait br-set-external-id $bridge bridge-id $bridge
+}
+
+function neutron_ovs_base_cleanup {
+    # remove all OVS ports that look like Neutron created ports
+    for port in $(sudo ovs-vsctl list port | grep -o -e tap[0-9a-f\-]* -e q[rg]-[0-9a-f\-]*); do
+        sudo ovs-vsctl del-port ${port}
+    done
+
+    # remove all OVS bridges created by Neutron
+    for bridge in $(sudo ovs-vsctl list-br | grep -o -e ${OVS_BRIDGE} -e ${PUBLIC_BRIDGE}); do
+        sudo ovs-vsctl del-br ${bridge}
+    done
+}
+
+function _neutron_ovs_base_install_agent_packages {
+    local kernel_version
+    # Install deps
+    # FIXME add to ``files/apts/neutron``, but don't install if not needed!
+    if is_ubuntu; then
+        kernel_version=`cat /proc/version | cut -d " " -f3`
+        ovs_packages="make fakeroot dkms openvswitch-switch"
+        # From kernel 3.13 on, openvswitch-datapath-dkms is not needed
+        kernel_major_minor=`echo $kernel_version | cut -d. -f1-2`
+        if [ `vercmp_numbers "$kernel_major_minor" "3.13"` -lt "0" ]; then
+            ovs_packages="$ovs_packages openvswitch-datapath-dkms"
+        fi
+        ovs_packages="$ovs_packages linux-headers-$kernel_version"
+        install_package $ovs_packages
+    elif is_fedora; then
+        install_package openvswitch
+        # Ensure that the service is started
+        restart_service openvswitch
+    elif is_suse; then
+        install_package openvswitch-switch
+        restart_service openvswitch-switch
+    fi
+}
+
+function _neutron_ovs_base_configure_debug_command {
+    iniset $NEUTRON_TEST_CONFIG_FILE DEFAULT external_network_bridge $PUBLIC_BRIDGE
+}
+
+function _neutron_ovs_base_configure_firewall_driver {
+    if [[ "$Q_USE_SECGROUP" == "True" ]]; then
+        iniset /$Q_PLUGIN_CONF_FILE securitygroup firewall_driver neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+    else
+        iniset /$Q_PLUGIN_CONF_FILE securitygroup firewall_driver neutron.agent.firewall.NoopFirewallDriver
+    fi
+}
+
+function _neutron_ovs_base_configure_l3_agent {
+    iniset $Q_L3_CONF_FILE DEFAULT external_network_bridge $PUBLIC_BRIDGE
+
+    neutron-ovs-cleanup
+    sudo ovs-vsctl --no-wait -- --may-exist add-br $PUBLIC_BRIDGE
+    sudo ovs-vsctl --no-wait br-set-external-id $PUBLIC_BRIDGE bridge-id $PUBLIC_BRIDGE
+    # ensure no IP is configured on the public bridge
+    sudo ip addr flush dev $PUBLIC_BRIDGE
+}
+
+function _neutron_ovs_base_configure_nova_vif_driver {
+    :
+}
+
+# Restore xtrace
+$OVSB_XTRACE

@@ -1,0 +1,109 @@
+[nova.image.download.modules]
+file = nova.image.download.file
+
+[nova.api.v3.extensions.server.rebuild]
+access_ips = nova.api.openstack.compute.plugins.v3.access_ips:AccessIPs
+
+[nova.api.v3.extensions]
+multinic = nova.api.openstack.compute.plugins.v3.multinic:Multinic
+keypairs = nova.api.openstack.compute.plugins.v3.keypairs:Keypairs
+availability_zone = nova.api.openstack.compute.plugins.v3.availability_zone:AvailabilityZone
+flavor_manage = nova.api.openstack.compute.plugins.v3.flavor_manage:FlavorManage
+remote_consoles = nova.api.openstack.compute.plugins.v3.remote_consoles:RemoteConsoles
+migrations = nova.api.openstack.compute.plugins.v3.migrations:Migrations
+hypervisors = nova.api.openstack.compute.plugins.v3.hypervisors:Hypervisors
+server_diagnostics = nova.api.openstack.compute.plugins.v3.server_diagnostics:ServerDiagnostics
+agents = nova.api.openstack.compute.plugins.v3.agents:Agents
+flavor_rxtx = nova.api.openstack.compute.plugins.v3.flavor_rxtx:FlavorRxtx
+multiple_create = nova.api.openstack.compute.plugins.v3.multiple_create:MultipleCreate
+extended_server_attributes = nova.api.openstack.compute.plugins.v3.extended_server_attributes:ExtendedServerAttributes
+security_groups = nova.api.openstack.compute.plugins.v3.security_groups:SecurityGroups
+scheduler_hints = nova.api.openstack.compute.plugins.v3.scheduler_hints:SchedulerHints
+flavors = nova.api.openstack.compute.plugins.v3.flavors:Flavors
+console_auth_tokens = nova.api.openstack.compute.plugins.v3.console_auth_tokens:ConsoleAuthTokens
+server_external_events = nova.api.openstack.compute.plugins.v3.server_external_events:ServerExternalEvents
+access_ips = nova.api.openstack.compute.plugins.v3.access_ips:AccessIPs
+admin_actions = nova.api.openstack.compute.plugins.v3.admin_actions:AdminActions
+instance_actions = nova.api.openstack.compute.plugins.v3.instance_actions:InstanceActions
+pci = nova.api.openstack.compute.plugins.v3.pci:Pci
+suspend_server = nova.api.openstack.compute.plugins.v3.suspend_server:SuspendServer
+admin_password = nova.api.openstack.compute.plugins.v3.admin_password:AdminPassword
+certificates = nova.api.openstack.compute.plugins.v3.certificates:Certificates
+create_backup = nova.api.openstack.compute.plugins.v3.create_backup:CreateBackup
+lock_server = nova.api.openstack.compute.plugins.v3.lock_server:LockServer
+hide_server_addresses = nova.api.openstack.compute.plugins.v3.hide_server_addresses:HideServerAddresses
+extended_volumes = nova.api.openstack.compute.plugins.v3.extended_volumes:ExtendedVolumes
+server_password = nova.api.openstack.compute.plugins.v3.server_password:ServerPassword
+deferred_delete = nova.api.openstack.compute.plugins.v3.deferred_delete:DeferredDelete
+rescue = nova.api.openstack.compute.plugins.v3.rescue:Rescue
+block_device_mapping = nova.api.openstack.compute.plugins.v3.block_device_mapping:BlockDeviceMapping
+pause_server = nova.api.openstack.compute.plugins.v3.pause_server:PauseServer
+server_metadata = nova.api.openstack.compute.plugins.v3.server_metadata:ServerMetadata
+aggregates = nova.api.openstack.compute.plugins.v3.aggregates:Aggregates
+extended_availability_zone = nova.api.openstack.compute.plugins.v3.extended_availability_zone:ExtendedAvailabilityZone
+evacuate = nova.api.openstack.compute.plugins.v3.evacuate:Evacuate
+flavor_access = nova.api.openstack.compute.plugins.v3.flavor_access:FlavorAccess
+consoles = nova.api.openstack.compute.plugins.v3.consoles:Consoles
+extended_status = nova.api.openstack.compute.plugins.v3.extended_status:ExtendedStatus
+flavors_extraspecs = nova.api.openstack.compute.plugins.v3.flavors_extraspecs:FlavorsExtraSpecs
+attach_interfaces = nova.api.openstack.compute.plugins.v3.attach_interfaces:AttachInterfaces
+services = nova.api.openstack.compute.plugins.v3.services:Services
+servers = nova.api.openstack.compute.plugins.v3.servers:Servers
+extension_info = nova.api.openstack.compute.plugins.v3.extension_info:ExtensionInfo
+server_usage = nova.api.openstack.compute.plugins.v3.server_usage:ServerUsage
+migrate_server = nova.api.openstack.compute.plugins.v3.migrate_server:MigrateServer
+ips = nova.api.openstack.compute.plugins.v3.ips:IPs
+cells = nova.api.openstack.compute.plugins.v3.cells:Cells
+versions = nova.api.openstack.compute.plugins.v3.versions:Versions
+hosts = nova.api.openstack.compute.plugins.v3.hosts:Hosts
+shelve = nova.api.openstack.compute.plugins.v3.shelve:Shelve
+console_output = nova.api.openstack.compute.plugins.v3.console_output:ConsoleOutput
+config_drive = nova.api.openstack.compute.plugins.v3.config_drive:ConfigDrive
+quota_sets = nova.api.openstack.compute.plugins.v3.quota_sets:QuotaSets
+
+[nova.api.v3.extensions.server.update]
+access_ips = nova.api.openstack.compute.plugins.v3.access_ips:AccessIPs
+
+[oslo.messaging.notify.drivers]
+nova.openstack.common.notifier.no_op_notifier = oslo.messaging.notify._impl_noop:NoOpDriver
+nova.openstack.common.notifier.test_notifier = oslo.messaging.notify._impl_test:TestDriver
+nova.openstack.common.notifier.rpc_notifier = oslo.messaging.notify._impl_messaging:MessagingDriver
+nova.openstack.common.notifier.log_notifier = oslo.messaging.notify._impl_log:LogDriver
+nova.openstack.common.notifier.rpc_notifier2 = oslo.messaging.notify._impl_messaging:MessagingV2Driver
+
+[console_scripts]
+nova-dhcpbridge = nova.cmd.dhcpbridge:main
+nova-manage = nova.cmd.manage:main
+nova-api = nova.cmd.api:main
+nova-api-os-compute = nova.cmd.api_os_compute:main
+nova-objectstore = nova.cmd.objectstore:main
+nova-novncproxy = nova.cmd.novncproxy:main
+nova-consoleauth = nova.cmd.consoleauth:main
+nova-network = nova.cmd.network:main
+nova-conductor = nova.cmd.conductor:main
+nova-api-metadata = nova.cmd.api_metadata:main
+nova-api-ec2 = nova.cmd.api_ec2:main
+nova-clear-rabbit-queues = nova.cmd.clear_rabbit_queues:main
+nova-xvpvncproxy = nova.cmd.xvpvncproxy:main
+nova-all = nova.cmd.all:main
+nova-scheduler = nova.cmd.scheduler:main
+nova-console = nova.cmd.console:main
+nova-baremetal-deploy-helper = nova.cmd.baremetal_deploy_helper:main
+nova-spicehtml5proxy = nova.cmd.spicehtml5proxy:main
+nova-cert = nova.cmd.cert:main
+nova-baremetal-manage = nova.cmd.baremetal_manage:main
+nova-compute = nova.cmd.compute:main
+nova-cells = nova.cmd.cells:main
+nova-rootwrap = oslo.rootwrap.cmd:main
+
+[nova.api.v3.extensions.server.create]
+multiple_create = nova.api.openstack.compute.plugins.v3.multiple_create:MultipleCreate
+block_device_mapping = nova.api.openstack.compute.plugins.v3.block_device_mapping:BlockDeviceMapping
+access_ips = nova.api.openstack.compute.plugins.v3.access_ips:AccessIPs
+availability_zone = nova.api.openstack.compute.plugins.v3.availability_zone:AvailabilityZone
+user_data = nova.api.openstack.compute.plugins.v3.user_data:UserData
+keypairs_create = nova.api.openstack.compute.plugins.v3.keypairs:Keypairs
+scheduler_hints = nova.api.openstack.compute.plugins.v3.scheduler_hints:SchedulerHints
+security_groups = nova.api.openstack.compute.plugins.v3.security_groups:SecurityGroups
+config_drive = nova.api.openstack.compute.plugins.v3.config_drive:ConfigDrive
+

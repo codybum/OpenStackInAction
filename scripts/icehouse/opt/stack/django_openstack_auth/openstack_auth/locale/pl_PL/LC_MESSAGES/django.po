@@ -1,0 +1,62 @@
+# Polish (Poland) translations for django_openstack_auth.
+# Copyright (C) 2014 ORGANIZATION
+# This file is distributed under the same license as the
+# django_openstack_auth project.
+#
+# Translators:
+msgid ""
+msgstr ""
+"Project-Id-Version:  Horizon\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-07-16 06:06+0000\n"
+"PO-Revision-Date: 2014-03-21 08:11+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Polish (Poland) "
+"(http://www.transifex.com/projects/p/horizon/language/pl_PL/)\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && "
+"(n%100<10 || n%100>=20) ? 1 : 2)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+
+#: openstack_auth/backend.py:41
+msgid "The authentication token issued by the Identity service has expired."
+msgstr "Tonek uwierzytelniania wydany przez usługę uwierzytelniania wygasł."
+
+#: openstack_auth/backend.py:98
+msgid "Invalid user name or password."
+msgstr "Nieprawidłowa nazwa użytkownika lub hasło."
+
+#: openstack_auth/backend.py:103
+msgid "An error occurred authenticating. Please try again later."
+msgstr "Wystąpił błąd w trakcie uwierzytelniania. Proszę spróbować później."
+
+#: openstack_auth/backend.py:125
+msgid "Unable to retrieve authorized projects."
+msgstr "Nie można pobrać uwierzytelnionych projektów."
+
+#: openstack_auth/backend.py:130
+msgid "You are not authorized for any projects."
+msgstr "Nie upoważniono do żadnego projektu."
+
+#: openstack_auth/backend.py:150
+msgid "Unable to authenticate to any available projects."
+msgstr "Nie można uwierzytelnić do żadnego z istniejących projektów."
+
+#: openstack_auth/forms.py:48
+msgid "Region"
+msgstr "Region"
+
+#: openstack_auth/forms.py:50
+msgid "User Name"
+msgstr "Nazwa użytkownika"
+
+#: openstack_auth/forms.py:52
+msgid "Password"
+msgstr "Hasło"
+
+#: openstack_auth/forms.py:61
+msgid "Domain"
+msgstr "Domena"
+

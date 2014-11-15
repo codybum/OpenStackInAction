@@ -1,0 +1,11 @@
+# 2014-10-20-144952
+BASE_SQL_CONN=mysql://root:devstack@127.0.0.1
+ENABLED_SERVICES=g-api,g-reg,key,n-api,n-crt,n-obj,n-cpu,n-cond,n-sch,n-novnc,n-xvnc,n-cauth,c-sch,c-api,c-vol,h-eng,h-api,h-api-cfn,h-api-cw,horizon,rabbit,tempest,mysql,q-svc,q-agt,q-dhcp,q-l3,q-meta
+HOST_IP=10.0.2.32
+LOGFILE=/opt/stack/logs/stack.sh.log.2014-10-20-144548
+SERVICE_HOST=10.0.2.32
+SERVICE_PROTOCOL=http
+STACK_USER=stack
+TLS_IP=
+KEYSTONE_AUTH_PROTOCOL=http
+OS_CACERT=

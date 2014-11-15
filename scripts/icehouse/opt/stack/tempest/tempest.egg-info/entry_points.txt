@@ -1,0 +1,9 @@
+[oslo.config.opts]
+tempest.config = tempest.config:list_opts
+
+[console_scripts]
+run-tempest-stress = tempest.cmd.run_stress:main
+tempest-cleanup = tempest.cmd.cleanup:main
+verify-tempest-config = tempest.cmd.verify_tempest_config:main
+javelin2 = tempest.cmd.javelin:main
+

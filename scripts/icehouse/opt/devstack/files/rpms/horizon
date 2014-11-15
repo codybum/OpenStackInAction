@@ -1,0 +1,24 @@
+Django
+gcc
+httpd # NOPRIME
+mod_wsgi  # NOPRIME
+pylint
+python-anyjson
+python-BeautifulSoup
+python-boto
+python-coverage
+python-dateutil
+python-eventlet
+python-greenlet
+python-httplib2
+python-kombu
+python-migrate
+python-mox
+python-nose
+python-paste        #dist:f19,f20
+python-paste-deploy #dist:f19,f20
+python-routes
+python-sphinx
+python-sqlalchemy
+python-webob
+pyxattr

@@ -1,0 +1,17 @@
+curl
+gcc
+memcached
+python-PasteDeploy
+python-WebOb
+python-configobj
+python-coverage
+python-devel
+python-eventlet
+python-greenlet
+python-netifaces
+python-nose
+python-simplejson
+python-xattr
+sqlite3
+xfsprogs
+xinetd

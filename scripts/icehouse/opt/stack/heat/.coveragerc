@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = heat,contrib
+omit = */tests/*,heat/openstack/*
+
+[report]
+ignore-errors = True

@@ -1,0 +1,11 @@
+include AUTHORS
+include ChangeLog
+include LICENSE
+include README.rst
+include tox.ini .testr.conf
+recursive-include tests *
+
+exclude .gitignore
+exclude .gitreview
+
+global-exclude *.pyc

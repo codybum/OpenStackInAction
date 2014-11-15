@@ -1,0 +1,545 @@
+# functions - DevStack-specific functions
+#
+# The following variables are assumed to be defined by certain functions:
+#
+# - ``DATABASE_BACKENDS``
+# - ``ENABLED_SERVICES``
+# - ``FILES``
+# - ``GLANCE_HOSTPORT``
+#
+
+# Include the common functions
+FUNC_DIR=$(cd $(dirname "${BASH_SOURCE:-$0}") && pwd)
+source ${FUNC_DIR}/functions-common
+
+# Save trace setting
+XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+
+# Checks if installed Apache is <= given version
+# $1 = x.y.z (version string of Apache)
+function check_apache_version {
+    local cmd="apachectl"
+    if ! [[ -x $(which apachectl 2>/dev/null) ]]; then
+        cmd="/usr/sbin/apachectl"
+    fi
+
+    local version=$($cmd -v | grep version | grep -Po 'Apache/\K[^ ]*')
+    expr "$version" '>=' $1 > /dev/null
+}
+
+
+# Cleanup anything from /tmp on unstack
+# clean_tmp
+function cleanup_tmp {
+    local tmp_dir=${TMPDIR:-/tmp}
+
+    # see comments in pip_install
+    sudo rm -rf ${tmp_dir}/pip-build.*
+}
+
+
+# Retrieve an image from a URL and upload into Glance.
+# Uses the following variables:
+#
+# - ``FILES`` must be set to the cache dir
+# - ``GLANCE_HOSTPORT``
+#
+# upload_image image-url glance-token
+function upload_image {
+    local image_url=$1
+    local token=$2
+
+    # Create a directory for the downloaded image tarballs.
+    mkdir -p $FILES/images
+    IMAGE_FNAME=`basename "$image_url"`
+    if [[ $image_url != file* ]]; then
+        # Downloads the image (uec ami+akistyle), then extracts it.
+        if [[ ! -f $FILES/$IMAGE_FNAME || "$(stat -c "%s" $FILES/$IMAGE_FNAME)" = "0" ]]; then
+            wget -c $image_url -O $FILES/$IMAGE_FNAME
+            if [[ $? -ne 0 ]]; then
+                echo "Not found: $image_url"
+                return
+            fi
+        fi
+        IMAGE="$FILES/${IMAGE_FNAME}"
+    else
+        # File based URL (RFC 1738): file://host/path
+        # Remote files are not considered here.
+        # *nix: file:///home/user/path/file
+        # windows: file:///C:/Documents%20and%20Settings/user/path/file
+        IMAGE=$(echo $image_url | sed "s/^file:\/\///g")
+        if [[ ! -f $IMAGE || "$(stat -c "%s" $IMAGE)" == "0" ]]; then
+            echo "Not found: $image_url"
+            return
+        fi
+    fi
+
+    # OpenVZ-format images are provided as .tar.gz, but not decompressed prior to loading
+    if [[ "$image_url" =~ 'openvz' ]]; then
+        IMAGE_NAME="${IMAGE_FNAME%.tar.gz}"
+        glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME" --is-public=True --container-format ami --disk-format ami < "${IMAGE}"
+        return
+    fi
+
+    # vmdk format images
+    if [[ "$image_url" =~ '.vmdk' ]]; then
+        IMAGE_NAME="${IMAGE_FNAME%.vmdk}"
+
+        # Before we can upload vmdk type images to glance, we need to know it's
+        # disk type, storage adapter, and networking adapter. These values are
+        # passed to glance as custom properties.
+        # We take these values from the vmdk file if populated. Otherwise, we use
+        # vmdk filename, which is expected in the following format:
+        #
+        #     <name>-<disk type>;<storage adapter>;<network adapter>
+        #
+        # If the filename does not follow the above format then the vsphere
+        # driver will supply default values.
+
+        vmdk_adapter_type=""
+        vmdk_disktype=""
+        vmdk_net_adapter=""
+
+        # vmdk adapter type
+        vmdk_adapter_type="$(head -25 $IMAGE | { grep -a -F -m 1 'ddb.adapterType =' $IMAGE || true; })"
+        vmdk_adapter_type="${vmdk_adapter_type#*\"}"
+        vmdk_adapter_type="${vmdk_adapter_type%?}"
+
+        # vmdk disk type
+        vmdk_create_type="$(head -25 $IMAGE | { grep -a -F -m 1 'createType=' $IMAGE || true; })"
+        vmdk_create_type="${vmdk_create_type#*\"}"
+        vmdk_create_type="${vmdk_create_type%\"*}"
+
+        descriptor_data_pair_msg="Monolithic flat and VMFS disks "`
+                                    `"should use a descriptor-data pair."
+        if [[ "$vmdk_create_type" = "monolithicSparse" ]]; then
+            vmdk_disktype="sparse"
+        elif [[ "$vmdk_create_type" = "monolithicFlat" || \
+        "$vmdk_create_type" = "vmfs" ]]; then
+            # Attempt to retrieve the *-flat.vmdk
+            flat_fname="$(head -25 $IMAGE | { grep -G 'RW\|RDONLY [0-9]+ FLAT\|VMFS' $IMAGE || true; })"
+            flat_fname="${flat_fname#*\"}"
+            flat_fname="${flat_fname%?}"
+            if [[ -z "$flat_fname" ]]; then
+                flat_fname="$IMAGE_NAME-flat.vmdk"
+            fi
+            path_len=`expr ${#image_url} - ${#IMAGE_FNAME}`
+            flat_url="${image_url:0:$path_len}$flat_fname"
+            warn $LINENO "$descriptor_data_pair_msg"`
+                            `" Attempt to retrieve the *-flat.vmdk: $flat_url"
+            if [[ $flat_url != file* ]]; then
+                if [[ ! -f $FILES/$flat_fname || \
+                "$(stat -c "%s" $FILES/$flat_fname)" = "0" ]]; then
+                    wget -c $flat_url -O $FILES/$flat_fname
+                fi
+                IMAGE="$FILES/${flat_fname}"
+            else
+                IMAGE=$(echo $flat_url | sed "s/^file:\/\///g")
+                if [[ ! -f $IMAGE || "$(stat -c "%s" $IMAGE)" == "0" ]]; then
+                    echo "Flat disk not found: $flat_url"
+                    return 1
+                fi
+            fi
+            IMAGE_NAME="${flat_fname}"
+            vmdk_disktype="preallocated"
+        elif [[ "$vmdk_create_type" = "streamOptimized" ]]; then
+            vmdk_disktype="streamOptimized"
+        elif [[ -z "$vmdk_create_type" ]]; then
+            # *-flat.vmdk provided: attempt to retrieve the descriptor (*.vmdk)
+            # to retrieve appropriate metadata
+            if [[ ${IMAGE_NAME: -5} != "-flat" ]]; then
+                warn $LINENO "Expected filename suffix: '-flat'."`
+                            `" Filename provided: ${IMAGE_NAME}"
+            else
+                descriptor_fname="${IMAGE_NAME:0:${#IMAGE_NAME} - 5}.vmdk"
+                path_len=`expr ${#image_url} - ${#IMAGE_FNAME}`
+                flat_path="${image_url:0:$path_len}"
+                descriptor_url=$flat_path$descriptor_fname
+                warn $LINENO "$descriptor_data_pair_msg"`
+                                `" Attempt to retrieve the descriptor *.vmdk: $descriptor_url"
+                if [[ $flat_path != file* ]]; then
+                    if [[ ! -f $FILES/$descriptor_fname || \
+                    "$(stat -c "%s" $FILES/$descriptor_fname)" = "0" ]]; then
+                        wget -c $descriptor_url -O $FILES/$descriptor_fname
+                    fi
+                    descriptor_url="$FILES/$descriptor_fname"
+                else
+                    descriptor_url=$(echo $descriptor_url | sed "s/^file:\/\///g")
+                    if [[ ! -f $descriptor_url || \
+                    "$(stat -c "%s" $descriptor_url)" == "0" ]]; then
+                        echo "Descriptor not found: $descriptor_url"
+                        return 1
+                    fi
+                fi
+                vmdk_adapter_type="$(head -25 $descriptor_url | { grep -a -F -m 1 'ddb.adapterType =' $descriptor_url || true; })"
+                vmdk_adapter_type="${vmdk_adapter_type#*\"}"
+                vmdk_adapter_type="${vmdk_adapter_type%?}"
+            fi
+            vmdk_disktype="preallocated"
+        else
+            vmdk_disktype="preallocated"
+        fi
+
+        # NOTE: For backwards compatibility reasons, colons may be used in place
+        # of semi-colons for property delimiters but they are not permitted
+        # characters in NTFS filesystems.
+        property_string=`echo "$IMAGE_NAME" | { grep -oP '(?<=-)(?!.*-).*[:;].*[:;].*$' || true; }`
+        IFS=':;' read -a props <<< "$property_string"
+        vmdk_disktype="${props[0]:-$vmdk_disktype}"
+        vmdk_adapter_type="${props[1]:-$vmdk_adapter_type}"
+        vmdk_net_adapter="${props[2]:-$vmdk_net_adapter}"
+
+        glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME" --is-public=True --container-format bare --disk-format vmdk --property vmware_disktype="$vmdk_disktype" --property vmware_adaptertype="$vmdk_adapter_type" --property hw_vif_model="$vmdk_net_adapter" < "${IMAGE}"
+        return
+    fi
+
+    # XenServer-vhd-ovf-format images are provided as .vhd.tgz
+    # and should not be decompressed prior to loading
+    if [[ "$image_url" =~ '.vhd.tgz' ]]; then
+        IMAGE_NAME="${IMAGE_FNAME%.vhd.tgz}"
+        FORCE_VM_MODE=""
+        if [[ "$IMAGE_NAME" =~ 'cirros' ]]; then
+            # Cirros VHD image currently only boots in PV mode.
+            # Nova defaults to PV for all VHD images, but
+            # the glance setting is needed for booting
+            # directly from volume.
+            FORCE_VM_MODE="--property vm_mode=xen"
+        fi
+        glance \
+            --os-auth-token $token \
+            --os-image-url http://$GLANCE_HOSTPORT \
+            image-create \
+            --name "$IMAGE_NAME" --is-public=True \
+            --container-format=ovf --disk-format=vhd \
+            $FORCE_VM_MODE < "${IMAGE}"
+        return
+    fi
+
+    # .xen-raw.tgz suggests a Xen capable raw image inside a tgz.
+    # and should not be decompressed prior to loading.
+    # Setting metadata, so PV mode is used.
+    if [[ "$image_url" =~ '.xen-raw.tgz' ]]; then
+        IMAGE_NAME="${IMAGE_FNAME%.xen-raw.tgz}"
+        glance \
+            --os-auth-token $token \
+            --os-image-url http://$GLANCE_HOSTPORT \
+            image-create \
+            --name "$IMAGE_NAME" --is-public=True \
+            --container-format=tgz --disk-format=raw \
+            --property vm_mode=xen < "${IMAGE}"
+        return
+    fi
+
+    KERNEL=""
+    RAMDISK=""
+    DISK_FORMAT=""
+    CONTAINER_FORMAT=""
+    UNPACK=""
+    case "$IMAGE_FNAME" in
+        *.tar.gz|*.tgz)
+            # Extract ami and aki files
+            [ "${IMAGE_FNAME%.tar.gz}" != "$IMAGE_FNAME" ] &&
+                IMAGE_NAME="${IMAGE_FNAME%.tar.gz}" ||
+                IMAGE_NAME="${IMAGE_FNAME%.tgz}"
+            xdir="$FILES/images/$IMAGE_NAME"
+            rm -Rf "$xdir";
+            mkdir "$xdir"
+            tar -zxf $FILES/$IMAGE_FNAME -C "$xdir"
+            KERNEL=$(for f in "$xdir/"*-vmlinuz* "$xdir/"aki-*/image; do
+                [ -f "$f" ] && echo "$f" && break; done; true)
+            RAMDISK=$(for f in "$xdir/"*-initrd* "$xdir/"ari-*/image; do
+                [ -f "$f" ] && echo "$f" && break; done; true)
+            IMAGE=$(for f in "$xdir/"*.img "$xdir/"ami-*/image; do
+                [ -f "$f" ] && echo "$f" && break; done; true)
+            if [[ -z "$IMAGE_NAME" ]]; then
+                IMAGE_NAME=$(basename "$IMAGE" ".img")
+            fi
+            ;;
+        *.img)
+            IMAGE_NAME=$(basename "$IMAGE" ".img")
+            format=$(qemu-img info ${IMAGE} | awk '/^file format/ { print $3; exit }')
+            if [[ ",qcow2,raw,vdi,vmdk,vpc," =~ ",$format," ]]; then
+                DISK_FORMAT=$format
+            else
+                DISK_FORMAT=raw
+            fi
+            CONTAINER_FORMAT=bare
+            ;;
+        *.img.gz)
+            IMAGE_NAME=$(basename "$IMAGE" ".img.gz")
+            DISK_FORMAT=raw
+            CONTAINER_FORMAT=bare
+            UNPACK=zcat
+            ;;
+        *.qcow2)
+            IMAGE_NAME=$(basename "$IMAGE" ".qcow2")
+            DISK_FORMAT=qcow2
+            CONTAINER_FORMAT=bare
+            ;;
+        *.iso)
+            IMAGE_NAME=$(basename "$IMAGE" ".iso")
+            DISK_FORMAT=iso
+            CONTAINER_FORMAT=bare
+            ;;
+        *.vhd|*.vhdx|*.vhd.gz|*.vhdx.gz)
+            local extension="${IMAGE_FNAME#*.}"
+            IMAGE_NAME=$(basename "$IMAGE" ".$extension")
+            DISK_FORMAT=vhd
+            CONTAINER_FORMAT=bare
+            if [ "${IMAGE_FNAME##*.}" == "gz" ]; then
+                UNPACK=zcat
+            fi
+            ;;
+        *) echo "Do not know what to do with $IMAGE_FNAME"; false;;
+    esac
+
+    if is_arch "ppc64"; then
+        IMG_PROPERTY="--property hw_cdrom_bus=scsi"
+    fi
+
+    if [ "$CONTAINER_FORMAT" = "bare" ]; then
+        if [ "$UNPACK" = "zcat" ]; then
+            glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME" $IMG_PROPERTY --is-public True --container-format=$CONTAINER_FORMAT --disk-format $DISK_FORMAT < <(zcat --force "${IMAGE}")
+        else
+            glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME" $IMG_PROPERTY --is-public True --container-format=$CONTAINER_FORMAT --disk-format $DISK_FORMAT < "${IMAGE}"
+        fi
+    else
+        # Use glance client to add the kernel the root filesystem.
+        # We parse the results of the first upload to get the glance ID of the
+        # kernel for use when uploading the root filesystem.
+        KERNEL_ID=""; RAMDISK_ID="";
+        if [ -n "$KERNEL" ]; then
+            KERNEL_ID=$(glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME-kernel" $IMG_PROPERTY --is-public True --container-format aki --disk-format aki < "$KERNEL" | grep ' id ' | get_field 2)
+        fi
+        if [ -n "$RAMDISK" ]; then
+            RAMDISK_ID=$(glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME-ramdisk" $IMG_PROPERTY --is-public True --container-format ari --disk-format ari < "$RAMDISK" | grep ' id ' | get_field 2)
+        fi
+        glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "${IMAGE_NAME%.img}" $IMG_PROPERTY --is-public True --container-format ami --disk-format ami ${KERNEL_ID:+--property kernel_id=$KERNEL_ID} ${RAMDISK_ID:+--property ramdisk_id=$RAMDISK_ID} < "${IMAGE}"
+    fi
+}
+
+
+# Set the database backend to use
+# When called from stackrc/localrc DATABASE_BACKENDS has not been
+# initialized yet, just save the configuration selection and call back later
+# to validate it.
+#
+# ``$1`` - the name of the database backend to use (mysql, postgresql, ...)
+function use_database {
+    if [[ -z "$DATABASE_BACKENDS" ]]; then
+        # No backends registered means this is likely called from ``localrc``
+        # This is now deprecated usage
+        DATABASE_TYPE=$1
+        DEPRECATED_TEXT="$DEPRECATED_TEXT\nThe database backend needs to be properly set in ENABLED_SERVICES; use_database is deprecated localrc\n"
+    else
+        # This should no longer get called...here for posterity
+        use_exclusive_service DATABASE_BACKENDS DATABASE_TYPE $1
+    fi
+}
+
+
+# Wait for an HTTP server to start answering requests
+# wait_for_service timeout url
+function wait_for_service {
+    local timeout=$1
+    local url=$2
+    timeout $timeout sh -c "while ! curl --noproxy '*' -s $url >/dev/null; do sleep 1; done"
+}
+
+
+# ping check
+# Uses globals ``ENABLED_SERVICES``
+# ping_check from-net ip boot-timeout expected
+function ping_check {
+    if is_service_enabled neutron; then
+        _ping_check_neutron  "$1" $2 $3 $4
+        return
+    fi
+    _ping_check_novanet "$1" $2 $3 $4
+}
+
+# ping check for nova
+# Uses globals ``MULTI_HOST``, ``PRIVATE_NETWORK``
+function _ping_check_novanet {
+    local from_net=$1
+    local ip=$2
+    local boot_timeout=$3
+    local expected=${4:-"True"}
+    local check_command=""
+    MULTI_HOST=`trueorfalse False $MULTI_HOST`
+    if [[ "$MULTI_HOST" = "True" && "$from_net" = "$PRIVATE_NETWORK_NAME" ]]; then
+        return
+    fi
+    if [[ "$expected" = "True" ]]; then
+        check_command="while ! ping -c1 -w1 $ip; do sleep 1; done"
+    else
+        check_command="while ping -c1 -w1 $ip; do sleep 1; done"
+    fi
+    if ! timeout $boot_timeout sh -c "$check_command"; then
+        if [[ "$expected" = "True" ]]; then
+            die $LINENO "[Fail] Couldn't ping server"
+        else
+            die $LINENO "[Fail] Could ping server"
+        fi
+    fi
+}
+
+# Get ip of instance
+function get_instance_ip {
+    local vm_id=$1
+    local network_name=$2
+    local nova_result="$(nova show $vm_id)"
+    local ip=$(echo "$nova_result" | grep "$network_name" | get_field 2)
+    if [[ $ip = "" ]];then
+        echo "$nova_result"
+        die $LINENO "[Fail] Coudn't get ipaddress of VM"
+    fi
+    echo $ip
+}
+
+# ssh check
+
+# ssh_check net-name key-file floating-ip default-user active-timeout
+function ssh_check {
+    if is_service_enabled neutron; then
+        _ssh_check_neutron  "$1" $2 $3 $4 $5
+        return
+    fi
+    _ssh_check_novanet "$1" $2 $3 $4 $5
+}
+
+function _ssh_check_novanet {
+    local NET_NAME=$1
+    local KEY_FILE=$2
+    local FLOATING_IP=$3
+    local DEFAULT_INSTANCE_USER=$4
+    local ACTIVE_TIMEOUT=$5
+    local probe_cmd=""
+    if ! timeout $ACTIVE_TIMEOUT sh -c "while ! ssh -o StrictHostKeyChecking=no -i $KEY_FILE ${DEFAULT_INSTANCE_USER}@$FLOATING_IP echo success; do sleep 1; done"; then
+        die $LINENO "server didn't become ssh-able!"
+    fi
+}
+
+
+# Get the location of the $module-rootwrap executables, where module is cinder
+# or nova.
+# get_rootwrap_location module
+function get_rootwrap_location {
+    local module=$1
+
+    echo "$(get_python_exec_prefix)/$module-rootwrap"
+}
+
+
+# Path permissions sanity check
+# check_path_perm_sanity path
+function check_path_perm_sanity {
+    # Ensure no element of the path has 0700 permissions, which is very
+    # likely to cause issues for daemons.  Inspired by default 0700
+    # homedir permissions on RHEL and common practice of making DEST in
+    # the stack user's homedir.
+
+    local real_path=$(readlink -f $1)
+    local rebuilt_path=""
+    for i in $(echo ${real_path} | tr "/" " "); do
+        rebuilt_path=$rebuilt_path"/"$i
+
+        if [[ $(stat -c '%a' ${rebuilt_path}) = 700 ]]; then
+            echo "*** DEST path element"
+            echo "***    ${rebuilt_path}"
+            echo "*** appears to have 0700 permissions."
+            echo "*** This is very likely to cause fatal issues for devstack daemons."
+
+            if [[ -n "$SKIP_PATH_SANITY" ]]; then
+                return
+            else
+                echo "*** Set SKIP_PATH_SANITY to skip this check"
+                die $LINENO "Invalid path permissions"
+            fi
+        fi
+    done
+}
+
+
+# This function recursively compares versions, and is not meant to be
+# called by anything other than vercmp_numbers below. This function does
+# not work with alphabetic versions.
+#
+# _vercmp_r sep ver1 ver2
+function _vercmp_r {
+    typeset sep
+    typeset -a ver1=() ver2=()
+    sep=$1; shift
+    ver1=("${@:1:sep}")
+    ver2=("${@:sep+1}")
+
+    if ((ver1 > ver2)); then
+        echo 1; return 0
+    elif ((ver2 > ver1)); then
+        echo -1; return 0
+    fi
+
+    if ((sep <= 1)); then
+        echo 0; return 0
+    fi
+
+    _vercmp_r $((sep-1)) "${ver1[@]:1}" "${ver2[@]:1}"
+}
+
+
+# This function compares two versions and is meant to be called by
+# external callers. Please note the function assumes non-alphabetic
+# versions. For example, this will work:
+#
+#   vercmp_numbers 1.10 1.4
+#
+# The above will return "1", as 1.10 is greater than 1.4.
+#
+#   vercmp_numbers 5.2 6.4
+#
+# The above will return "-1", as 5.2 is less than 6.4.
+#
+#   vercmp_numbers 4.0 4.0
+#
+# The above will return "0", as the versions are equal.
+#
+# vercmp_numbers ver1 ver2
+function vercmp_numbers {
+    typeset v1=$1 v2=$2 sep
+    typeset -a ver1 ver2
+
+    IFS=. read -ra ver1 <<< "$v1"
+    IFS=. read -ra ver2 <<< "$v2"
+
+    _vercmp_r "${#ver1[@]}" "${ver1[@]}" "${ver2[@]}"
+}
+
+
+# This function sets log formatting options for colorizing log
+# output to stdout. It is meant to be called by lib modules.
+# The last two parameters are optional and can be used to specify
+# non-default value for project and user format variables.
+# Defaults are respectively 'project_name' and 'user_name'
+#
+# setup_colorized_logging something.conf SOMESECTION
+function setup_colorized_logging {
+    local conf_file=$1
+    local conf_section=$2
+    local project_var=${3:-"project_name"}
+    local user_var=${4:-"user_name"}
+    # Add color to logging output
+    iniset $conf_file $conf_section logging_context_format_string "%(asctime)s.%(msecs)03d %(color)s%(levelname)s %(name)s [[01;36m%(request_id)s [00;36m%("$user_var")s %("$project_var")s%(color)s] [01;35m%(instance)s%(color)s%(message)s[00m"
+    iniset $conf_file $conf_section logging_default_format_string "%(asctime)s.%(msecs)03d %(color)s%(levelname)s %(name)s [[00;36m-%(color)s] [01;35m%(instance)s%(color)s%(message)s[00m"
+    iniset $conf_file $conf_section logging_debug_format_suffix "[00;33mfrom (pid=%(process)d) %(funcName)s %(pathname)s:%(lineno)d[00m"
+    iniset $conf_file $conf_section logging_exception_prefix "%(color)s%(asctime)s.%(msecs)03d TRACE %(name)s [01;35m%(instance)s[00m"
+}
+
+
+# Restore xtrace
+$XTRACE
+
+# Local variables:
+# mode: shell-script
+# End:

@@ -1,0 +1,104 @@
+sessionname stack
+hardstatus alwayslastline '%{= .} %-Lw%{= .}%> %n%f %t*%{= .}%+Lw%< %-=%{g}(%{d}%H/%l%{g})'
+setenv PROMPT_COMMAND /bin/true
+screen -t shell bash
+screen -t key bash
+stuff "/opt/stack/keystone/bin/keystone-all --config-file /etc/keystone/keystone.conf --debug"
+logfile /opt/stack/logs/screen-key.2014-10-20-144548.log
+log on
+screen -t horizon bash
+stuff "sudo tail -f /var/log/apache2/horizon_error.log"
+logfile /opt/stack/logs/screen-horizon.2014-10-20-144548.log
+log on
+screen -t g-reg bash
+stuff "/usr/local/bin/glance-registry --config-file=/etc/glance/glance-registry.conf"
+logfile /opt/stack/logs/screen-g-reg.2014-10-20-144548.log
+log on
+screen -t g-api bash
+stuff "/usr/local/bin/glance-api --config-file=/etc/glance/glance-api.conf"
+logfile /opt/stack/logs/screen-g-api.2014-10-20-144548.log
+log on
+screen -t n-api bash
+stuff "/usr/local/bin/nova-api"
+logfile /opt/stack/logs/screen-n-api.2014-10-20-144548.log
+log on
+screen -t q-svc bash
+stuff "python /usr/local/bin/neutron-server --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini"
+logfile /opt/stack/logs/screen-q-svc.2014-10-20-144548.log
+log on
+screen -t q-agt bash
+stuff "python /usr/local/bin/neutron-openvswitch-agent --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini"
+logfile /opt/stack/logs/screen-q-agt.2014-10-20-144548.log
+log on
+screen -t q-dhcp bash
+stuff "python /usr/local/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini"
+logfile /opt/stack/logs/screen-q-dhcp.2014-10-20-144548.log
+log on
+screen -t q-l3 bash
+stuff "python /usr/local/bin/neutron-l3-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/l3_agent.ini"
+logfile /opt/stack/logs/screen-q-l3.2014-10-20-144548.log
+log on
+screen -t q-meta bash
+stuff "python /usr/local/bin/neutron-metadata-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/metadata_agent.ini"
+logfile /opt/stack/logs/screen-q-meta.2014-10-20-144548.log
+log on
+screen -t n-cpu bash
+stuff "/usr/local/bin/nova-compute --config-file /etc/nova/nova.conf"
+logfile /opt/stack/logs/screen-n-cpu.2014-10-20-144548.log
+log on
+screen -t n-cond bash
+stuff "/usr/local/bin/nova-conductor --config-file /etc/nova/nova.conf"
+logfile /opt/stack/logs/screen-n-cond.2014-10-20-144548.log
+log on
+screen -t n-crt bash
+stuff "/usr/local/bin/nova-cert --config-file /etc/nova/nova.conf"
+logfile /opt/stack/logs/screen-n-crt.2014-10-20-144548.log
+log on
+screen -t n-sch bash
+stuff "/usr/local/bin/nova-scheduler --config-file /etc/nova/nova.conf"
+logfile /opt/stack/logs/screen-n-sch.2014-10-20-144548.log
+log on
+screen -t n-novnc bash
+stuff "/usr/local/bin/nova-novncproxy --config-file /etc/nova/nova.conf --web /opt/stack/noVNC"
+logfile /opt/stack/logs/screen-n-novnc.2014-10-20-144548.log
+log on
+screen -t n-xvnc bash
+stuff "/usr/local/bin/nova-xvpvncproxy --config-file /etc/nova/nova.conf"
+logfile /opt/stack/logs/screen-n-xvnc.2014-10-20-144548.log
+log on
+screen -t n-cauth bash
+stuff "/usr/local/bin/nova-consoleauth --config-file /etc/nova/nova.conf"
+logfile /opt/stack/logs/screen-n-cauth.2014-10-20-144548.log
+log on
+screen -t n-obj bash
+stuff "/usr/local/bin/nova-objectstore --config-file /etc/nova/nova.conf"
+logfile /opt/stack/logs/screen-n-obj.2014-10-20-144548.log
+log on
+screen -t c-api bash
+stuff "/opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf"
+logfile /opt/stack/logs/screen-c-api.2014-10-20-144548.log
+log on
+screen -t c-sch bash
+stuff "/opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf"
+logfile /opt/stack/logs/screen-c-sch.2014-10-20-144548.log
+log on
+screen -t c-vol bash
+stuff "/opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf"
+logfile /opt/stack/logs/screen-c-vol.2014-10-20-144548.log
+log on
+screen -t h-eng bash
+stuff "/opt/stack/heat/bin/heat-engine --config-file=/etc/heat/heat.conf"
+logfile /opt/stack/logs/screen-h-eng.2014-10-20-144548.log
+log on
+screen -t h-api bash
+stuff "/opt/stack/heat/bin/heat-api --config-file=/etc/heat/heat.conf"
+logfile /opt/stack/logs/screen-h-api.2014-10-20-144548.log
+log on
+screen -t h-api-cfn bash
+stuff "/opt/stack/heat/bin/heat-api-cfn --config-file=/etc/heat/heat.conf"
+logfile /opt/stack/logs/screen-h-api-cfn.2014-10-20-144548.log
+log on
+screen -t h-api-cw bash
+stuff "/opt/stack/heat/bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf"
+logfile /opt/stack/logs/screen-h-api-cw.2014-10-20-144548.log
+log on

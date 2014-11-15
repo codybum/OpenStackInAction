@@ -1,0 +1,22 @@
+Metadata-Version: 1.1
+Name: python-neutronclient
+Version: 2.3.10.dev31.gf8e2e42
+Summary: CLI and Client Library for OpenStack Networking
+Home-page: http://www.openstack.org/
+Author: OpenStack Networking Project
+Author-email: openstack-dev@lists.openstack.org
+License: UNKNOWN
+Description: This is the client API library for Neutron.
+        
+        
+Platform: UNKNOWN
+Classifier: Environment :: OpenStack
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Information Technology
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 2.6

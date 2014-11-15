@@ -1,0 +1,177 @@
+# lib/horizon
+# Functions to control the configuration and operation of the horizon service
+
+# Dependencies:
+#
+# - ``functions`` file
+# - ``apache`` file
+# - ``SERVICE_{TENANT_NAME|PASSWORD}`` must be defined
+
+# ``stack.sh`` calls the entry points in this order:
+#
+# - install_horizon
+# - configure_horizon
+# - init_horizon
+# - start_horizon
+# - stop_horizon
+# - cleanup_horizon
+
+# Save trace setting
+XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+
+# Defaults
+# --------
+
+# Set up default directories
+HORIZON_DIR=$DEST/horizon
+HORIZONAUTH_DIR=$DEST/django_openstack_auth
+
+# local_settings.py is used to customize Dashboard settings.
+# The example file in Horizon repo is used by default.
+HORIZON_SETTINGS=${HORIZON_SETTINGS:-$HORIZON_DIR/openstack_dashboard/local/local_settings.py.example}
+
+# Tell Tempest this project is present
+TEMPEST_SERVICES+=,horizon
+
+
+# Functions
+# ---------
+
+# utility method of setting python option
+function _horizon_config_set {
+    local file=$1
+    local section=$2
+    local option=$3
+    local value=$4
+
+    if grep -q "^$section" $file; then
+        line=$(sed -ne "/^$section/,/^}/ { /^ *'$option':/ p; }" $file)
+        if [ -n "$line" ]; then
+            sed -i -e "/^$section/,/^}/ s/^\( *'$option'\) *:.*$/\1: $value,/" $file
+        else
+            sed -i -e "/^$section/a\    '$option': $value," $file
+        fi
+    else
+        echo -e "\n\n$section = {\n    '$option': $value,\n}" >> $file
+    fi
+}
+
+
+
+# Entry Points
+# ------------
+
+# cleanup_horizon() - Remove residual data files, anything left over from previous
+# runs that a clean run would need to clean up
+function cleanup_horizon {
+    if [[ is_fedora && $DISTRO =~ (rhel6) ]]; then
+        # If ``/usr/bin/node`` points into ``$DEST``
+        # we installed it via ``install_nodejs``
+        if [[ $(readlink -f /usr/bin/node) =~ ($DEST) ]]; then
+            sudo rm /usr/bin/node
+        fi
+    fi
+}
+
+# configure_horizon() - Set config files, create data dirs, etc
+function configure_horizon {
+    setup_develop $HORIZON_DIR
+}
+
+# init_horizon() - Initialize databases, etc.
+function init_horizon {
+    # ``local_settings.py`` is used to override horizon default settings.
+    local_settings=$HORIZON_DIR/openstack_dashboard/local/local_settings.py
+    cp $HORIZON_SETTINGS $local_settings
+
+    if is_service_enabled neutron; then
+        _horizon_config_set $local_settings OPENSTACK_NEUTRON_NETWORK enable_security_group $Q_USE_SECGROUP
+    fi
+    # enable loadbalancer dashboard in case service is enabled
+    if is_service_enabled q-lbaas; then
+        _horizon_config_set $local_settings OPENSTACK_NEUTRON_NETWORK enable_lb True
+    fi
+
+    # enable firewall dashboard in case service is enabled
+    if is_service_enabled q-fwaas; then
+        _horizon_config_set $local_settings OPENSTACK_NEUTRON_NETWORK enable_firewall True
+    fi
+
+    # enable VPN dashboard in case service is enabled
+    if is_service_enabled q-vpn; then
+        _horizon_config_set $local_settings OPENSTACK_NEUTRON_NETWORK enable_vpn True
+    fi
+
+    # Create an empty directory that apache uses as docroot
+    sudo mkdir -p $HORIZON_DIR/.blackhole
+
+    # Apache 2.4 uses mod_authz_host for access control now (instead of "Allow")
+    HORIZON_REQUIRE=''
+    if check_apache_version "2.4" ; then
+        HORIZON_REQUIRE='Require all granted'
+    fi
+
+    local horizon_conf=/etc/$APACHE_NAME/$APACHE_CONF_DIR/horizon.conf
+    if is_ubuntu; then
+        disable_apache_site 000-default
+        sudo touch $horizon_conf
+        enable_apache_site horizon.conf
+    elif is_fedora; then
+        sudo sed '/^Listen/s/^.*$/Listen 0.0.0.0:80/' -i /etc/httpd/conf/httpd.conf
+    elif is_suse; then
+        : # nothing to do
+    else
+        exit_distro_not_supported "horizon apache configuration"
+    fi
+
+    # Remove old log files that could mess with how devstack detects whether Horizon
+    # has been successfully started (see start_horizon() and functions::screen_it())
+    # and run_process
+    sudo rm -f /var/log/$APACHE_NAME/horizon_*
+
+    # Configure apache to run horizon
+    sudo sh -c "sed -e \"
+        s,%USER%,$APACHE_USER,g;
+        s,%GROUP%,$APACHE_GROUP,g;
+        s,%HORIZON_DIR%,$HORIZON_DIR,g;
+        s,%APACHE_NAME%,$APACHE_NAME,g;
+        s,%DEST%,$DEST,g;
+        s,%HORIZON_REQUIRE%,$HORIZON_REQUIRE,g;
+    \" $FILES/apache-horizon.template >$horizon_conf"
+}
+
+# install_django_openstack_auth() - Collect source and prepare
+function install_django_openstack_auth {
+    git_clone $HORIZONAUTH_REPO $HORIZONAUTH_DIR $HORIZONAUTH_BRANCH
+    setup_install $HORIZONAUTH_DIR
+}
+
+# install_horizon() - Collect source and prepare
+function install_horizon {
+    # Apache installation, because we mark it NOPRIME
+    install_apache_wsgi
+
+    git_clone $HORIZON_REPO $HORIZON_DIR $HORIZON_BRANCH $HORIZON_TAG
+}
+
+# start_horizon() - Start running processes, including screen
+function start_horizon {
+    restart_apache_server
+    tail_log horizon /var/log/$APACHE_NAME/horizon_error.log
+}
+
+# stop_horizon() - Stop running processes (non-screen)
+function stop_horizon {
+    stop_apache_server
+}
+
+
+# Restore xtrace
+$XTRACE
+
+# Tell emacs to use shell-script-mode
+## Local variables:
+## mode: shell-script
+## End:

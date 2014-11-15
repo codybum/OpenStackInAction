@@ -1,0 +1,548 @@
+# lib/ironic
+# Functions to control the configuration and operation of the **Ironic** service
+
+# Dependencies:
+#
+# - ``functions`` file
+# - ``DEST``, ``DATA_DIR``, ``STACK_USER`` must be defined
+# - ``SERVICE_{TENANT_NAME|PASSWORD}`` must be defined
+# - ``SERVICE_HOST``
+# - ``KEYSTONE_TOKEN_FORMAT`` must be defined
+
+# ``stack.sh`` calls the entry points in this order:
+#
+# - install_ironic
+# - install_ironicclient
+# - init_ironic
+# - start_ironic
+# - stop_ironic
+# - cleanup_ironic
+
+# Save trace and pipefail settings
+XTRACE=$(set +o | grep xtrace)
+PIPEFAIL=$(set +o | grep pipefail)
+set +o xtrace
+set +o pipefail
+
+# Defaults
+# --------
+
+# Set up default directories
+IRONIC_DIR=$DEST/ironic
+IRONIC_DATA_DIR=$DATA_DIR/ironic
+IRONIC_STATE_PATH=/var/lib/ironic
+IRONICCLIENT_DIR=$DEST/python-ironicclient
+IRONIC_AUTH_CACHE_DIR=${IRONIC_AUTH_CACHE_DIR:-/var/cache/ironic}
+IRONIC_CONF_DIR=${IRONIC_CONF_DIR:-/etc/ironic}
+IRONIC_CONF_FILE=$IRONIC_CONF_DIR/ironic.conf
+IRONIC_ROOTWRAP_CONF=$IRONIC_CONF_DIR/rootwrap.conf
+IRONIC_POLICY_JSON=$IRONIC_CONF_DIR/policy.json
+
+# Set up defaults for functional / integration testing
+IRONIC_SCRIPTS_DIR=${IRONIC_SCRIPTS_DIR:-$TOP_DIR/tools/ironic/scripts}
+IRONIC_TEMPLATES_DIR=${IRONIC_TEMPLATES_DIR:-$TOP_DIR/tools/ironic/templates}
+IRONIC_BAREMETAL_BASIC_OPS=$(trueorfalse False $IRONIC_BAREMETAL_BASIC_OPS)
+IRONIC_DRIVERS_WHITELIST=${IRONIC_DRIVERS_WHITELIST:-fake,pxe_ssh}
+IRONIC_SSH_USERNAME=${IRONIC_SSH_USERNAME:-`whoami`}
+IRONIC_SSH_KEY_DIR=${IRONIC_SSH_KEY_DIR:-$IRONIC_DATA_DIR/ssh_keys}
+IRONIC_SSH_KEY_FILENAME=${IRONIC_SSH_KEY_FILENAME:-ironic_key}
+IRONIC_KEY_FILE=$IRONIC_SSH_KEY_DIR/$IRONIC_SSH_KEY_FILENAME
+IRONIC_SSH_VIRT_TYPE=${IRONIC_SSH_VIRT_TYPE:-virsh}
+IRONIC_TFTPBOOT_DIR=${IRONIC_TFTPBOOT_DIR:-$IRONIC_DATA_DIR/tftpboot}
+IRONIC_VM_SSH_PORT=${IRONIC_VM_SSH_PORT:-22}
+IRONIC_VM_SSH_ADDRESS=${IRONIC_VM_SSH_ADDRESS:-$HOST_IP}
+IRONIC_VM_COUNT=${IRONIC_VM_COUNT:-1}
+IRONIC_VM_SPECS_CPU=${IRONIC_VM_SPECS_CPU:-1}
+# NOTE(adam_g): Kernels 3.12 and newer user tmpfs by default for initramfs.
+#               DIB produced ramdisks tend to be ~250MB but tmpfs will only allow
+#               use of 50% of available memory before ENOSPC.  Set minimum 1GB
+#               for nodes to avoid (LP: #1311987) and ensure consistency across
+#               older and newer kernels.
+IRONIC_VM_SPECS_RAM=${IRONIC_VM_SPECS_RAM:-1024}
+IRONIC_VM_SPECS_DISK=${IRONIC_VM_SPECS_DISK:-10}
+IRONIC_VM_EMULATOR=${IRONIC_VM_EMULATOR:-/usr/bin/qemu-system-x86_64}
+IRONIC_VM_NETWORK_BRIDGE=${IRONIC_VM_NETWORK_BRIDGE:-brbm}
+IRONIC_VM_NETWORK_RANGE=${IRONIC_VM_NETWORK_RANGE:-192.0.2.0/24}
+IRONIC_VM_MACS_CSV_FILE=${IRONIC_VM_MACS_CSV_FILE:-$IRONIC_DATA_DIR/ironic_macs.csv}
+IRONIC_AUTHORIZED_KEYS_FILE=${IRONIC_AUTHORIZED_KEYS_FILE:-$HOME/.ssh/authorized_keys}
+
+DIB_DIR=${DIB_DIR:-$DEST/diskimage-builder}
+
+# Use DIB to create deploy ramdisk and kernel.
+IRONIC_BUILD_DEPLOY_RAMDISK=`trueorfalse True $IRONIC_BUILD_DEPLOY_RAMDISK`
+# If not use DIB, these files are used as deploy ramdisk/kernel.
+# (The value must be a absolute path)
+IRONIC_DEPLOY_RAMDISK=${IRONIC_DEPLOY_RAMDISK:-}
+IRONIC_DEPLOY_KERNEL=${IRONIC_DEPLOY_KERNEL:-}
+IRONIC_DEPLOY_ELEMENT=${IRONIC_DEPLOY_ELEMENT:-deploy-ironic}
+
+#TODO(agordeev): replace 'ubuntu' with host distro name getting
+IRONIC_DEPLOY_FLAVOR=${IRONIC_DEPLOY_FLAVOR:-ubuntu $IRONIC_DEPLOY_ELEMENT}
+
+# Support entry points installation of console scripts
+IRONIC_BIN_DIR=$(get_python_exec_prefix)
+
+# Ironic connection info.  Note the port must be specified.
+IRONIC_SERVICE_PROTOCOL=http
+IRONIC_HOSTPORT=${IRONIC_HOSTPORT:-$SERVICE_HOST:6385}
+
+# Tell Tempest this project is present
+TEMPEST_SERVICES+=,ironic
+
+
+# Functions
+# ---------
+
+# Test if any Ironic services are enabled
+# is_ironic_enabled
+function is_ironic_enabled {
+    [[ ,${ENABLED_SERVICES} =~ ,"ir-" ]] && return 0
+    return 1
+}
+
+# install_ironic() - Collect source and prepare
+function install_ironic {
+    git_clone $IRONIC_REPO $IRONIC_DIR $IRONIC_BRANCH
+    setup_develop $IRONIC_DIR
+}
+
+# install_ironicclient() - Collect sources and prepare
+function install_ironicclient {
+    git_clone $IRONICCLIENT_REPO $IRONICCLIENT_DIR $IRONICCLIENT_BRANCH
+    setup_develop $IRONICCLIENT_DIR
+}
+
+# cleanup_ironic() - Remove residual data files, anything left over from previous
+# runs that would need to clean up.
+function cleanup_ironic {
+    sudo rm -rf $IRONIC_AUTH_CACHE_DIR
+}
+
+# configure_ironic() - Set config files, create data dirs, etc
+function configure_ironic {
+    if [[ ! -d $IRONIC_CONF_DIR ]]; then
+        sudo mkdir -p $IRONIC_CONF_DIR
+    fi
+    sudo chown $STACK_USER $IRONIC_CONF_DIR
+
+    # Copy over ironic configuration file and configure common parameters.
+    cp $IRONIC_DIR/etc/ironic/ironic.conf.sample $IRONIC_CONF_FILE
+    iniset $IRONIC_CONF_FILE DEFAULT debug True
+    inicomment $IRONIC_CONF_FILE DEFAULT log_file
+    iniset $IRONIC_CONF_FILE DEFAULT sql_connection `database_connection_url ironic`
+    iniset $IRONIC_CONF_FILE DEFAULT state_path $IRONIC_STATE_PATH
+    iniset $IRONIC_CONF_FILE DEFAULT use_syslog $SYSLOG
+    # Configure Ironic conductor, if it was enabled.
+    if is_service_enabled ir-cond; then
+        configure_ironic_conductor
+    fi
+
+    # Configure Ironic API, if it was enabled.
+    if is_service_enabled ir-api; then
+        configure_ironic_api
+    fi
+
+    if [[ "$IRONIC_BAREMETAL_BASIC_OPS" == "True" ]]; then
+        configure_ironic_auxiliary
+    fi
+}
+
+# configure_ironic_api() - Is used by configure_ironic(). Performs
+# API specific configuration.
+function configure_ironic_api {
+    iniset $IRONIC_CONF_FILE DEFAULT auth_strategy keystone
+    iniset $IRONIC_CONF_FILE DEFAULT policy_file $IRONIC_POLICY_JSON
+    iniset $IRONIC_CONF_FILE keystone_authtoken auth_host $KEYSTONE_AUTH_HOST
+    iniset $IRONIC_CONF_FILE keystone_authtoken auth_port $KEYSTONE_AUTH_PORT
+    iniset $IRONIC_CONF_FILE keystone_authtoken auth_protocol $KEYSTONE_AUTH_PROTOCOL
+    iniset $IRONIC_CONF_FILE keystone_authtoken cafile $KEYSTONE_SSL_CA
+    iniset $IRONIC_CONF_FILE keystone_authtoken auth_uri $KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:$KEYSTONE_SERVICE_PORT/
+    iniset $IRONIC_CONF_FILE keystone_authtoken admin_tenant_name $SERVICE_TENANT_NAME
+    iniset $IRONIC_CONF_FILE keystone_authtoken admin_user ironic
+    iniset $IRONIC_CONF_FILE keystone_authtoken admin_password $SERVICE_PASSWORD
+    iniset_rpc_backend ironic $IRONIC_CONF_FILE DEFAULT
+    iniset $IRONIC_CONF_FILE keystone_authtoken signing_dir $IRONIC_AUTH_CACHE_DIR/api
+
+    cp -p $IRONIC_DIR/etc/ironic/policy.json $IRONIC_POLICY_JSON
+}
+
+# configure_ironic_conductor() - Is used by configure_ironic().
+# Sets conductor specific settings.
+function configure_ironic_conductor {
+    cp $IRONIC_DIR/etc/ironic/rootwrap.conf $IRONIC_ROOTWRAP_CONF
+    cp -r $IRONIC_DIR/etc/ironic/rootwrap.d $IRONIC_CONF_DIR
+    IRONIC_ROOTWRAP=$(get_rootwrap_location ironic)
+    ROOTWRAP_ISUDOER_CMD="$IRONIC_ROOTWRAP $IRONIC_CONF_DIR/rootwrap.conf *"
+
+    # Set up the rootwrap sudoers for ironic
+    TEMPFILE=`mktemp`
+    echo "$STACK_USER ALL=(root) NOPASSWD: $ROOTWRAP_ISUDOER_CMD" >$TEMPFILE
+    chmod 0440 $TEMPFILE
+    sudo chown root:root $TEMPFILE
+    sudo mv $TEMPFILE /etc/sudoers.d/ironic-rootwrap
+
+    iniset $IRONIC_CONF_FILE DEFAULT rootwrap_config $IRONIC_ROOTWRAP_CONF
+    iniset $IRONIC_CONF_FILE DEFAULT drivers_whitelist $IRONIC_DRIVERS_WHITELIST
+    iniset $IRONIC_CONF_FILE conductor api_url http://$HOST_IP:6385
+    iniset $IRONIC_CONF_FILE pxe tftp_server $HOST_IP
+    iniset $IRONIC_CONF_FILE pxe tftp_root $IRONIC_TFTPBOOT_DIR
+    iniset $IRONIC_CONF_FILE pxe tftp_master_path $IRONIC_TFTPBOOT_DIR/master_images
+}
+
+# create_ironic_cache_dir() - Part of the init_ironic() process
+function create_ironic_cache_dir {
+    # Create cache dir
+    sudo mkdir -p $IRONIC_AUTH_CACHE_DIR/api
+    sudo chown $STACK_USER $IRONIC_AUTH_CACHE_DIR/api
+    rm -f $IRONIC_AUTH_CACHE_DIR/api/*
+    sudo mkdir -p $IRONIC_AUTH_CACHE_DIR/registry
+    sudo chown $STACK_USER $IRONIC_AUTH_CACHE_DIR/registry
+    rm -f $IRONIC_AUTH_CACHE_DIR/registry/*
+}
+
+# create_ironic_accounts() - Set up common required ironic accounts
+
+# Tenant               User       Roles
+# ------------------------------------------------------------------
+# service              ironic     admin        # if enabled
+function create_ironic_accounts {
+
+    SERVICE_TENANT=$(openstack project list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
+    ADMIN_ROLE=$(openstack role list | awk "/ admin / { print \$2 }")
+
+    # Ironic
+    if [[ "$ENABLED_SERVICES" =~ "ir-api" ]]; then
+        IRONIC_USER=$(openstack user create \
+            ironic \
+            --password "$SERVICE_PASSWORD" \
+            --project $SERVICE_TENANT \
+            --email ironic@example.com \
+            | grep " id " | get_field 2)
+        openstack role add \
+            $ADMIN_ROLE \
+            --project $SERVICE_TENANT \
+            --user $IRONIC_USER
+        if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
+            IRONIC_SERVICE=$(openstack service create \
+                ironic \
+                --type=baremetal \
+                --description="Ironic baremetal provisioning service" \
+                | grep " id " | get_field 2)
+            openstack endpoint create \
+                $IRONIC_SERVICE \
+                --region RegionOne \
+                --publicurl "$IRONIC_SERVICE_PROTOCOL://$IRONIC_HOSTPORT" \
+                --adminurl "$IRONIC_SERVICE_PROTOCOL://$IRONIC_HOSTPORT" \
+                --internalurl "$IRONIC_SERVICE_PROTOCOL://$IRONIC_HOSTPORT"
+        fi
+    fi
+}
+
+
+# init_ironic() - Initialize databases, etc.
+function init_ironic {
+    # (Re)create  ironic database
+    recreate_database ironic utf8
+
+    # Migrate ironic database
+    $IRONIC_BIN_DIR/ironic-dbsync
+
+    create_ironic_cache_dir
+}
+
+# start_ironic() - Start running processes, including screen
+function start_ironic {
+    # Start Ironic API server, if enabled.
+    if is_service_enabled ir-api; then
+        start_ironic_api
+    fi
+
+    # Start Ironic conductor, if enabled.
+    if is_service_enabled ir-cond; then
+        start_ironic_conductor
+    fi
+}
+
+# start_ironic_api() - Used by start_ironic().
+# Starts Ironic API server.
+function start_ironic_api {
+    run_process ir-api "$IRONIC_BIN_DIR/ironic-api --config-file=$IRONIC_CONF_FILE"
+    echo "Waiting for ir-api ($IRONIC_HOSTPORT) to start..."
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- http://$IRONIC_HOSTPORT; do sleep 1; done"; then
+        die $LINENO "ir-api did not start"
+    fi
+}
+
+# start_ironic_conductor() - Used by start_ironic().
+# Starts Ironic conductor.
+function start_ironic_conductor {
+    run_process ir-cond "$IRONIC_BIN_DIR/ironic-conductor --config-file=$IRONIC_CONF_FILE"
+    # TODO(romcheg): Find a way to check whether the conductor has started.
+}
+
+# stop_ironic() - Stop running processes
+function stop_ironic {
+    # Kill the Ironic screen windows
+    screen -S $SCREEN_NAME -p ir-api -X kill
+    screen -S $SCREEN_NAME -p ir-cond -X kill
+}
+
+function is_ironic {
+    if ( is_service_enabled ir-cond && is_service_enabled ir-api ); then
+        return 0
+    fi
+    return 1
+}
+
+function configure_ironic_dirs {
+    sudo mkdir -p $IRONIC_DATA_DIR
+    sudo mkdir -p $IRONIC_STATE_PATH
+    sudo mkdir -p $IRONIC_TFTPBOOT_DIR
+    sudo chown -R $STACK_USER $IRONIC_DATA_DIR $IRONIC_STATE_PATH
+    sudo chown -R $STACK_USER:$LIBVIRT_GROUP $IRONIC_TFTPBOOT_DIR
+    if is_ubuntu; then
+        PXEBIN=/usr/lib/syslinux/pxelinux.0
+    elif is_fedora; then
+        PXEBIN=/usr/share/syslinux/pxelinux.0
+    fi
+    if [ ! -f $PXEBIN ]; then
+        die $LINENO "pxelinux.0 (from SYSLINUX) not found."
+    fi
+
+    cp $PXEBIN $IRONIC_TFTPBOOT_DIR
+    mkdir -p $IRONIC_TFTPBOOT_DIR/pxelinux.cfg
+}
+
+function create_bridge_and_vms {
+    # Call libvirt setup scripts in a new shell to ensure any new group membership
+    sudo su $STACK_USER -c "$IRONIC_SCRIPTS_DIR/setup-network"
+    sudo su $STACK_USER -c "$IRONIC_SCRIPTS_DIR/create-nodes \
+        $IRONIC_VM_SPECS_CPU $IRONIC_VM_SPECS_RAM $IRONIC_VM_SPECS_DISK \
+        amd64 $IRONIC_VM_COUNT $IRONIC_VM_NETWORK_BRIDGE $IRONIC_VM_EMULATOR" >> $IRONIC_VM_MACS_CSV_FILE
+}
+
+function enroll_vms {
+
+    CHASSIS_ID=$(ironic chassis-create -d "ironic test chassis" | grep " uuid " | get_field 2)
+    IRONIC_NET_ID=$(neutron net-list | grep private | get_field 1)
+    local idx=0
+
+    # work around; need to know what netns neutron uses for private network.
+    # Without knowing how to interconnect the networks, PXE won't work properly
+    # for fake baremetal instances. The network should be configured prior all
+    # the instances operation. If we don't do this, the first port creation
+    # only happens in the middle of fake baremetal instance's spawning by nova,
+    # so we'll end up with unbootable fake baremetal VM due to broken PXE.
+    PORT_ID=$(neutron port-create private | grep " id " | get_field 2)
+
+    while read MAC; do
+
+        NODE_ID=$(ironic node-create --chassis_uuid $CHASSIS_ID --driver pxe_ssh \
+            -i ssh_virt_type=$IRONIC_SSH_VIRT_TYPE \
+            -i ssh_address=$IRONIC_VM_SSH_ADDRESS \
+            -i ssh_port=$IRONIC_VM_SSH_PORT \
+            -i ssh_username=$IRONIC_SSH_USERNAME \
+            -i ssh_key_filename=$IRONIC_SSH_KEY_DIR/$IRONIC_SSH_KEY_FILENAME \
+            -p cpus=$IRONIC_VM_SPECS_CPU \
+            -p memory_mb=$IRONIC_VM_SPECS_RAM \
+            -p local_gb=$IRONIC_VM_SPECS_DISK \
+            -p cpu_arch=x86_64 \
+            | grep " uuid " | get_field 2)
+
+        ironic port-create --address $MAC --node_uuid $NODE_ID
+
+        idx=$((idx+1))
+
+    done < $IRONIC_VM_MACS_CSV_FILE
+
+    # create the nova flavor
+    nova flavor-create baremetal auto $IRONIC_VM_SPECS_RAM $IRONIC_VM_SPECS_DISK $IRONIC_VM_SPECS_CPU
+    nova flavor-key baremetal set "cpu_arch"="x86_64" "baremetal:deploy_kernel_id"="$IRONIC_DEPLOY_KERNEL_ID" "baremetal:deploy_ramdisk_id"="$IRONIC_DEPLOY_RAMDISK_ID"
+
+    # intentional sleep to make sure the tag has been set to port
+    sleep 10
+    TAPDEV=$(sudo ip netns exec qdhcp-${IRONIC_NET_ID} ip link list | grep tap | cut -d':' -f2 | cut -b2-)
+    TAG_ID=$(sudo ovs-vsctl show |grep ${TAPDEV} -A1 -m1 | grep tag | cut -d':' -f2 | cut -b2-)
+
+    # make sure veth pair is not existing, otherwise delete its links
+    sudo ip link show ovs-tap1 && sudo ip link delete ovs-tap1
+    sudo ip link show brbm-tap1 && sudo ip link delete brbm-tap1
+    # create veth pair for future interconnection between br-int and brbm
+    sudo ip link add brbm-tap1 type veth peer name ovs-tap1
+    sudo ip link set dev brbm-tap1 up
+    sudo ip link set dev ovs-tap1 up
+
+    sudo ovs-vsctl -- --if-exists del-port ovs-tap1 -- add-port br-int ovs-tap1 tag=$TAG_ID
+    sudo ovs-vsctl -- --if-exists del-port brbm-tap1 -- add-port $IRONIC_VM_NETWORK_BRIDGE brbm-tap1
+
+    # Remove the port needed only for workaround. For additional info read the
+    # comment at the beginning of this function
+    neutron port-delete $PORT_ID
+}
+
+function configure_iptables {
+    # enable tftp natting for allowing connections to HOST_IP's tftp server
+    sudo modprobe nf_conntrack_tftp
+    sudo modprobe nf_nat_tftp
+    # nodes boot from TFTP and callback to the API server listening on $HOST_IP
+    sudo iptables -I INPUT -d $HOST_IP -p udp --dport 69 -j ACCEPT || true
+    sudo iptables -I INPUT -d $HOST_IP -p tcp --dport 6385 -j ACCEPT || true
+}
+
+function configure_tftpd {
+    if is_ubuntu; then
+        PXEBIN=/usr/lib/syslinux/pxelinux.0
+    elif is_fedora; then
+        PXEBIN=/usr/share/syslinux/pxelinux.0
+    fi
+    if [ ! -f $PXEBIN ]; then
+        die $LINENO "pxelinux.0 (from SYSLINUX) not found."
+    fi
+
+    # stop tftpd and setup serving via xinetd
+    stop_service tftpd-hpa || true
+    [ -f /etc/init/tftpd-hpa.conf ] && echo "manual" | sudo tee /etc/init/tftpd-hpa.override
+    sudo cp $IRONIC_TEMPLATES_DIR/tftpd-xinetd.template /etc/xinetd.d/tftp
+    sudo sed -e "s|%TFTPBOOT_DIR%|$IRONIC_TFTPBOOT_DIR|g" -i /etc/xinetd.d/tftp
+
+    # setup tftp file mapping to satisfy requests at the root (booting) and
+    # /tftpboot/ sub-dir (as per deploy-ironic elements)
+    echo "r ^([^/]) $IRONIC_TFTPBOOT_DIR/\1" >$IRONIC_TFTPBOOT_DIR/map-file
+    echo "r ^(/tftpboot/) $IRONIC_TFTPBOOT_DIR/\2" >>$IRONIC_TFTPBOOT_DIR/map-file
+
+    chmod -R 0755 $IRONIC_TFTPBOOT_DIR
+    restart_service xinetd
+}
+
+function configure_ironic_ssh_keypair {
+    # Generating ssh key pair for stack user
+    if [[ ! -d $IRONIC_SSH_KEY_DIR ]]; then
+        mkdir -p $IRONIC_SSH_KEY_DIR
+    fi
+    if [[ ! -d $HOME/.ssh ]]; then
+        mkdir -p $HOME/.ssh
+        chmod 700 $HOME/.ssh
+    fi
+    echo -e 'n\n' | ssh-keygen -q -t rsa -P '' -f $IRONIC_KEY_FILE
+    cat $IRONIC_KEY_FILE.pub | tee -a $IRONIC_AUTHORIZED_KEYS_FILE
+}
+
+function ironic_ssh_check {
+    local KEY_FILE=$1
+    local FLOATING_IP=$2
+    local PORT=$3
+    local DEFAULT_INSTANCE_USER=$4
+    local ACTIVE_TIMEOUT=$5
+    if ! timeout $ACTIVE_TIMEOUT sh -c "while ! ssh -p $PORT -o StrictHostKeyChecking=no -i $KEY_FILE ${DEFAULT_INSTANCE_USER}@$FLOATING_IP echo success; do sleep 1; done"; then
+        die $LINENO "server didn't become ssh-able!"
+    fi
+}
+
+function configure_ironic_auxiliary {
+    configure_ironic_dirs
+    configure_ironic_ssh_keypair
+    ironic_ssh_check $IRONIC_SSH_KEY_DIR/$IRONIC_SSH_KEY_FILENAME $IRONIC_VM_SSH_ADDRESS $IRONIC_VM_SSH_PORT $IRONIC_SSH_USERNAME 10
+}
+
+# build deploy kernel+ramdisk, then upload them to glance
+# this function sets IRONIC_DEPLOY_KERNEL_ID and IRONIC_DEPLOY_RAMDISK_ID
+function upload_baremetal_ironic_deploy {
+    token=$1
+
+    if [ -z "$IRONIC_DEPLOY_KERNEL" -o -z "$IRONIC_DEPLOY_RAMDISK" ]; then
+        IRONIC_DEPLOY_KERNEL_PATH=$TOP_DIR/files/ir-deploy.kernel
+        IRONIC_DEPLOY_RAMDISK_PATH=$TOP_DIR/files/ir-deploy.initramfs
+    else
+        IRONIC_DEPLOY_KERNEL_PATH=$IRONIC_DEPLOY_KERNEL
+        IRONIC_DEPLOY_RAMDISK_PATH=$IRONIC_DEPLOY_RAMDISK
+    fi
+
+    if [ ! -e "$IRONIC_DEPLOY_RAMDISK_PATH" -o ! -e "$IRONIC_DEPLOY_KERNEL_PATH" ]; then
+        # files don't exist, need to build them
+        if [ "$IRONIC_BUILD_DEPLOY_RAMDISK" = "True" ]; then
+            # we can build them only if we're not offline
+            if [ "$OFFLINE" != "True" ]; then
+                $DIB_DIR/bin/ramdisk-image-create $IRONIC_DEPLOY_FLAVOR \
+                    -o $TOP_DIR/files/ir-deploy
+            else
+                die $LINENO "Deploy kernel+ramdisk files don't exist and cannot be build in OFFLINE mode"
+            fi
+        else
+            die $LINENO "Deploy kernel+ramdisk files don't exist and their building was disabled explicitly by IRONIC_BUILD_DEPLOY_RAMDISK"
+        fi
+    fi
+
+    # load them into glance
+    IRONIC_DEPLOY_KERNEL_ID=$(glance \
+        --os-auth-token $token \
+        --os-image-url http://$GLANCE_HOSTPORT \
+        image-create \
+        --name $(basename $IRONIC_DEPLOY_KERNEL_PATH) \
+        --is-public True --disk-format=aki \
+        < $IRONIC_DEPLOY_KERNEL_PATH  | grep ' id ' | get_field 2)
+    IRONIC_DEPLOY_RAMDISK_ID=$(glance \
+        --os-auth-token $token \
+        --os-image-url http://$GLANCE_HOSTPORT \
+        image-create \
+        --name $(basename $IRONIC_DEPLOY_RAMDISK_PATH) \
+        --is-public True --disk-format=ari \
+        < $IRONIC_DEPLOY_RAMDISK_PATH  | grep ' id ' | get_field 2)
+}
+
+function prepare_baremetal_basic_ops {
+
+    # install diskimage-builder
+    git_clone $DIB_REPO $DIB_DIR $DIB_BRANCH
+
+    # make sure all needed service were enabled
+    for srv in nova glance key neutron; do
+        if ! is_service_enabled "$srv"; then
+            die $LINENO "$srv should be enabled for ironic tests"
+        fi
+    done
+
+    TOKEN=$(keystone token-get | grep ' id ' | get_field 2)
+    die_if_not_set $LINENO TOKEN "Keystone fail to get token"
+
+    echo_summary "Creating and uploading baremetal images for ironic"
+
+    # build and upload separate deploy kernel & ramdisk
+    upload_baremetal_ironic_deploy $TOKEN
+
+    create_bridge_and_vms
+    enroll_vms
+    configure_tftpd
+    configure_iptables
+
+    # restart nova-compute to ensure its resource tracking is up to
+    # date with newly enrolled nodes
+    stop_nova_compute || true
+    start_nova_compute
+}
+
+function cleanup_baremetal_basic_ops {
+    rm -f $IRONIC_VM_MACS_CSV_FILE
+    if [ -f $IRONIC_KEY_FILE ]; then
+        KEY=`cat $IRONIC_KEY_FILE.pub`
+        # remove public key from authorized_keys
+        grep -v "$KEY" $IRONIC_AUTHORIZED_KEYS_FILE > temp && mv temp $IRONIC_AUTHORIZED_KEYS_FILE
+        chmod 0600 $IRONIC_AUTHORIZED_KEYS_FILE
+    fi
+    sudo rm -rf $IRONIC_DATA_DIR $IRONIC_STATE_PATH
+    sudo su $STACK_USER -c "$IRONIC_SCRIPTS_DIR/cleanup-nodes $IRONIC_VM_COUNT $IRONIC_VM_NETWORK_BRIDGE"
+    sudo rm -rf /etc/xinetd.d/tftp /etc/init/tftpd-hpa.override
+    restart_service xinetd
+    sudo iptables -D INPUT -d $HOST_IP -p udp --dport 69 -j ACCEPT || true
+    sudo iptables -D INPUT -d $HOST_IP -p tcp --dport 6385 -j ACCEPT || true
+    sudo rmmod nf_conntrack_tftp || true
+    sudo rmmod nf_nat_tftp || true
+}
+
+# Restore xtrace + pipefail
+$XTRACE
+$PIPEFAIL
+
+# Tell emacs to use shell-script-mode
+## Local variables:
+## mode: shell-script
+## End:

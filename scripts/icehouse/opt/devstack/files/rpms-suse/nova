@@ -1,0 +1,51 @@
+curl
+dnsmasq
+dnsmasq-utils # dist:opensuse-12.3
+conntrack-tools
+ebtables
+gawk
+genisoimage # required for config_drive
+iptables
+iputils
+kpartx
+kvm # NOPRIME
+# qemu as fallback if kvm cannot be used
+qemu # NOPRIME
+libvirt # NOPRIME
+libvirt-python # NOPRIME
+mariadb # NOPRIME
+parted
+polkit
+python-M2Crypto
+python-m2crypto # dist:sle11sp2
+python-Paste
+python-PasteDeploy
+python-Routes
+python-SQLAlchemy
+python-Tempita
+python-boto
+python-cheetah
+python-eventlet
+python-feedparser
+python-greenlet
+python-iso8601
+python-kombu
+python-libxml2
+python-lockfile
+python-lxml # needed for glance which is needed for nova --- this shouldn't be here
+python-mox
+python-mysql
+python-numpy # needed by websockify for spice console
+python-paramiko
+python-sqlalchemy-migrate
+python-suds
+python-xattr # needed for glance which is needed for nova --- this shouldn't be here
+rabbitmq-server # NOPRIME
+socat
+sqlite3
+sudo
+vlan
+
+# FIXME: qpid is not part of openSUSE, those names are tentative
+python-qpid # NOPRIME
+qpidd # NOPRIME
