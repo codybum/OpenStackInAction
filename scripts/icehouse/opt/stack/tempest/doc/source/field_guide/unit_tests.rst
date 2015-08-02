@@ -1,1 +1,0 @@
-../../../tempest/tests/README.rst

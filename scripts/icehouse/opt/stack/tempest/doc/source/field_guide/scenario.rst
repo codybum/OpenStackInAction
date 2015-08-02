@@ -1,1 +1,0 @@
-../../../tempest/scenario/README.rst

@@ -1,0 +1,11 @@
+default: myopenstack
+
+environments:
+    myopenstack:
+    type: openstack
+    use-floating-ip: false
+    use-default-secgroup: true
+    network: "private"
+    region: "RegionOne"
+    auth-mode: userpass
+    default-series: precise
