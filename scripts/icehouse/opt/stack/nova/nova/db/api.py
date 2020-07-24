@@ -446,12 +446,12 @@ def migration_get_by_instance_and_status(context, instance_uuid, status):
 
 
 def migration_get_unconfirmed_by_dest_compute(context, confirm_window,
-        dest_compute, use_slave=False):
+        dest_compute, use_subordinate=False):
     """Finds all unconfirmed migrations within the confirmation window for
     a specific destination compute host.
     """
     return IMPL.migration_get_unconfirmed_by_dest_compute(context,
-            confirm_window, dest_compute, use_slave=use_slave)
+            confirm_window, dest_compute, use_subordinate=use_subordinate)
 
 
 def migration_get_in_progress_by_host_and_node(context, host, node):
@@ -588,10 +588,10 @@ def virtual_interface_get_by_uuid(context, vif_uuid):
     return IMPL.virtual_interface_get_by_uuid(context, vif_uuid)
 
 
-def virtual_interface_get_by_instance(context, instance_id, use_slave=False):
+def virtual_interface_get_by_instance(context, instance_id, use_subordinate=False):
     """Gets all virtual_interfaces for instance."""
     return IMPL.virtual_interface_get_by_instance(context, instance_id,
-                                                  use_slave=use_slave)
+                                                  use_subordinate=use_subordinate)
 
 
 def virtual_interface_get_by_instance_and_network(context, instance_id,
@@ -632,10 +632,10 @@ def instance_destroy(context, instance_uuid, constraint=None,
     return rv
 
 
-def instance_get_by_uuid(context, uuid, columns_to_join=None, use_slave=False):
+def instance_get_by_uuid(context, uuid, columns_to_join=None, use_subordinate=False):
     """Get an instance or raise if it does not exist."""
     return IMPL.instance_get_by_uuid(context, uuid,
-                                     columns_to_join, use_slave=use_slave)
+                                     columns_to_join, use_subordinate=use_subordinate)
 
 
 def instance_get(context, instance_id, columns_to_join=None):
@@ -651,13 +651,13 @@ def instance_get_all(context, columns_to_join=None):
 
 def instance_get_all_by_filters(context, filters, sort_key='created_at',
                                 sort_dir='desc', limit=None, marker=None,
-                                columns_to_join=None, use_slave=False):
+                                columns_to_join=None, use_subordinate=False):
     """Get all instances that match all filters."""
     return IMPL.instance_get_all_by_filters(context, filters, sort_key,
                                             sort_dir, limit=limit,
                                             marker=marker,
                                             columns_to_join=columns_to_join,
-                                            use_slave=use_slave)
+                                            use_subordinate=use_subordinate)
 
 
 def instance_get_active_by_window_joined(context, begin, end=None,
@@ -672,11 +672,11 @@ def instance_get_active_by_window_joined(context, begin, end=None,
 
 
 def instance_get_all_by_host(context, host,
-                             columns_to_join=None, use_slave=False):
+                             columns_to_join=None, use_subordinate=False):
     """Get all instances belonging to a host."""
     return IMPL.instance_get_all_by_host(context, host,
                                          columns_to_join,
-                                         use_slave=use_slave)
+                                         use_subordinate=use_subordinate)
 
 
 def instance_get_all_by_host_and_node(context, host, node):
@@ -1184,11 +1184,11 @@ def block_device_mapping_update_or_create(context, values, legacy=True):
 
 
 def block_device_mapping_get_all_by_instance(context, instance_uuid,
-                                             use_slave=False):
+                                             use_subordinate=False):
     """Get all block device mapping belonging to an instance."""
     return IMPL.block_device_mapping_get_all_by_instance(context,
                                                          instance_uuid,
-                                                         use_slave)
+                                                         use_subordinate)
 
 
 def block_device_mapping_get_by_volume_id(context, volume_id,
@@ -1620,7 +1620,7 @@ def agent_build_update(context, agent_build_id, values):
 ####################
 
 
-def bw_usage_get(context, uuid, start_period, mac, use_slave=False):
+def bw_usage_get(context, uuid, start_period, mac, use_subordinate=False):
     """Return bw usage for instance and mac in a given audit period."""
     return IMPL.bw_usage_get(context, uuid, start_period, mac)
 

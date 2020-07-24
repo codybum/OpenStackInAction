@@ -197,23 +197,23 @@ class MockTestCase(TestCase):
 
     def setUp(self):
         super(MockTestCase, self).setUp()
-        self.master_mock = mock.Mock(name='master_mock')
+        self.main_mock = mock.Mock(name='main_mock')
 
     def patch(self, target, autospec=True, **kwargs):
-        """Patch target and attach it to the master mock."""
+        """Patch target and attach it to the main mock."""
         f = self.useFixture(mockpatch.Patch(target,
                                             autospec=autospec, **kwargs))
         mocked = f.mock
         attach_as = kwargs.pop('attach_as', None)
         if attach_as is not None:
-            self.master_mock.attach_mock(mocked, attach_as)
+            self.main_mock.attach_mock(mocked, attach_as)
         return mocked
 
     def patchClass(self, module, name, autospec=True, attach_as=None):
         """Patches a modules class.
 
         This will create a class instance mock (using the provided name to
-        find the class in the module) and attach a mock class the master mock
+        find the class in the module) and attach a mock class the main mock
         to be cleaned up on test exit.
         """
         if autospec:
@@ -233,12 +233,12 @@ class MockTestCase(TestCase):
             attach_class_as = attach_as + '_class'
             attach_instance_as = attach_as
 
-        self.master_mock.attach_mock(class_mock, attach_class_as)
-        self.master_mock.attach_mock(instance_mock, attach_instance_as)
+        self.main_mock.attach_mock(class_mock, attach_class_as)
+        self.main_mock.attach_mock(instance_mock, attach_instance_as)
         return class_mock, instance_mock
 
-    def resetMasterMock(self):
-        self.master_mock.reset_mock()
+    def resetMainMock(self):
+        self.main_mock.reset_mock()
 
 
 class CapturingLoggingHandler(logging.Handler):

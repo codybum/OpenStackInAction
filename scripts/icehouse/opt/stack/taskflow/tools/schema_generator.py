@@ -31,7 +31,7 @@ CONN_CONF = {
     # This uses an in-memory database (aka nothing is written)
     "connection": "sqlite://",
 }
-TABLE_QUERY = "SELECT name, sql FROM sqlite_master WHERE type='table'"
+TABLE_QUERY = "SELECT name, sql FROM sqlite_main WHERE type='table'"
 SCHEMA_QUERY = "pragma table_info(%s)"
 
 

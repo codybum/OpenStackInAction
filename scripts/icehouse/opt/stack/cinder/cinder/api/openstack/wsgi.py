@@ -577,7 +577,7 @@ class ResponseObject(object):
         self.serializer = serializer()
 
     def attach(self, **kwargs):
-        """Attach slave templates to serializers."""
+        """Attach subordinate templates to serializers."""
 
         if self.media_type in kwargs:
             self.serializer.attach(kwargs[self.media_type])

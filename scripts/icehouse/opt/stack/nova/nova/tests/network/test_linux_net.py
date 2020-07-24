@@ -259,7 +259,7 @@ class LinuxNetworkTestCase(test.NoDBTestCase):
         self.context = context.RequestContext('testuser', 'testproject',
                                               is_admin=True)
 
-        def get_vifs(_context, instance_uuid, use_slave):
+        def get_vifs(_context, instance_uuid, use_subordinate):
             return [vif for vif in vifs if vif['instance_uuid'] ==
                         instance_uuid]
 

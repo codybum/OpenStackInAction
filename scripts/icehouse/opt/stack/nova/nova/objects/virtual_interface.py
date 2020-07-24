@@ -93,7 +93,7 @@ class VirtualInterfaceList(base.ObjectListBase, base.NovaObject):
         return base.obj_make_list(context, cls(), VirtualInterface, db_vifs)
 
     @base.remotable_classmethod
-    def get_by_instance_uuid(cls, context, instance_uuid, use_slave=False):
+    def get_by_instance_uuid(cls, context, instance_uuid, use_subordinate=False):
         db_vifs = db.virtual_interface_get_by_instance(context, instance_uuid,
-                use_slave=use_slave)
+                use_subordinate=use_subordinate)
         return base.obj_make_list(context, cls(), VirtualInterface, db_vifs)

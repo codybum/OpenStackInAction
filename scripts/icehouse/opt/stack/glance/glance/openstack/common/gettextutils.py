@@ -326,9 +326,9 @@ def get_available_languages(domain):
     # order matters) since our in-line message strings are en_US
     language_list = ['en_US']
     # NOTE(luisg): Babel <1.0 used a function called list(), which was
-    # renamed to locale_identifiers() in >=1.0, the requirements master list
+    # renamed to locale_identifiers() in >=1.0, the requirements main list
     # requires >=0.9.6, uncapped, so defensively work with both. We can remove
-    # this check when the master list updates to >=1.0, and update all projects
+    # this check when the main list updates to >=1.0, and update all projects
     list_identifiers = (getattr(localedata, 'list', None) or
                         getattr(localedata, 'locale_identifiers'))
     locale_identifiers = list_identifiers()

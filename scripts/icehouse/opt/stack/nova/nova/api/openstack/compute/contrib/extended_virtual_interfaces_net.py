@@ -33,7 +33,7 @@ class ExtendedVirtualInterfaceNetTemplate(xmlutil.TemplateBuilder):
         elem = xmlutil.SubTemplateElement(root, 'virtual_interface',
                                           selector='virtual_interfaces')
         make_vif(elem)
-        return xmlutil.SlaveTemplate(root, 1,
+        return xmlutil.SubordinateTemplate(root, 1,
                              nsmap={Extended_virtual_interfaces_net.alias:
                                     Extended_virtual_interfaces_net.namespace})
 
@@ -48,7 +48,7 @@ class ExtendedServerVIFNetController(wsgi.Controller):
         key = "%s:net_id" % Extended_virtual_interfaces_net.alias
         context = req.environ['nova.context']
         if authorize(context):
-            # Attach our slave template to the response object
+            # Attach our subordinate template to the response object
             resp_obj.attach(xml=ExtendedVirtualInterfaceNetTemplate())
             for vif in resp_obj.obj['virtual_interfaces']:
                 vif1 = self.network_api.get_vif_by_mac_address(context,

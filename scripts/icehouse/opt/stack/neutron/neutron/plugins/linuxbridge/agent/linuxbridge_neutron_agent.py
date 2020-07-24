@@ -318,7 +318,7 @@ class LinuxBridgeManager:
         # Check if the interface is part of the bridge
         if not self.interface_exists_on_bridge(bridge_name, interface):
             try:
-                # Check if the interface is not enslaved in another bridge
+                # Check if the interface is not ensubordinated in another bridge
                 if self.is_device_on_bridge(interface):
                     bridge = self.get_bridge_for_tap_device(interface)
                     utils.execute(['brctl', 'delif', bridge, interface],

@@ -71,10 +71,10 @@ db_opts = [
 ]
 
 connection_opts = [
-    cfg.StrOpt('slave_connection',
+    cfg.StrOpt('subordinate_connection',
                secret=True,
                help='The SQLAlchemy connection string used to connect to the '
-                    'slave database'),
+                    'subordinate database'),
 ]
 
 CONF = cfg.CONF
@@ -92,12 +92,12 @@ _MASTER_FACADE = None
 _SLAVE_FACADE = None
 
 
-def _create_facade_lazily(use_slave=False):
+def _create_facade_lazily(use_subordinate=False):
     global _MASTER_FACADE
     global _SLAVE_FACADE
 
-    return_slave = use_slave and CONF.database.slave_connection
-    if not return_slave:
+    return_subordinate = use_subordinate and CONF.database.subordinate_connection
+    if not return_subordinate:
         if _MASTER_FACADE is None:
             _MASTER_FACADE = db_session.EngineFacade(
                 CONF.database.connection,
@@ -107,19 +107,19 @@ def _create_facade_lazily(use_slave=False):
     else:
         if _SLAVE_FACADE is None:
             _SLAVE_FACADE = db_session.EngineFacade(
-                CONF.database.slave_connection,
+                CONF.database.subordinate_connection,
                 **dict(CONF.database.iteritems())
             )
         return _SLAVE_FACADE
 
 
-def get_engine(use_slave=False):
-    facade = _create_facade_lazily(use_slave)
+def get_engine(use_subordinate=False):
+    facade = _create_facade_lazily(use_subordinate)
     return facade.get_engine()
 
 
-def get_session(use_slave=False, **kwargs):
-    facade = _create_facade_lazily(use_slave)
+def get_session(use_subordinate=False, **kwargs):
+    facade = _create_facade_lazily(use_subordinate)
     return facade.get_session(**kwargs)
 
 
@@ -215,7 +215,7 @@ def model_query(context, model, *args, **kwargs):
     """Query helper that accounts for context's `read_deleted` field.
 
     :param context: context to query under
-    :param use_slave: If true, use slave_connection
+    :param use_subordinate: If true, use subordinate_connection
     :param session: if present, the session to use
     :param read_deleted: if present, overrides context's read_deleted field.
     :param project_only: if present and context is user-type, then restrict
@@ -227,11 +227,11 @@ def model_query(context, model, *args, **kwargs):
             model parameter.
     """
 
-    use_slave = kwargs.get('use_slave') or False
-    if CONF.database.slave_connection == '':
-        use_slave = False
+    use_subordinate = kwargs.get('use_subordinate') or False
+    if CONF.database.subordinate_connection == '':
+        use_subordinate = False
 
-    session = kwargs.get('session') or get_session(use_slave=use_slave)
+    session = kwargs.get('session') or get_session(use_subordinate=use_subordinate)
     read_deleted = kwargs.get('read_deleted') or context.read_deleted
     project_only = kwargs.get('project_only', False)
 
@@ -1436,9 +1436,9 @@ def virtual_interface_create(context, values):
     return vif_ref
 
 
-def _virtual_interface_query(context, session=None, use_slave=False):
+def _virtual_interface_query(context, session=None, use_subordinate=False):
     return model_query(context, models.VirtualInterface, session=session,
-                       read_deleted="no", use_slave=use_slave)
+                       read_deleted="no", use_subordinate=use_subordinate)
 
 
 @require_context
@@ -1484,12 +1484,12 @@ def virtual_interface_get_by_uuid(context, vif_uuid):
 
 @require_context
 @require_instance_exists_using_uuid
-def virtual_interface_get_by_instance(context, instance_uuid, use_slave=False):
+def virtual_interface_get_by_instance(context, instance_uuid, use_subordinate=False):
     """Gets all virtual interfaces for instance.
 
     :param instance_uuid: = uuid of the instance to retrieve vifs for
     """
-    vif_refs = _virtual_interface_query(context, use_slave=use_slave).\
+    vif_refs = _virtual_interface_query(context, use_subordinate=use_subordinate).\
                        filter_by(instance_uuid=instance_uuid).\
                        all()
     return vif_refs
@@ -1684,16 +1684,16 @@ def instance_destroy(context, instance_uuid, constraint=None):
 
 
 @require_context
-def instance_get_by_uuid(context, uuid, columns_to_join=None, use_slave=False):
+def instance_get_by_uuid(context, uuid, columns_to_join=None, use_subordinate=False):
     return _instance_get_by_uuid(context, uuid,
-            columns_to_join=columns_to_join, use_slave=use_slave)
+            columns_to_join=columns_to_join, use_subordinate=use_subordinate)
 
 
 def _instance_get_by_uuid(context, uuid, session=None,
-                          columns_to_join=None, use_slave=False):
+                          columns_to_join=None, use_subordinate=False):
     result = _build_instance_get(context, session=session,
                                  columns_to_join=columns_to_join,
-                                 use_slave=use_slave).\
+                                 use_subordinate=use_subordinate).\
                 filter_by(uuid=uuid).\
                 first()
 
@@ -1722,9 +1722,9 @@ def instance_get(context, instance_id, columns_to_join=None):
 
 
 def _build_instance_get(context, session=None,
-                        columns_to_join=None, use_slave=False):
+                        columns_to_join=None, use_subordinate=False):
     query = model_query(context, models.Instance, session=session,
-                        project_only=True, use_slave=use_slave).\
+                        project_only=True, use_subordinate=use_subordinate).\
             options(joinedload_all('security_groups.rules')).\
             options(joinedload('info_cache'))
     if columns_to_join is None:
@@ -1742,7 +1742,7 @@ def _build_instance_get(context, session=None,
 
 
 def _instances_fill_metadata(context, instances,
-                             manual_joins=None, use_slave=False):
+                             manual_joins=None, use_subordinate=False):
     """Selectively fill instances with manually-joined metadata. Note that
     instance will be converted to a dict.
 
@@ -1760,13 +1760,13 @@ def _instances_fill_metadata(context, instances,
     meta = collections.defaultdict(list)
     if 'metadata' in manual_joins:
         for row in _instance_metadata_get_multi(context, uuids,
-                                                use_slave=use_slave):
+                                                use_subordinate=use_subordinate):
             meta[row['instance_uuid']].append(row)
 
     sys_meta = collections.defaultdict(list)
     if 'system_metadata' in manual_joins:
         for row in _instance_system_metadata_get_multi(context, uuids,
-                                                       use_slave=use_slave):
+                                                       use_subordinate=use_subordinate):
             sys_meta[row['instance_uuid']].append(row)
 
     pcidevs = collections.defaultdict(list)
@@ -1818,7 +1818,7 @@ def instance_get_all(context, columns_to_join=None):
 @require_context
 def instance_get_all_by_filters(context, filters, sort_key, sort_dir,
                                 limit=None, marker=None, columns_to_join=None,
-                                use_slave=False):
+                                use_subordinate=False):
     """Return instances that match all filters.  Deleted instances
     will be returned by default, unless there's a filter that says
     otherwise.
@@ -1855,10 +1855,10 @@ def instance_get_all_by_filters(context, filters, sort_key, sort_dir,
 
     sort_fn = {'desc': desc, 'asc': asc}
 
-    if CONF.database.slave_connection == '':
-        use_slave = False
+    if CONF.database.subordinate_connection == '':
+        use_subordinate = False
 
-    session = get_session(use_slave=use_slave)
+    session = get_session(use_subordinate=use_subordinate)
 
     if columns_to_join is None:
         columns_to_join = ['info_cache', 'security_groups']
@@ -2066,14 +2066,14 @@ def instance_get_active_by_window_joined(context, begin, end=None,
 
 
 def _instance_get_all_query(context, project_only=False,
-                            joins=None, use_slave=False):
+                            joins=None, use_subordinate=False):
     if joins is None:
         joins = ['info_cache', 'security_groups']
 
     query = model_query(context,
                         models.Instance,
                         project_only=project_only,
-                        use_slave=use_slave)
+                        use_subordinate=use_subordinate)
     for join in joins:
         query = query.options(joinedload(join))
     return query
@@ -2082,12 +2082,12 @@ def _instance_get_all_query(context, project_only=False,
 @require_admin_context
 def instance_get_all_by_host(context, host,
                              columns_to_join=None,
-                             use_slave=False):
+                             use_subordinate=False):
     return _instances_fill_metadata(context,
       _instance_get_all_query(context,
-                              use_slave=use_slave).filter_by(host=host).all(),
+                              use_subordinate=use_subordinate).filter_by(host=host).all(),
                               manual_joins=columns_to_join,
-                              use_slave=use_slave)
+                              use_subordinate=use_subordinate)
 
 
 def _instance_get_all_uuids_by_host(context, host, session=None):
@@ -3459,12 +3459,12 @@ def get_snapshot_uuid_by_ec2_id(context, ec2_id):
 
 
 def _block_device_mapping_get_query(context, session=None,
-        columns_to_join=None, use_slave=False):
+        columns_to_join=None, use_subordinate=False):
     if columns_to_join is None:
         columns_to_join = []
 
     query = model_query(context, models.BlockDeviceMapping,
-                        session=session, use_slave=use_slave)
+                        session=session, use_subordinate=use_subordinate)
 
     for column in columns_to_join:
         query = query.options(joinedload(column))
@@ -3546,8 +3546,8 @@ def block_device_mapping_update_or_create(context, values, legacy=True):
 
 @require_context
 def block_device_mapping_get_all_by_instance(context, instance_uuid,
-                                             use_slave=False):
-    return _block_device_mapping_get_query(context, use_slave=use_slave).\
+                                             use_subordinate=False):
+    return _block_device_mapping_get_query(context, use_subordinate=use_subordinate).\
                  filter_by(instance_uuid=instance_uuid).\
                  all()
 
@@ -4052,12 +4052,12 @@ def migration_get_by_instance_and_status(context, instance_uuid, status):
 
 @require_admin_context
 def migration_get_unconfirmed_by_dest_compute(context, confirm_window,
-                                              dest_compute, use_slave=False):
+                                              dest_compute, use_subordinate=False):
     confirm_window = (timeutils.utcnow() -
                       datetime.timedelta(seconds=confirm_window))
 
     return model_query(context, models.Migration, read_deleted="yes",
-                       use_slave=use_slave).\
+                       use_subordinate=use_subordinate).\
              filter(models.Migration.updated_at <= confirm_window).\
              filter_by(status="finished").\
              filter_by(dest_compute=dest_compute).\
@@ -4577,11 +4577,11 @@ def cell_get_all(context):
 # User-provided metadata
 
 def _instance_metadata_get_multi(context, instance_uuids,
-                                 session=None, use_slave=False):
+                                 session=None, use_subordinate=False):
     if not instance_uuids:
         return []
     return model_query(context, models.InstanceMetadata,
-                       session=session, use_slave=use_slave).\
+                       session=session, use_subordinate=use_subordinate).\
                     filter(
             models.InstanceMetadata.instance_uuid.in_(instance_uuids))
 
@@ -4643,11 +4643,11 @@ def instance_metadata_update(context, instance_uuid, metadata, delete):
 
 
 def _instance_system_metadata_get_multi(context, instance_uuids,
-                                        session=None, use_slave=False):
+                                        session=None, use_subordinate=False):
     if not instance_uuids:
         return []
     return model_query(context, models.InstanceSystemMetadata,
-                       session=session, use_slave=use_slave).\
+                       session=session, use_subordinate=use_subordinate).\
                     filter(
             models.InstanceSystemMetadata.instance_uuid.in_(instance_uuids))
 
@@ -4750,9 +4750,9 @@ def agent_build_update(context, agent_build_id, values):
 ####################
 
 @require_context
-def bw_usage_get(context, uuid, start_period, mac, use_slave=False):
+def bw_usage_get(context, uuid, start_period, mac, use_subordinate=False):
     return model_query(context, models.BandwidthUsage, read_deleted="yes",
-                       use_slave=use_slave).\
+                       use_subordinate=use_subordinate).\
                            filter_by(start_period=start_period).\
                            filter_by(uuid=uuid).\
                            filter_by(mac=mac).\

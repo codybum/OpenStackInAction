@@ -45,7 +45,7 @@ mapping_id = 'test_mapping'
 mapping_rules_file_path = '/tmp/path/to/file'
 # Copied from
 # (https://github.com/openstack/keystone/blob\
-# master/keystone/tests/mapping_fixtures.py
+# main/keystone/tests/mapping_fixtures.py
 EMPLOYEE_GROUP_ID = "0cd5e9"
 DEVELOPER_GROUP_ID = "xyz"
 MAPPING_RULES = [

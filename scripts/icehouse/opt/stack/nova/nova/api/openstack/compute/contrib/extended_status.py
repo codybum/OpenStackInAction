@@ -36,7 +36,7 @@ class ExtendedStatusController(wsgi.Controller):
     def show(self, req, resp_obj, id):
         context = req.environ['nova.context']
         if authorize(context):
-            # Attach our slave template to the response object
+            # Attach our subordinate template to the response object
             resp_obj.attach(xml=ExtendedStatusTemplate())
             server = resp_obj.obj['server']
             db_instance = req.get_db_instance(server['id'])
@@ -48,7 +48,7 @@ class ExtendedStatusController(wsgi.Controller):
     def detail(self, req, resp_obj):
         context = req.environ['nova.context']
         if authorize(context):
-            # Attach our slave template to the response object
+            # Attach our subordinate template to the response object
             resp_obj.attach(xml=ExtendedStatusesTemplate())
             servers = list(resp_obj.obj['servers'])
             for server in servers:
@@ -86,7 +86,7 @@ class ExtendedStatusTemplate(xmlutil.TemplateBuilder):
     def construct(self):
         root = xmlutil.TemplateElement('server', selector='server')
         make_server(root)
-        return xmlutil.SlaveTemplate(root, 1, nsmap={
+        return xmlutil.SubordinateTemplate(root, 1, nsmap={
             Extended_status.alias: Extended_status.namespace})
 
 
@@ -95,5 +95,5 @@ class ExtendedStatusesTemplate(xmlutil.TemplateBuilder):
         root = xmlutil.TemplateElement('servers')
         elem = xmlutil.SubTemplateElement(root, 'server', selector='servers')
         make_server(elem)
-        return xmlutil.SlaveTemplate(root, 1, nsmap={
+        return xmlutil.SubordinateTemplate(root, 1, nsmap={
             Extended_status.alias: Extended_status.namespace})

@@ -44,7 +44,7 @@ COMMANDS = """Commands:
 
     help <command>  Output help for one of the commands below
 
-    compare         What is missing from the slave glance?
+    compare         What is missing from the subordinate glance?
     dump            Dump the contents of a glance instance to local disk.
     livecopy        Load the contents of one glance instance into another.
     load            Load the contents of a local directory into glance.
@@ -53,10 +53,10 @@ COMMANDS = """Commands:
 
 
 IMAGE_ALREADY_PRESENT_MESSAGE = _('The image %s is already present on '
-                                  'the slave, but our check for it did '
+                                  'the subordinate, but our check for it did '
                                   'not find it. This indicates that we '
                                   'do not have permissions to see all '
-                                  'the images on the slave server.')
+                                  'the images on the subordinate server.')
 
 SERVER_PORT_REGEX = '\w+:\w+'
 
@@ -293,7 +293,7 @@ def replication_size(options, args):
 
     imageservice = get_image_service()
     client = imageservice(httplib.HTTPConnection(server, port),
-                          options.slavetoken)
+                          options.subordinatetoken)
     for image in client.get_images():
         logging.debug(_('Considering image: %(image)s') % {'image': image})
         if image['status'] == 'active':
@@ -328,7 +328,7 @@ def replication_dump(options, args):
 
     imageservice = get_image_service()
     client = imageservice(httplib.HTTPConnection(server, port),
-                          options.mastertoken)
+                          options.maintoken)
     for image in client.get_images():
         logging.info(_('Considering: %s') % image['id'])
 
@@ -363,19 +363,19 @@ def _dict_diff(a, b):
 
     Returns: True if the dictionaries are different
     """
-    # Only things the master has which the slave lacks matter
+    # Only things the main has which the subordinate lacks matter
     if set(a.keys()) - set(b.keys()):
-        logging.debug(_('metadata diff -- master has extra keys: %(keys)s')
+        logging.debug(_('metadata diff -- main has extra keys: %(keys)s')
                       % {'keys': ' '.join(set(a.keys()) - set(b.keys()))})
         return True
 
     for key in a:
         if str(a[key]) != str(b[key]):
             logging.debug(_('metadata diff -- value differs for key '
-                          '%(key)s: master "%(master_value)s" vs '
-                          'slave "%(slave_value)s"') %
-                          {'key': key, 'master_value': a[key],
-                           'slave_value': b[key]})
+                          '%(key)s: main "%(main_value)s" vs '
+                          'subordinate "%(subordinate_value)s"') %
+                          {'key': key, 'main_value': a[key],
+                           'subordinate_value': b[key]})
             return True
 
     return False
@@ -413,7 +413,7 @@ def replication_load(options, args):
 
     imageservice = get_image_service()
     client = imageservice(httplib.HTTPConnection(server, port),
-                          options.slavetoken)
+                          options.subordinatetoken)
 
     updated = []
 
@@ -441,7 +441,7 @@ def replication_load(options, args):
                 headers = client.get_image_meta(image_uuid)
                 for key in options.dontreplicate.split(' '):
                     if key in headers:
-                        logging.debug(_('Stripping %(header)s from slave '
+                        logging.debug(_('Stripping %(header)s from subordinate '
                                         'metadata'), {'header': key})
                         del headers[key]
 
@@ -474,69 +474,69 @@ def replication_livecopy(options, args):
 
     Load the contents of one glance instance into another.
 
-    fromserver:port: the location of the master glance instance.
-    toserver:port:   the location of the slave glance instance.
+    fromserver:port: the location of the main glance instance.
+    toserver:port:   the location of the subordinate glance instance.
     """
 
     # Make sure from-server and to-server are provided
     if len(args) < 2:
         raise TypeError(_("Too few arguments."))
 
-    slave_server_port = args.pop()
-    master_server_port = args.pop()
+    subordinate_server_port = args.pop()
+    main_server_port = args.pop()
 
-    if not re.match(SERVER_PORT_REGEX, slave_server_port) or \
-            not re.match(SERVER_PORT_REGEX, master_server_port):
+    if not re.match(SERVER_PORT_REGEX, subordinate_server_port) or \
+            not re.match(SERVER_PORT_REGEX, main_server_port):
         raise ValueError(_("Bad format of the given arguments."))
 
     imageservice = get_image_service()
 
-    slave_server, slave_port = slave_server_port.split(':')
-    slave_conn = httplib.HTTPConnection(slave_server, slave_port)
-    slave_client = imageservice(slave_conn, options.slavetoken)
+    subordinate_server, subordinate_port = subordinate_server_port.split(':')
+    subordinate_conn = httplib.HTTPConnection(subordinate_server, subordinate_port)
+    subordinate_client = imageservice(subordinate_conn, options.subordinatetoken)
 
-    master_server, master_port = master_server_port.split(':')
-    master_conn = httplib.HTTPConnection(master_server, master_port)
-    master_client = imageservice(master_conn, options.mastertoken)
+    main_server, main_port = main_server_port.split(':')
+    main_conn = httplib.HTTPConnection(main_server, main_port)
+    main_client = imageservice(main_conn, options.maintoken)
 
     updated = []
 
-    for image in master_client.get_images():
+    for image in main_client.get_images():
         logging.info(_('Considering %(id)s') % {'id': image['id']})
         for key in options.dontreplicate.split(' '):
             if key in image:
-                logging.debug(_('Stripping %(header)s from master metadata'),
+                logging.debug(_('Stripping %(header)s from main metadata'),
                               {'header': key})
                 del image[key]
 
-        if _image_present(slave_client, image['id']):
+        if _image_present(subordinate_client, image['id']):
             # NOTE(mikal): Perhaps we just need to update the metadata?
             # Note that we don't attempt to change an image file once it
             # has been uploaded.
-            headers = slave_client.get_image_meta(image['id'])
+            headers = subordinate_client.get_image_meta(image['id'])
             if headers['status'] == 'active':
                 for key in options.dontreplicate.split(' '):
                     if key in image:
-                        logging.debug(_('Stripping %(header)s from master '
+                        logging.debug(_('Stripping %(header)s from main '
                                         'metadata'), {'header': key})
                         del image[key]
                     if key in headers:
-                        logging.debug(_('Stripping %(header)s from slave '
+                        logging.debug(_('Stripping %(header)s from subordinate '
                                         'metadata'), {'header': key})
                         del headers[key]
 
                 if _dict_diff(image, headers):
                     logging.info(_('... metadata has changed'))
-                    headers, body = slave_client.add_image_meta(image)
+                    headers, body = subordinate_client.add_image_meta(image)
                     _check_upload_response_headers(headers, body)
                     updated.append(image['id'])
 
         elif image['status'] == 'active':
             logging.info(_('%s is being synced') % image['id'])
             if not options.metaonly:
-                image_response = master_client.get_image(image['id'])
+                image_response = main_client.get_image(image['id'])
                 try:
-                    headers, body = slave_client.add_image(image,
+                    headers, body = subordinate_client.add_image(image,
                                                            image_response)
                     _check_upload_response_headers(headers, body)
                     updated.append(image['id'])
@@ -551,55 +551,55 @@ def replication_compare(options, args):
 
     Compare the contents of fromserver with those of toserver.
 
-    fromserver:port: the location of the master glance instance.
-    toserver:port:   the location of the slave glance instance.
+    fromserver:port: the location of the main glance instance.
+    toserver:port:   the location of the subordinate glance instance.
     """
 
     # Make sure from-server and to-server are provided
     if len(args) < 2:
         raise TypeError(_("Too few arguments."))
 
-    slave_server_port = args.pop()
-    master_server_port = args.pop()
+    subordinate_server_port = args.pop()
+    main_server_port = args.pop()
 
-    if not re.match(SERVER_PORT_REGEX, slave_server_port) or \
-            not re.match(SERVER_PORT_REGEX, master_server_port):
+    if not re.match(SERVER_PORT_REGEX, subordinate_server_port) or \
+            not re.match(SERVER_PORT_REGEX, main_server_port):
         raise ValueError(_("Bad format of the given arguments."))
 
     imageservice = get_image_service()
 
-    slave_server, slave_port = slave_server_port.split(':')
-    slave_conn = httplib.HTTPConnection(slave_server, slave_port)
-    slave_client = imageservice(slave_conn, options.slavetoken)
+    subordinate_server, subordinate_port = subordinate_server_port.split(':')
+    subordinate_conn = httplib.HTTPConnection(subordinate_server, subordinate_port)
+    subordinate_client = imageservice(subordinate_conn, options.subordinatetoken)
 
-    master_server, master_port = master_server_port.split(':')
-    master_conn = httplib.HTTPConnection(master_server, master_port)
-    master_client = imageservice(master_conn, options.mastertoken)
+    main_server, main_port = main_server_port.split(':')
+    main_conn = httplib.HTTPConnection(main_server, main_port)
+    main_client = imageservice(main_conn, options.maintoken)
 
     differences = {}
 
-    for image in master_client.get_images():
-        if _image_present(slave_client, image['id']):
-            headers = slave_client.get_image_meta(image['id'])
+    for image in main_client.get_images():
+        if _image_present(subordinate_client, image['id']):
+            headers = subordinate_client.get_image_meta(image['id'])
             for key in options.dontreplicate.split(' '):
                 if key in image:
-                    logging.debug(_('Stripping %(header)s from master '
+                    logging.debug(_('Stripping %(header)s from main '
                                     'metadata'), {'header': key})
                     del image[key]
                 if key in headers:
-                    logging.debug(_('Stripping %(header)s from slave '
+                    logging.debug(_('Stripping %(header)s from subordinate '
                                     'metadata'), {'header': key})
                     del headers[key]
 
             for key in image:
                 if image[key] != headers.get(key, None):
                     logging.info(_('%(image_id)s: field %(key)s differs '
-                                 '(source is %(master_value)s, destination '
-                                 'is %(slave_value)s)')
+                                 '(source is %(main_value)s, destination '
+                                 'is %(subordinate_value)s)')
                                  % {'image_id': image['id'],
                                     'key': key,
-                                    'master_value': image[key],
-                                    'slave_value': headers.get(key,
+                                    'main_value': image[key],
+                                    'subordinate_value': headers.get(key,
                                                                'undefined')})
                     differences[image['id']] = 'diff'
                 else:
@@ -754,13 +754,13 @@ def main():
     oparser.add_option('-t', '--token', action="store", default='',
                        help=("Pass in your authentication token if you have "
                              "one. If you use this option the same token is "
-                             "used for both the master and the slave."))
-    oparser.add_option('-M', '--mastertoken', action="store", default='',
+                             "used for both the main and the subordinate."))
+    oparser.add_option('-M', '--maintoken', action="store", default='',
                        help=("Pass in your authentication token if you have "
-                             "one. This is the token used for the master."))
-    oparser.add_option('-S', '--slavetoken', action="store", default='',
+                             "one. This is the token used for the main."))
+    oparser.add_option('-S', '--subordinatetoken', action="store", default='',
                        help=("Pass in your authentication token if you have "
-                             "one. This is the token used for the slave."))
+                             "one. This is the token used for the subordinate."))
     oparser.add_option('-v', '--verbose', action="store_true", default=False,
                        help="Print more verbose output.")
 
@@ -787,8 +787,8 @@ def main():
     sys.excepthook = logging_excepthook
 
     if options.token:
-        options.slavetoken = options.token
-        options.mastertoken = options.token
+        options.subordinatetoken = options.token
+        options.maintoken = options.token
 
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)

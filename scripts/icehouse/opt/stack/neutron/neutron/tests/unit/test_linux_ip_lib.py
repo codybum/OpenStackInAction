@@ -50,11 +50,11 @@ LINK_SAMPLE = [
     'state UP qlen 1000'
     '\    link/ether cc:dd:ee:ff:ab:cd brd ff:ff:ff:ff:ff:ff promiscuity 0',
     '9: bar.9@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc '
-    ' noqueue master brq0b24798c-07 state UP mode DEFAULT'
+    ' noqueue main brq0b24798c-07 state UP mode DEFAULT'
     '\    link/ether ab:04:49:b6:ab:a0 brd ff:ff:ff:ff:ff:ff promiscuity 0'
     '\    vlan protocol 802.1q id 9 <REORDER_HDR>',
     '10: bar@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc '
-    ' noqueue master brq0b24798c-07 state UP mode DEFAULT'
+    ' noqueue main brq0b24798c-07 state UP mode DEFAULT'
     '\    link/ether ab:04:49:b6:ab:a0 brd ff:ff:ff:ff:ff:ff promiscuity 0'
     '\    vlan protocol 802.1Q id 10 <REORDER_HDR>',
     '11: bar:bar@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq '
