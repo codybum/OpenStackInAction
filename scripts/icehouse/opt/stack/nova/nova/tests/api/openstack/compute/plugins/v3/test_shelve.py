@@ -26,7 +26,7 @@ from nova.tests import fake_instance
 
 
 def fake_instance_get_by_uuid(context, instance_id,
-                              columns_to_join=None, use_slave=False):
+                              columns_to_join=None, use_subordinate=False):
     return fake_instance.fake_db_instance(
         **{'name': 'fake', 'project_id': '%s_unequal' % context.project_id})
 

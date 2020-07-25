@@ -1072,11 +1072,11 @@ class KeystoneClientTests(object):
         client.tenants.list()
 
 
-class KcMasterTestCase(CompatTestCase, KeystoneClientTests):
-    checkout_info = (KEYSTONECLIENT_REPO, 'master')
+class KcMainTestCase(CompatTestCase, KeystoneClientTests):
+    checkout_info = (KEYSTONECLIENT_REPO, 'main')
 
 
-class KcOptTestCase(KcMasterTestCase):
+class KcOptTestCase(KcMainTestCase):
     # Set KSCTEST_PATH to the keystoneclient directory, then run this test.
     #
     # For example, to test your local keystoneclient,

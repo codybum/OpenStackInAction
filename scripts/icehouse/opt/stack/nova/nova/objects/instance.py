@@ -72,7 +72,7 @@ class Instance(base.NovaPersistentObject, base.NovaObject):
     # Version 1.7: String attributes updated to support unicode
     # Version 1.8: 'security_groups' and 'pci_devices' cannot be None
     # Version 1.9: Make uuid a non-None real string
-    # Version 1.10: Added use_slave to refresh and get_by_uuid
+    # Version 1.10: Added use_subordinate to refresh and get_by_uuid
     # Version 1.11: Update instance from database during destroy
     # Version 1.12: Added ephemeral_key_uuid
     # Version 1.13: Added delete_metadata_key()
@@ -304,13 +304,13 @@ class Instance(base.NovaPersistentObject, base.NovaObject):
         return instance
 
     @base.remotable_classmethod
-    def get_by_uuid(cls, context, uuid, expected_attrs=None, use_slave=False):
+    def get_by_uuid(cls, context, uuid, expected_attrs=None, use_subordinate=False):
         if expected_attrs is None:
             expected_attrs = ['info_cache', 'security_groups']
         columns_to_join = _expected_cols(expected_attrs)
         db_inst = db.instance_get_by_uuid(context, uuid,
                                           columns_to_join=columns_to_join,
-                                          use_slave=use_slave)
+                                          use_subordinate=use_subordinate)
         return cls._from_db_object(context, cls(), db_inst,
                                    expected_attrs)
 
@@ -483,12 +483,12 @@ class Instance(base.NovaPersistentObject, base.NovaObject):
         self.obj_reset_changes()
 
     @base.remotable
-    def refresh(self, context, use_slave=False):
+    def refresh(self, context, use_subordinate=False):
         extra = [field for field in INSTANCE_OPTIONAL_ATTRS
                        if self.obj_attr_is_set(field)]
         current = self.__class__.get_by_uuid(context, uuid=self.uuid,
                                              expected_attrs=extra,
-                                             use_slave=use_slave)
+                                             use_subordinate=use_subordinate)
         # NOTE(danms): We orphan the instance copy so we do not unexpectedly
         # trigger a lazy-load (which would mean we failed to calculate the
         # expected_attrs properly)
@@ -597,10 +597,10 @@ def _make_instance_list(context, inst_list, db_inst_list, expected_attrs):
 
 class InstanceList(base.ObjectListBase, base.NovaObject):
     # Version 1.0: Initial version
-    # Version 1.1: Added use_slave to get_by_host
+    # Version 1.1: Added use_subordinate to get_by_host
     #              Instance <= version 1.9
     # Version 1.2: Instance <= version 1.11
-    # Version 1.3: Added use_slave to get_by_filters
+    # Version 1.3: Added use_subordinate to get_by_filters
     # Version 1.4: Instance <= version 1.12
     # Version 1.5: Added method get_active_by_window_joined.
     # Version 1.6: Instance <= version 1.13
@@ -622,19 +622,19 @@ class InstanceList(base.ObjectListBase, base.NovaObject):
     @base.remotable_classmethod
     def get_by_filters(cls, context, filters,
                        sort_key='created_at', sort_dir='desc', limit=None,
-                       marker=None, expected_attrs=None, use_slave=False):
+                       marker=None, expected_attrs=None, use_subordinate=False):
         db_inst_list = db.instance_get_all_by_filters(
             context, filters, sort_key, sort_dir, limit=limit, marker=marker,
             columns_to_join=_expected_cols(expected_attrs),
-            use_slave=use_slave)
+            use_subordinate=use_subordinate)
         return _make_instance_list(context, cls(), db_inst_list,
                                    expected_attrs)
 
     @base.remotable_classmethod
-    def get_by_host(cls, context, host, expected_attrs=None, use_slave=False):
+    def get_by_host(cls, context, host, expected_attrs=None, use_subordinate=False):
         db_inst_list = db.instance_get_all_by_host(
             context, host, columns_to_join=_expected_cols(expected_attrs),
-            use_slave=use_slave)
+            use_subordinate=use_subordinate)
         return _make_instance_list(context, cls(), db_inst_list,
                                    expected_attrs)
 

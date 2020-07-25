@@ -364,15 +364,15 @@ class TemplateElementTest(test.TestCase):
                      attr2=xmlutil.ConstantSelector(2),
                      attr3=xmlutil.ConstantSelector(3))
 
-        # Create a master template element
-        master_elem = xmlutil.TemplateElement('test', attr1=attrs['attr1'])
+        # Create a main template element
+        main_elem = xmlutil.TemplateElement('test', attr1=attrs['attr1'])
 
-        # Create a couple of slave template element
-        slave_elems = [xmlutil.TemplateElement('test', attr2=attrs['attr2']),
+        # Create a couple of subordinate template element
+        subordinate_elems = [xmlutil.TemplateElement('test', attr2=attrs['attr2']),
                        xmlutil.TemplateElement('test', attr3=attrs['attr3']), ]
 
         # Try the render
-        elem = master_elem._render(None, None, slave_elems, None)
+        elem = main_elem._render(None, None, subordinate_elems, None)
 
         # Verify the particulars of the render
         self.assertEqual(elem.tag, 'test')
@@ -384,7 +384,7 @@ class TemplateElementTest(test.TestCase):
         parent = etree.Element('parent')
 
         # Try the render again...
-        elem = master_elem._render(parent, None, slave_elems, dict(a='foo'))
+        elem = main_elem._render(parent, None, subordinate_elems, dict(a='foo'))
 
         # Verify the particulars of the render
         self.assertEqual(len(parent), 1)
@@ -483,46 +483,46 @@ class TemplateTest(test.TestCase):
         self.assertEqual(len(nsmap), 1)
         self.assertEqual(nsmap['a'], 'foo')
 
-    def test_master_attach(self):
-        # Set up a master template
+    def test_main_attach(self):
+        # Set up a main template
         elem = xmlutil.TemplateElement('test')
-        tmpl = xmlutil.MasterTemplate(elem, 1)
+        tmpl = xmlutil.MainTemplate(elem, 1)
 
-        # Make sure it has a root but no slaves
+        # Make sure it has a root but no subordinates
         self.assertEqual(tmpl.root, elem)
-        self.assertEqual(len(tmpl.slaves), 0)
+        self.assertEqual(len(tmpl.subordinates), 0)
 
-        # Try to attach an invalid slave
+        # Try to attach an invalid subordinate
         bad_elem = xmlutil.TemplateElement('test2')
         self.assertRaises(ValueError, tmpl.attach, bad_elem)
-        self.assertEqual(len(tmpl.slaves), 0)
+        self.assertEqual(len(tmpl.subordinates), 0)
 
-        # Try to attach an invalid and a valid slave
+        # Try to attach an invalid and a valid subordinate
         good_elem = xmlutil.TemplateElement('test')
         self.assertRaises(ValueError, tmpl.attach, good_elem, bad_elem)
-        self.assertEqual(len(tmpl.slaves), 0)
+        self.assertEqual(len(tmpl.subordinates), 0)
 
         # Try to attach an inapplicable template
         class InapplicableTemplate(xmlutil.Template):
-            def apply(self, master):
+            def apply(self, main):
                 return False
         inapp_tmpl = InapplicableTemplate(good_elem)
         tmpl.attach(inapp_tmpl)
-        self.assertEqual(len(tmpl.slaves), 0)
+        self.assertEqual(len(tmpl.subordinates), 0)
 
         # Now try attaching an applicable template
         tmpl.attach(good_elem)
-        self.assertEqual(len(tmpl.slaves), 1)
-        self.assertEqual(tmpl.slaves[0].root, good_elem)
+        self.assertEqual(len(tmpl.subordinates), 1)
+        self.assertEqual(tmpl.subordinates[0].root, good_elem)
 
-    def test_master_copy(self):
-        # Construct a master template
+    def test_main_copy(self):
+        # Construct a main template
         elem = xmlutil.TemplateElement('test')
-        tmpl = xmlutil.MasterTemplate(elem, 1, nsmap=dict(a='foo'))
+        tmpl = xmlutil.MainTemplate(elem, 1, nsmap=dict(a='foo'))
 
-        # Give it a slave
-        slave = xmlutil.TemplateElement('test')
-        tmpl.attach(slave)
+        # Give it a subordinate
+        subordinate = xmlutil.TemplateElement('test')
+        tmpl.attach(subordinate)
 
         # Construct a copy
         copy = tmpl.copy()
@@ -532,42 +532,42 @@ class TemplateTest(test.TestCase):
         self.assertEqual(tmpl.root, copy.root)
         self.assertEqual(tmpl.version, copy.version)
         self.assertEqual(id(tmpl.nsmap), id(copy.nsmap))
-        self.assertNotEqual(id(tmpl.slaves), id(copy.slaves))
-        self.assertEqual(len(tmpl.slaves), len(copy.slaves))
-        self.assertEqual(tmpl.slaves[0], copy.slaves[0])
+        self.assertNotEqual(id(tmpl.subordinates), id(copy.subordinates))
+        self.assertEqual(len(tmpl.subordinates), len(copy.subordinates))
+        self.assertEqual(tmpl.subordinates[0], copy.subordinates[0])
 
-    def test_slave_apply(self):
-        # Construct a master template
+    def test_subordinate_apply(self):
+        # Construct a main template
         elem = xmlutil.TemplateElement('test')
-        master = xmlutil.MasterTemplate(elem, 3)
+        main = xmlutil.MainTemplate(elem, 3)
 
-        # Construct a slave template with applicable minimum version
-        slave = xmlutil.SlaveTemplate(elem, 2)
-        self.assertEqual(slave.apply(master), True)
+        # Construct a subordinate template with applicable minimum version
+        subordinate = xmlutil.SubordinateTemplate(elem, 2)
+        self.assertEqual(subordinate.apply(main), True)
 
-        # Construct a slave template with equal minimum version
-        slave = xmlutil.SlaveTemplate(elem, 3)
-        self.assertEqual(slave.apply(master), True)
+        # Construct a subordinate template with equal minimum version
+        subordinate = xmlutil.SubordinateTemplate(elem, 3)
+        self.assertEqual(subordinate.apply(main), True)
 
-        # Construct a slave template with inapplicable minimum version
-        slave = xmlutil.SlaveTemplate(elem, 4)
-        self.assertEqual(slave.apply(master), False)
+        # Construct a subordinate template with inapplicable minimum version
+        subordinate = xmlutil.SubordinateTemplate(elem, 4)
+        self.assertEqual(subordinate.apply(main), False)
 
-        # Construct a slave template with applicable version range
-        slave = xmlutil.SlaveTemplate(elem, 2, 4)
-        self.assertEqual(slave.apply(master), True)
+        # Construct a subordinate template with applicable version range
+        subordinate = xmlutil.SubordinateTemplate(elem, 2, 4)
+        self.assertEqual(subordinate.apply(main), True)
 
-        # Construct a slave template with low version range
-        slave = xmlutil.SlaveTemplate(elem, 1, 2)
-        self.assertEqual(slave.apply(master), False)
+        # Construct a subordinate template with low version range
+        subordinate = xmlutil.SubordinateTemplate(elem, 1, 2)
+        self.assertEqual(subordinate.apply(main), False)
 
-        # Construct a slave template with high version range
-        slave = xmlutil.SlaveTemplate(elem, 4, 5)
-        self.assertEqual(slave.apply(master), False)
+        # Construct a subordinate template with high version range
+        subordinate = xmlutil.SubordinateTemplate(elem, 4, 5)
+        self.assertEqual(subordinate.apply(main), False)
 
-        # Construct a slave template with matching version range
-        slave = xmlutil.SlaveTemplate(elem, 3, 3)
-        self.assertEqual(slave.apply(master), True)
+        # Construct a subordinate template with matching version range
+        subordinate = xmlutil.SubordinateTemplate(elem, 3, 3)
+        self.assertEqual(subordinate.apply(main), True)
 
     def test__serialize(self):
         # Our test object to serialize
@@ -579,7 +579,7 @@ class TemplateTest(test.TestCase):
                                   'd': 4, },
                         'image': {'name': 'image_foobar', 'id': 42, }, }, }
 
-        # Set up our master template
+        # Set up our main template
         root = xmlutil.TemplateElement('test', selector='test',
                                        name='name')
         value = xmlutil.SubTemplateElement(root, 'value', selector='values')
@@ -587,22 +587,22 @@ class TemplateTest(test.TestCase):
         attrs = xmlutil.SubTemplateElement(root, 'attrs', selector='attrs')
         xmlutil.SubTemplateElement(attrs, 'attr', selector=xmlutil.get_items,
                                    key=0, value=1)
-        master = xmlutil.MasterTemplate(root, 1, nsmap=dict(f='foo'))
+        main = xmlutil.MainTemplate(root, 1, nsmap=dict(f='foo'))
 
-        # Set up our slave template
-        root_slave = xmlutil.TemplateElement('test', selector='test')
-        image = xmlutil.SubTemplateElement(root_slave, 'image',
+        # Set up our subordinate template
+        root_subordinate = xmlutil.TemplateElement('test', selector='test')
+        image = xmlutil.SubTemplateElement(root_subordinate, 'image',
                                            selector='image', id='id')
         image.text = xmlutil.Selector('name')
-        slave = xmlutil.SlaveTemplate(root_slave, 1, nsmap=dict(b='bar'))
+        subordinate = xmlutil.SubordinateTemplate(root_subordinate, 1, nsmap=dict(b='bar'))
 
-        # Attach the slave to the master...
-        master.attach(slave)
+        # Attach the subordinate to the main...
+        main.attach(subordinate)
 
         # Try serializing our object
-        siblings = master._siblings()
-        nsmap = master._nsmap()
-        result = master._serialize(None, obj, siblings, nsmap)
+        siblings = main._siblings()
+        nsmap = main._nsmap()
+        result = main._serialize(None, obj, siblings, nsmap)
 
         # Now we get to manually walk the element tree...
         self.assertEqual(result.tag, 'test')
@@ -632,7 +632,7 @@ class TemplateTest(test.TestCase):
                         'scope0:scope1:scope2:key3': 'Value3'
                         }}
 
-        # Set up our master template
+        # Set up our main template
         root = xmlutil.TemplateElement('test', selector='test')
         key1 = xmlutil.SubTemplateElement(root, 'scope0:key1',
                                           selector='scope0:key1')
@@ -643,7 +643,7 @@ class TemplateTest(test.TestCase):
         key3 = xmlutil.SubTemplateElement(root, 'scope0:scope1:scope2:key3',
                                           selector='scope0:scope1:scope2:key3')
         key3.text = xmlutil.Selector()
-        serializer = xmlutil.MasterTemplate(root, 1)
+        serializer = xmlutil.MainTemplate(root, 1)
         xml_list = []
         xml_list.append("<?xmlversion='1.0'encoding='UTF-8'?><test>")
         xml_list.append("<scope0><key1>Value1</key1><scope1>")
@@ -655,60 +655,60 @@ class TemplateTest(test.TestCase):
         self.assertEqual(result, expected_xml)
 
 
-class MasterTemplateBuilder(xmlutil.TemplateBuilder):
+class MainTemplateBuilder(xmlutil.TemplateBuilder):
     def construct(self):
         elem = xmlutil.TemplateElement('test')
-        return xmlutil.MasterTemplate(elem, 1)
+        return xmlutil.MainTemplate(elem, 1)
 
 
-class SlaveTemplateBuilder(xmlutil.TemplateBuilder):
+class SubordinateTemplateBuilder(xmlutil.TemplateBuilder):
     def construct(self):
         elem = xmlutil.TemplateElement('test')
-        return xmlutil.SlaveTemplate(elem, 1)
+        return xmlutil.SubordinateTemplate(elem, 1)
 
 
 class TemplateBuilderTest(test.TestCase):
-    def test_master_template_builder(self):
+    def test_main_template_builder(self):
         # Make sure the template hasn't been built yet
-        self.assertIsNone(MasterTemplateBuilder._tmpl)
+        self.assertIsNone(MainTemplateBuilder._tmpl)
 
         # Now, construct the template
-        tmpl1 = MasterTemplateBuilder()
+        tmpl1 = MainTemplateBuilder()
 
         # Make sure that there is a template cached...
-        self.assertIsNotNone(MasterTemplateBuilder._tmpl)
+        self.assertIsNotNone(MainTemplateBuilder._tmpl)
 
         # Make sure it wasn't what was returned...
-        self.assertNotEqual(MasterTemplateBuilder._tmpl, tmpl1)
+        self.assertNotEqual(MainTemplateBuilder._tmpl, tmpl1)
 
         # Make sure it doesn't get rebuilt
-        cached = MasterTemplateBuilder._tmpl
-        tmpl2 = MasterTemplateBuilder()
-        self.assertEqual(MasterTemplateBuilder._tmpl, cached)
+        cached = MainTemplateBuilder._tmpl
+        tmpl2 = MainTemplateBuilder()
+        self.assertEqual(MainTemplateBuilder._tmpl, cached)
 
         # Make sure we're always getting fresh copies
         self.assertNotEqual(tmpl1, tmpl2)
 
         # Make sure we can override the copying behavior
-        tmpl3 = MasterTemplateBuilder(False)
-        self.assertEqual(MasterTemplateBuilder._tmpl, tmpl3)
+        tmpl3 = MainTemplateBuilder(False)
+        self.assertEqual(MainTemplateBuilder._tmpl, tmpl3)
 
-    def test_slave_template_builder(self):
+    def test_subordinate_template_builder(self):
         # Make sure the template hasn't been built yet
-        self.assertIsNone(SlaveTemplateBuilder._tmpl)
+        self.assertIsNone(SubordinateTemplateBuilder._tmpl)
 
         # Now, construct the template
-        tmpl1 = SlaveTemplateBuilder()
+        tmpl1 = SubordinateTemplateBuilder()
 
         # Make sure there is a template cached...
-        self.assertIsNotNone(SlaveTemplateBuilder._tmpl)
+        self.assertIsNotNone(SubordinateTemplateBuilder._tmpl)
 
         # Make sure it was what was returned...
-        self.assertEqual(SlaveTemplateBuilder._tmpl, tmpl1)
+        self.assertEqual(SubordinateTemplateBuilder._tmpl, tmpl1)
 
         # Make sure it doesn't get rebuilt
-        tmpl2 = SlaveTemplateBuilder()
-        self.assertEqual(SlaveTemplateBuilder._tmpl, tmpl1)
+        tmpl2 = SubordinateTemplateBuilder()
+        self.assertEqual(SubordinateTemplateBuilder._tmpl, tmpl1)
 
         # Make sure we're always getting the cached copy
         self.assertEqual(tmpl1, tmpl2)
@@ -719,6 +719,6 @@ class MiscellaneousXMLUtilTests(test.TestCase):
         expected_xml = ("<?xml version='1.0' encoding='UTF-8'?>\n"
                         '<wrapper><a>foo</a><b>bar</b></wrapper>')
         root = xmlutil.make_flat_dict('wrapper')
-        tmpl = xmlutil.MasterTemplate(root, 1)
+        tmpl = xmlutil.MainTemplate(root, 1)
         result = tmpl.serialize(dict(wrapper=dict(a='foo', b='bar')))
         self.assertEqual(result, expected_xml)

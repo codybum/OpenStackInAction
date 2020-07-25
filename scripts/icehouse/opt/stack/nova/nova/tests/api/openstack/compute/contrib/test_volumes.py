@@ -96,7 +96,7 @@ def fake_compute_volume_snapshot_create(self, context, volume_id,
     pass
 
 
-def fake_bdms_get_all_by_instance(context, instance_uuid, use_slave=False):
+def fake_bdms_get_all_by_instance(context, instance_uuid, use_subordinate=False):
     return [fake_block_device.FakeDbBlockDeviceDict(
             {'id': 1,
              'instance_uuid': instance_uuid,

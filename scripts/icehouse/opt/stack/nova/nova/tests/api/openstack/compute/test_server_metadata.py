@@ -90,7 +90,7 @@ def return_server(context, server_id, columns_to_join=None):
 
 
 def return_server_by_uuid(context, server_uuid,
-                          columns_to_join=None, use_slave=False):
+                          columns_to_join=None, use_subordinate=False):
     return fake_instance.fake_db_instance(
         **{'id': 1,
            'uuid': '0cc3346e-9fef-4445-abe6-5d2b2690ec64',
@@ -102,7 +102,7 @@ def return_server_by_uuid(context, server_uuid,
 
 
 def return_server_nonexistent(context, server_id,
-        columns_to_join=None, use_slave=False):
+        columns_to_join=None, use_subordinate=False):
     raise exception.InstanceNotFound(instance_id=server_id)
 
 
@@ -568,7 +568,7 @@ class BadStateServerMetaDataTest(BaseTest):
                'vm_state': vm_states.BUILDING})
 
     def _return_server_in_build_by_uuid(self, context, server_uuid,
-                                        columns_to_join=None, use_slave=False):
+                                        columns_to_join=None, use_subordinate=False):
         return fake_instance.fake_db_instance(
             **{'id': 1,
                'uuid': '0cc3346e-9fef-4445-abe6-5d2b2690ec64',

@@ -445,8 +445,8 @@ class ServerPool(object):
                                         timeout=None)
             # Store the first response as the error to be bubbled up to the
             # user since it was a good server. Subsequent servers will most
-            # likely be cluster slaves and won't have a useful error for the
-            # user (e.g. 302 redirect to master)
+            # likely be cluster subordinates and won't have a useful error for the
+            # user (e.g. 302 redirect to main)
             if not first_response:
                 first_response = ret
             if not self.server_failure(ret, ignore_codes):

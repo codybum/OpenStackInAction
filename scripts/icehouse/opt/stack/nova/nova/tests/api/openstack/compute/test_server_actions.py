@@ -631,7 +631,7 @@ class ServerActionsControllerTest(test.TestCase):
 
     def test_rebuild_server_not_found(self):
         def server_not_found(self, instance_id,
-                             columns_to_join=None, use_slave=False):
+                             columns_to_join=None, use_subordinate=False):
             raise exception.InstanceNotFound(instance_id=instance_id)
         self.stubs.Set(db, 'instance_get_by_uuid', server_not_found)
 
@@ -1022,7 +1022,7 @@ class ServerActionsControllerTest(test.TestCase):
         image_service.create(None, original_image)
 
         def fake_block_device_mapping_get_all_by_instance(context, inst_id,
-                                                          use_slave=False):
+                                                          use_subordinate=False):
             return [fake_block_device.FakeDbBlockDeviceDict(
                         {'volume_id': _fake_id('a'),
                          'source_type': 'snapshot',
@@ -1097,7 +1097,7 @@ class ServerActionsControllerTest(test.TestCase):
         image_service = glance.get_default_image_service()
 
         def fake_block_device_mapping_get_all_by_instance(context, inst_id,
-                                                          use_slave=False):
+                                                          use_subordinate=False):
             return [fake_block_device.FakeDbBlockDeviceDict(
                         {'volume_id': _fake_id('a'),
                          'source_type': 'snapshot',

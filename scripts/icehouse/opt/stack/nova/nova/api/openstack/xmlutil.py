@@ -671,13 +671,13 @@ class Template(object):
         # We are a template
         return self
 
-    def apply(self, master):
-        """Hook method for determining slave applicability.
+    def apply(self, main):
+        """Hook method for determining subordinate applicability.
 
         An overridable hook method used to determine if this template
-        is applicable as a slave to a given master template.
+        is applicable as a subordinate to a given main template.
 
-        :param master: The master template to test.
+        :param main: The main template to test.
         """
 
         return True
@@ -692,17 +692,17 @@ class Template(object):
         return "%r: %s" % (self, self.root.tree())
 
 
-class MasterTemplate(Template):
-    """Represent a master template.
+class MainTemplate(Template):
+    """Represent a main template.
 
-    Master templates are versioned derivatives of templates that
-    additionally allow slave templates to be attached.  Slave
+    Main templates are versioned derivatives of templates that
+    additionally allow subordinate templates to be attached.  Subordinate
     templates allow modification of the serialized result without
-    directly changing the master.
+    directly changing the main.
     """
 
     def __init__(self, root, version, nsmap=None):
-        """Initialize a master template.
+        """Initialize a main template.
 
         :param root: The root element of the template.
         :param version: The version number of the template.
@@ -711,9 +711,9 @@ class MasterTemplate(Template):
                       template.
         """
 
-        super(MasterTemplate, self).__init__(root, nsmap)
+        super(MainTemplate, self).__init__(root, nsmap)
         self.version = version
-        self.slaves = []
+        self.subordinates = []
 
     def __repr__(self):
         """Return string representation of the template."""
@@ -727,88 +727,88 @@ class MasterTemplate(Template):
 
         An overridable hook method to return the siblings of the root
         element.  This is the root element plus the root elements of
-        all the slave templates.
+        all the subordinate templates.
         """
 
-        return [self.root] + [slave.root for slave in self.slaves]
+        return [self.root] + [subordinate.root for subordinate in self.subordinates]
 
     def _nsmap(self):
         """Hook method for computing the namespace dictionary.
 
         An overridable hook method to return the namespace dictionary.
-        The namespace dictionary is computed by taking the master
+        The namespace dictionary is computed by taking the main
         template's namespace dictionary and updating it from all the
-        slave templates.
+        subordinate templates.
         """
 
         nsmap = self.nsmap.copy()
-        for slave in self.slaves:
-            nsmap.update(slave._nsmap())
+        for subordinate in self.subordinates:
+            nsmap.update(subordinate._nsmap())
         return nsmap
 
-    def attach(self, *slaves):
-        """Attach one or more slave templates.
+    def attach(self, *subordinates):
+        """Attach one or more subordinate templates.
 
-        Attaches one or more slave templates to the master template.
-        Slave templates must have a root element with the same tag as
-        the master template.  The slave template's apply() method will
-        be called to determine if the slave should be applied to this
-        master; if it returns False, that slave will be skipped.
-        (This allows filtering of slaves based on the version of the
-        master template.)
+        Attaches one or more subordinate templates to the main template.
+        Subordinate templates must have a root element with the same tag as
+        the main template.  The subordinate template's apply() method will
+        be called to determine if the subordinate should be applied to this
+        main; if it returns False, that subordinate will be skipped.
+        (This allows filtering of subordinates based on the version of the
+        main template.)
         """
 
-        slave_list = []
-        for slave in slaves:
-            slave = slave.wrap()
+        subordinate_list = []
+        for subordinate in subordinates:
+            subordinate = subordinate.wrap()
 
             # Make sure we have a tree match
-            if slave.root.tag != self.root.tag:
-                msg = _("Template tree mismatch; adding slave %(slavetag)s to "
-                        "master %(mastertag)s") % {'slavetag': slave.root.tag,
-                                                   'mastertag': self.root.tag}
+            if subordinate.root.tag != self.root.tag:
+                msg = _("Template tree mismatch; adding subordinate %(subordinatetag)s to "
+                        "main %(maintag)s") % {'subordinatetag': subordinate.root.tag,
+                                                   'maintag': self.root.tag}
                 raise ValueError(msg)
 
-            # Make sure slave applies to this template
-            if not slave.apply(self):
+            # Make sure subordinate applies to this template
+            if not subordinate.apply(self):
                 continue
 
-            slave_list.append(slave)
+            subordinate_list.append(subordinate)
 
-        # Add the slaves
-        self.slaves.extend(slave_list)
+        # Add the subordinates
+        self.subordinates.extend(subordinate_list)
 
     def copy(self):
-        """Return a copy of this master template."""
+        """Return a copy of this main template."""
 
-        # Return a copy of the MasterTemplate
+        # Return a copy of the MainTemplate
         tmp = self.__class__(self.root, self.version, self.nsmap)
-        tmp.slaves = self.slaves[:]
+        tmp.subordinates = self.subordinates[:]
         return tmp
 
 
-class SlaveTemplate(Template):
-    """Represent a slave template.
+class SubordinateTemplate(Template):
+    """Represent a subordinate template.
 
-    Slave templates are versioned derivatives of templates.  Each
-    slave has a minimum version and optional maximum version of the
-    master template to which they can be attached.
+    Subordinate templates are versioned derivatives of templates.  Each
+    subordinate has a minimum version and optional maximum version of the
+    main template to which they can be attached.
     """
 
     def __init__(self, root, min_vers, max_vers=None, nsmap=None):
-        """Initialize a slave template.
+        """Initialize a subordinate template.
 
         :param root: The root element of the template.
-        :param min_vers: The minimum permissible version of the master
-                         template for this slave template to apply.
-        :param max_vers: An optional upper bound for the master
+        :param min_vers: The minimum permissible version of the main
+                         template for this subordinate template to apply.
+        :param max_vers: An optional upper bound for the main
                          template version.
         :param nsmap: An optional namespace dictionary to be
                       associated with the root element of the
                       template.
         """
 
-        super(SlaveTemplate, self).__init__(root, nsmap)
+        super(SubordinateTemplate, self).__init__(root, nsmap)
         self.min_vers = min_vers
         self.max_vers = max_vers
 
@@ -819,23 +819,23 @@ class SlaveTemplate(Template):
                 (self.__class__.__module__, self.__class__.__name__,
                  self.min_vers, self.max_vers, id(self)))
 
-    def apply(self, master):
-        """Hook method for determining slave applicability.
+    def apply(self, main):
+        """Hook method for determining subordinate applicability.
 
         An overridable hook method used to determine if this template
-        is applicable as a slave to a given master template.  This
-        version requires the master template to have a version number
+        is applicable as a subordinate to a given main template.  This
+        version requires the main template to have a version number
         between min_vers and max_vers.
 
-        :param master: The master template to test.
+        :param main: The main template to test.
         """
 
-        # Does the master meet our minimum version requirement?
-        if master.version < self.min_vers:
+        # Does the main meet our minimum version requirement?
+        if main.version < self.min_vers:
             return False
 
         # How about our maximum version requirement?
-        if self.max_vers is not None and master.version > self.max_vers:
+        if self.max_vers is not None and main.version > self.max_vers:
             return False
 
         return True

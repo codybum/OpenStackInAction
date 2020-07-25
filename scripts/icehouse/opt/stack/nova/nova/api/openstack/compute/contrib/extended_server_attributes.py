@@ -39,7 +39,7 @@ class ExtendedServerAttributesController(wsgi.Controller):
     def show(self, req, resp_obj, id):
         context = req.environ['nova.context']
         if authorize(context):
-            # Attach our slave template to the response object
+            # Attach our subordinate template to the response object
             resp_obj.attach(xml=ExtendedServerAttributeTemplate())
             server = resp_obj.obj['server']
             db_instance = req.get_db_instance(server['id'])
@@ -51,7 +51,7 @@ class ExtendedServerAttributesController(wsgi.Controller):
     def detail(self, req, resp_obj):
         context = req.environ['nova.context']
         if authorize(context):
-            # Attach our slave template to the response object
+            # Attach our subordinate template to the response object
             resp_obj.attach(xml=ExtendedServerAttributesTemplate())
 
             servers = list(resp_obj.obj['servers'])
@@ -92,7 +92,7 @@ class ExtendedServerAttributeTemplate(xmlutil.TemplateBuilder):
         make_server(root)
         alias = Extended_server_attributes.alias
         namespace = Extended_server_attributes.namespace
-        return xmlutil.SlaveTemplate(root, 1, nsmap={alias: namespace})
+        return xmlutil.SubordinateTemplate(root, 1, nsmap={alias: namespace})
 
 
 class ExtendedServerAttributesTemplate(xmlutil.TemplateBuilder):
@@ -102,4 +102,4 @@ class ExtendedServerAttributesTemplate(xmlutil.TemplateBuilder):
         make_server(elem)
         alias = Extended_server_attributes.alias
         namespace = Extended_server_attributes.namespace
-        return xmlutil.SlaveTemplate(root, 1, nsmap={alias: namespace})
+        return xmlutil.SubordinateTemplate(root, 1, nsmap={alias: namespace})

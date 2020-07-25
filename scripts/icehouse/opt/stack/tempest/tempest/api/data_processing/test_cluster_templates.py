@@ -59,7 +59,7 @@ class ClusterTemplateTest(dp_base.BaseDataProcessingTest):
             },
             'node_groups': [
                 {
-                    'name': 'master-node',
+                    'name': 'main-node',
                     'flavor_id': cls.flavor_ref,
                     'node_processes': ['namenode'],
                     'count': 1

@@ -84,13 +84,13 @@ class LocalAPI(object):
     def instance_get_all_by_filters(self, context, filters,
                                     sort_key='created_at',
                                     sort_dir='desc',
-                                    columns_to_join=None, use_slave=False):
+                                    columns_to_join=None, use_subordinate=False):
         return self._manager.instance_get_all_by_filters(context,
                                                          filters,
                                                          sort_key,
                                                          sort_dir,
                                                          columns_to_join,
-                                                         use_slave)
+                                                         use_subordinate)
 
     def instance_get_active_by_window_joined(self, context, begin, end=None,
                                              project_id=None, host=None):

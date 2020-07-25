@@ -2425,7 +2425,7 @@ class CloudTestCase(test.TestCase):
         self.stubs.Set(fake._FakeImageService, 'show', fake_show)
 
         def fake_block_device_mapping_get_all_by_instance(context, inst_id,
-                                                          use_slave=False):
+                                                          use_subordinate=False):
             return [fake_block_device.FakeDbBlockDeviceDict(
                         {'volume_id': volumes[0],
                          'snapshot_id': snapshots[0],
@@ -2500,7 +2500,7 @@ class CloudTestCase(test.TestCase):
         ec2_instance_id = self._run_instance(**kwargs)
 
         def fake_block_device_mapping_get_all_by_instance(context, inst_id,
-                                                          use_slave=False):
+                                                          use_subordinate=False):
             return [fake_block_device.FakeDbBlockDeviceDict(
                         {'volume_id': volumes[0],
                          'snapshot_id': snapshots[0],

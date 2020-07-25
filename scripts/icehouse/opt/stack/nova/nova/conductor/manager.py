@@ -354,10 +354,10 @@ class ConductorManager(manager.Manager):
 
     def instance_get_all_by_filters(self, context, filters, sort_key,
                                     sort_dir, columns_to_join=None,
-                                    use_slave=False):
+                                    use_subordinate=False):
         result = self.db.instance_get_all_by_filters(
             context, filters, sort_key, sort_dir,
-            columns_to_join=columns_to_join, use_slave=use_slave)
+            columns_to_join=columns_to_join, use_subordinate=use_subordinate)
         return jsonutils.to_primitive(result)
 
     # NOTE(hanlind): This method can be removed in v2.0 of the RPC API.
@@ -929,9 +929,9 @@ class _ConductorManagerV2Proxy(object):
                 instance, legacy)
 
     def instance_get_all_by_filters(self, context, filters, sort_key,
-                                    sort_dir, columns_to_join, use_slave):
+                                    sort_dir, columns_to_join, use_subordinate):
         return self.manager.instance_get_all_by_filters(context, filters,
-                sort_key, sort_dir, columns_to_join, use_slave)
+                sort_key, sort_dir, columns_to_join, use_subordinate)
 
     def instance_get_active_by_window_joined(self, context, begin, end,
                                              project_id, host):

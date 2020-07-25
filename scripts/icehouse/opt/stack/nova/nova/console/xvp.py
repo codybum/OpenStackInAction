@@ -40,7 +40,7 @@ xvp_opts = [
                help='Generated XVP conf file'),
     cfg.StrOpt('console_xvp_pid',
                default='/var/run/xvp.pid',
-               help='XVP master process pid file'),
+               help='XVP main process pid file'),
     cfg.StrOpt('console_xvp_log',
                default='/var/log/xvp.log',
                help='XVP log file'),

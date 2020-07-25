@@ -1215,8 +1215,8 @@ class SecurityGroupTestCase(test.TestCase, ModelsObjectComparatorMixin):
 
         session = get_session()
         self.mox.StubOutWithMock(sqlalchemy_api, 'get_session')
-        sqlalchemy_api.get_session(use_slave=False).AndReturn(session)
-        sqlalchemy_api.get_session(use_slave=False).AndReturn(session)
+        sqlalchemy_api.get_session(use_subordinate=False).AndReturn(session)
+        sqlalchemy_api.get_session(use_subordinate=False).AndReturn(session)
         self.mox.ReplayAll()
 
         security_group = db.security_group_get(self.ctxt, sid,

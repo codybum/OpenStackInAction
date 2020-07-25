@@ -616,21 +616,21 @@ class ConductorTestCase(_BaseTestCase, test.TestCase):
         self.mox.StubOutWithMock(db, 'instance_get_all_by_filters')
         db.instance_get_all_by_filters(self.context, filters,
                                        'fake-key', 'fake-sort',
-                                       columns_to_join=None, use_slave=False)
+                                       columns_to_join=None, use_subordinate=False)
         self.mox.ReplayAll()
         self.conductor.instance_get_all_by_filters(self.context, filters,
                                                    'fake-key', 'fake-sort')
 
-    def test_instance_get_all_by_filters_use_slave(self):
+    def test_instance_get_all_by_filters_use_subordinate(self):
         filters = {'foo': 'bar'}
         self.mox.StubOutWithMock(db, 'instance_get_all_by_filters')
         db.instance_get_all_by_filters(self.context, filters,
                                        'fake-key', 'fake-sort',
-                                       columns_to_join=None, use_slave=True)
+                                       columns_to_join=None, use_subordinate=True)
         self.mox.ReplayAll()
         self.conductor.instance_get_all_by_filters(self.context, filters,
                                                    'fake-key', 'fake-sort',
-                                                   use_slave=True)
+                                                   use_subordinate=True)
 
     def test_instance_get_all_by_host(self):
         self.mox.StubOutWithMock(db, 'instance_get_all_by_host')
@@ -898,21 +898,21 @@ class ConductorRPCAPITestCase(_BaseTestCase, test.TestCase):
         self.mox.StubOutWithMock(db, 'instance_get_all_by_filters')
         db.instance_get_all_by_filters(self.context, filters,
                                        'fake-key', 'fake-sort',
-                                       columns_to_join=None, use_slave=False)
+                                       columns_to_join=None, use_subordinate=False)
         self.mox.ReplayAll()
         self.conductor.instance_get_all_by_filters(self.context, filters,
                                                    'fake-key', 'fake-sort')
 
-    def test_instance_get_all_by_filters_use_slave(self):
+    def test_instance_get_all_by_filters_use_subordinate(self):
         filters = {'foo': 'bar'}
         self.mox.StubOutWithMock(db, 'instance_get_all_by_filters')
         db.instance_get_all_by_filters(self.context, filters,
                                        'fake-key', 'fake-sort',
-                                       columns_to_join=None, use_slave=True)
+                                       columns_to_join=None, use_subordinate=True)
         self.mox.ReplayAll()
         self.conductor.instance_get_all_by_filters(self.context, filters,
                                                    'fake-key', 'fake-sort',
-                                                   use_slave=True)
+                                                   use_subordinate=True)
 
     def _test_stubbed(self, name, dbargs, condargs,
                       db_result_listified=False, db_exception=None):

@@ -25,7 +25,7 @@ cases.
 A 'created' pool becomes 'changing' during the first request of
 adding a host. During a 'changing' status no other requests will be accepted;
 this is to allow the hypervisor layer to instantiate the underlying pool
-without any potential race condition that may incur in master/slave-based
+without any potential race condition that may incur in main/subordinate-based
 configurations. The pool goes into the 'active' state when the underlying
 pool has been correctly instantiated.
 All other operations (e.g. add/remove hosts) that succeed will keep the

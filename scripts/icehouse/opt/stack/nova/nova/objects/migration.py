@@ -83,7 +83,7 @@ class Migration(base.NovaPersistentObject, base.NovaObject):
 class MigrationList(base.ObjectListBase, base.NovaObject):
     # Version 1.0: Initial version
     #              Migration <= 1.1
-    # Version 1.1: Added use_slave to get_unconfirmed_by_dest_compute
+    # Version 1.1: Added use_subordinate to get_unconfirmed_by_dest_compute
     VERSION = '1.1'
 
     fields = {
@@ -97,9 +97,9 @@ class MigrationList(base.ObjectListBase, base.NovaObject):
 
     @base.remotable_classmethod
     def get_unconfirmed_by_dest_compute(cls, context, confirm_window,
-                                        dest_compute, use_slave=False):
+                                        dest_compute, use_subordinate=False):
         db_migrations = db.migration_get_unconfirmed_by_dest_compute(
-            context, confirm_window, dest_compute, use_slave=use_slave)
+            context, confirm_window, dest_compute, use_subordinate=use_subordinate)
         return base.obj_make_list(context, MigrationList(), Migration,
                                   db_migrations)
 

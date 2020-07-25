@@ -48,7 +48,7 @@ class TestWorkerBasedActionEngine(test.MockTestCase):
                                      transport_options=None,
                                      transition_timeout=mock.ANY)
         ]
-        self.assertEqual(self.master_mock.mock_calls, expected_calls)
+        self.assertEqual(self.main_mock.mock_calls, expected_calls)
 
     def test_creation_custom(self):
         flow = lf.Flow('test-flow').add(utils.DummyTask())
@@ -68,4 +68,4 @@ class TestWorkerBasedActionEngine(test.MockTestCase):
                                      transport_options={},
                                      transition_timeout=200)
         ]
-        self.assertEqual(self.master_mock.mock_calls, expected_calls)
+        self.assertEqual(self.main_mock.mock_calls, expected_calls)

@@ -772,7 +772,7 @@ try:
                     raise
 
             if self.link_index:
-                src = app.config.master_doc + app.builder.out_suffix
+                src = app.config.main_doc + app.builder.out_suffix
                 dst = app.builder.get_outfilename('index')
                 os.symlink(src, dst)
 

@@ -332,11 +332,11 @@ database_opts = [
                                                   group='DATABASE'),
                                 cfg.DeprecatedOpt('connection',
                                                   group='sql'), ]),
-    cfg.StrOpt('slave_connection',
+    cfg.StrOpt('subordinate_connection',
                default='',
                secret=True,
                help='The SQLAlchemy connection string used to connect to the '
-                    'slave database'),
+                    'subordinate database'),
     cfg.IntOpt('idle_timeout',
                default=3600,
                deprecated_opts=[cfg.DeprecatedOpt('sql_idle_timeout',
@@ -463,21 +463,21 @@ class SqliteForeignKeysListener(PoolListener):
 
 
 def get_session(autocommit=True, expire_on_commit=False, sqlite_fk=False,
-                slave_session=False, mysql_traditional_mode=False):
+                subordinate_session=False, mysql_traditional_mode=False):
     """Return a SQLAlchemy session."""
     global _MAKER
     global _SLAVE_MAKER
     maker = _MAKER
 
-    if slave_session:
+    if subordinate_session:
         maker = _SLAVE_MAKER
 
     if maker is None:
-        engine = get_engine(sqlite_fk=sqlite_fk, slave_engine=slave_session,
+        engine = get_engine(sqlite_fk=sqlite_fk, subordinate_engine=subordinate_session,
                             mysql_traditional_mode=mysql_traditional_mode)
         maker = get_maker(engine, autocommit, expire_on_commit)
 
-    if slave_session:
+    if subordinate_session:
         _SLAVE_MAKER = maker
     else:
         _MAKER = maker
@@ -620,7 +620,7 @@ def _wrap_db_error(f):
     return _wrap
 
 
-def get_engine(sqlite_fk=False, slave_engine=False,
+def get_engine(sqlite_fk=False, subordinate_engine=False,
                mysql_traditional_mode=False):
     """Return a SQLAlchemy engine."""
     global _ENGINE
@@ -628,14 +628,14 @@ def get_engine(sqlite_fk=False, slave_engine=False,
     engine = _ENGINE
     db_uri = CONF.database.connection
 
-    if slave_engine:
+    if subordinate_engine:
         engine = _SLAVE_ENGINE
-        db_uri = CONF.database.slave_connection
+        db_uri = CONF.database.subordinate_connection
 
     if engine is None:
         engine = create_engine(db_uri, sqlite_fk=sqlite_fk,
                                mysql_traditional_mode=mysql_traditional_mode)
-    if slave_engine:
+    if subordinate_engine:
         _SLAVE_ENGINE = engine
     else:
         _ENGINE = engine
@@ -730,7 +730,7 @@ def create_engine(sql_connection, sqlite_fk=False,
                   mysql_traditional_mode=False):
     """Return a new SQLAlchemy engine."""
     # NOTE(geekinutah): At this point we could be connecting to the normal
-    #                   db handle or the slave db handle. Things like
+    #                   db handle or the subordinate db handle. Things like
     #                   _wrap_db_error aren't going to work well if their
     #                   backends don't match. Let's check.
     _assert_matching_drivers()
@@ -893,12 +893,12 @@ def _patch_mysqldb_with_stacktrace_comments():
 
 
 def _assert_matching_drivers():
-    """Make sure slave handle and normal handle have the same driver."""
+    """Make sure subordinate handle and normal handle have the same driver."""
     # NOTE(geekinutah): There's no use case for writing to one backend and
     #                 reading from another. Who knows what the future holds?
-    if CONF.database.slave_connection == '':
+    if CONF.database.subordinate_connection == '':
         return
 
     normal = sqlalchemy.engine.url.make_url(CONF.database.connection)
-    slave = sqlalchemy.engine.url.make_url(CONF.database.slave_connection)
-    assert normal.drivername == slave.drivername
+    subordinate = sqlalchemy.engine.url.make_url(CONF.database.subordinate_connection)
+    assert normal.drivername == subordinate.drivername

@@ -124,7 +124,7 @@ class ConductorAPI(object):
     1.62 - Added object_backport()
     1.63 - Changed the format of values['stats'] from a dict to a JSON string
            in compute_node_update()
-    1.64 - Added use_slave to instance_get_all_filters()
+    1.64 - Added use_subordinate to instance_get_all_filters()
     ...  - Remove instance_type_get()
     ...  - Remove aggregate_get()
     ...  - Remove aggregate_get_by_host()
@@ -232,10 +232,10 @@ class ConductorAPI(object):
 
     def instance_get_all_by_filters(self, context, filters, sort_key,
                                     sort_dir, columns_to_join=None,
-                                    use_slave=False):
+                                    use_subordinate=False):
         msg_kwargs = dict(filters=filters, sort_key=sort_key,
                           sort_dir=sort_dir, columns_to_join=columns_to_join,
-                          use_slave=use_slave)
+                          use_subordinate=use_subordinate)
         cctxt = self.client.prepare()
         return cctxt.call(context, 'instance_get_all_by_filters', **msg_kwargs)
 

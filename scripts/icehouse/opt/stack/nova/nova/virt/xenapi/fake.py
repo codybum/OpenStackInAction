@@ -114,7 +114,7 @@ def create_host(name_label, hostname='fake_name', address='fake_addr'):
     # Create a pool if we don't have one already
     if len(_db_content['pool']) == 0:
         pool_ref = _create_pool('')
-        _db_content['pool'][pool_ref]['master'] = host_ref
+        _db_content['pool'][pool_ref]['main'] = host_ref
         _db_content['pool'][pool_ref]['default-SR'] = host_default_sr_ref
         _db_content['pool'][pool_ref]['suspend-image-SR'] = host_default_sr_ref
 
@@ -833,7 +833,7 @@ class SessionBase(object):
             return self._session
         elif name == 'xenapi':
             return _Dispatcher(self.xenapi_request, None)
-        elif name.startswith('login') or name.startswith('slave_local'):
+        elif name.startswith('login') or name.startswith('subordinate_local'):
             return lambda *params: self._login(name, params)
         elif name.startswith('Async'):
             return lambda *params: self._async(name, params)

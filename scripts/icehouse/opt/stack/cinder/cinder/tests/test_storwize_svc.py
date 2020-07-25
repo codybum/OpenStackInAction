@@ -2135,29 +2135,29 @@ class StorwizeSVCDriverTestCase(test.TestCase):
 
     def test_storwize_svc_delete_volume_snapshots(self):
         # Create a volume with two snapshots
-        master = self._create_volume()
+        main = self._create_volume()
 
         # Fail creating a snapshot - will force delete the snapshot
         if self.USESIM and False:
-            snap = self._generate_vol_info(master['name'], master['id'])
+            snap = self._generate_vol_info(main['name'], main['id'])
             self.sim.error_injection('startfcmap', 'bad_id')
             self.assertRaises(exception.VolumeBackendAPIException,
                               self.driver.create_snapshot, snap)
             self._assert_vol_exists(snap['name'], False)
 
         # Delete a snapshot
-        snap = self._generate_vol_info(master['name'], master['id'])
+        snap = self._generate_vol_info(main['name'], main['id'])
         self.driver.create_snapshot(snap)
         self._assert_vol_exists(snap['name'], True)
         self.driver.delete_snapshot(snap)
         self._assert_vol_exists(snap['name'], False)
 
         # Delete a volume with snapshots (regular)
-        snap = self._generate_vol_info(master['name'], master['id'])
+        snap = self._generate_vol_info(main['name'], main['id'])
         self.driver.create_snapshot(snap)
         self._assert_vol_exists(snap['name'], True)
-        self.driver.delete_volume(master)
-        self._assert_vol_exists(master['name'], False)
+        self.driver.delete_volume(main)
+        self._assert_vol_exists(main['name'], False)
 
         # Fail create volume from snapshot - will force delete the volume
         if self.USESIM:

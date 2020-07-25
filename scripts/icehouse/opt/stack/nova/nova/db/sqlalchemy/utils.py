@@ -114,7 +114,7 @@ def _get_unique_constraints_in_sqlite(migrate_engine, table_name):
         """
             SELECT sql
             FROM
-                sqlite_master
+                sqlite_main
             WHERE
                 type = 'table' AND
                 name = :table_name;

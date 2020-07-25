@@ -1444,7 +1444,7 @@ class XenAPIVMTestCase(stubs.XenAPITestBase):
         fake_inst2 = fake_instance.fake_db_instance(id=456)
         db.instance_get_all_by_host(self.context, fake_inst['host'],
                                     columns_to_join=None,
-                                    use_slave=False
+                                    use_subordinate=False
                                     ).AndReturn([fake_inst, fake_inst2])
         self.mox.ReplayAll()
         expected_name = CONF.instance_name_template % fake_inst['id']
@@ -1461,7 +1461,7 @@ class XenAPIVMTestCase(stubs.XenAPITestBase):
         self.stubs.Set(db, "aggregate_get_by_host",
                        fake_aggregate_get_by_host)
 
-        self.stubs.Set(self.conn._session, "is_slave", True)
+        self.stubs.Set(self.conn._session, "is_subordinate", True)
 
         self.assertRaises(test.TestingException,
                 self.conn._session._get_host_uuid)
@@ -2890,7 +2890,7 @@ class XenAPIAggregateTestCase(stubs.XenAPITestBase):
                   pool_states.POOL_FLAG: 'XenAPI'}}
         self.aggr = db.aggregate_create(self.context, values)
         self.fake_metadata = {pool_states.POOL_FLAG: 'XenAPI',
-                              'master_compute': 'host',
+                              'main_compute': 'host',
                               'availability_zone': 'fake_zone',
                               pool_states.KEY: pool_states.ACTIVE,
                               'host': xenapi_fake.get_record('host',
@@ -2900,18 +2900,18 @@ class XenAPIAggregateTestCase(stubs.XenAPITestBase):
 
         calls = []
 
-        def pool_add_to_aggregate(context, aggregate, host, slave_info=None):
+        def pool_add_to_aggregate(context, aggregate, host, subordinate_info=None):
             self.assertEqual("CONTEXT", context)
             self.assertEqual("AGGREGATE", aggregate)
             self.assertEqual("HOST", host)
-            self.assertEqual("SLAVEINFO", slave_info)
+            self.assertEqual("SLAVEINFO", subordinate_info)
             calls.append(pool_add_to_aggregate)
         self.stubs.Set(self.conn._pool,
                        "add_to_aggregate",
                        pool_add_to_aggregate)
 
         self.conn.add_to_aggregate("CONTEXT", "AGGREGATE", "HOST",
-                                   slave_info="SLAVEINFO")
+                                   subordinate_info="SLAVEINFO")
 
         self.assertIn(pool_add_to_aggregate, calls)
 
@@ -2920,18 +2920,18 @@ class XenAPIAggregateTestCase(stubs.XenAPITestBase):
         calls = []
 
         def pool_remove_from_aggregate(context, aggregate, host,
-                                       slave_info=None):
+                                       subordinate_info=None):
             self.assertEqual("CONTEXT", context)
             self.assertEqual("AGGREGATE", aggregate)
             self.assertEqual("HOST", host)
-            self.assertEqual("SLAVEINFO", slave_info)
+            self.assertEqual("SLAVEINFO", subordinate_info)
             calls.append(pool_remove_from_aggregate)
         self.stubs.Set(self.conn._pool,
                        "remove_from_aggregate",
                        pool_remove_from_aggregate)
 
         self.conn.remove_from_aggregate("CONTEXT", "AGGREGATE", "HOST",
-                                        slave_info="SLAVEINFO")
+                                        subordinate_info="SLAVEINFO")
 
         self.assertIn(pool_remove_from_aggregate, calls)
 
@@ -2947,11 +2947,11 @@ class XenAPIAggregateTestCase(stubs.XenAPITestBase):
         self.assertThat(self.fake_metadata,
                         matchers.DictMatches(result['metadetails']))
 
-    def test_join_slave(self):
-        # Ensure join_slave gets called when the request gets to master.
-        def fake_join_slave(id, compute_uuid, host, url, user, password):
-            fake_join_slave.called = True
-        self.stubs.Set(self.conn._pool, "_join_slave", fake_join_slave)
+    def test_join_subordinate(self):
+        # Ensure join_subordinate gets called when the request gets to main.
+        def fake_join_subordinate(id, compute_uuid, host, url, user, password):
+            fake_join_subordinate.called = True
+        self.stubs.Set(self.conn._pool, "_join_subordinate", fake_join_subordinate)
 
         aggregate = self._aggregate_setup(hosts=['host', 'host2'],
                                           metadata=self.fake_metadata)
@@ -2961,7 +2961,7 @@ class XenAPIAggregateTestCase(stubs.XenAPITestBase):
                                          user='fake_user',
                                          passwd='fake_pass',
                                          xenhost_uuid='fake_uuid'))
-        self.assertTrue(fake_join_slave.called)
+        self.assertTrue(fake_join_subordinate.called)
 
     def test_add_to_aggregate_first_host(self):
         def fake_pool_set_name_label(self, session, pool_ref, name):
@@ -3001,19 +3001,19 @@ class XenAPIAggregateTestCase(stubs.XenAPITestBase):
                           self.conn._pool.remove_from_aggregate,
                           self.context, result, "test_host")
 
-    def test_remove_slave(self):
-        # Ensure eject slave gets called.
-        def fake_eject_slave(id, compute_uuid, host_uuid):
-            fake_eject_slave.called = True
-        self.stubs.Set(self.conn._pool, "_eject_slave", fake_eject_slave)
+    def test_remove_subordinate(self):
+        # Ensure eject subordinate gets called.
+        def fake_eject_subordinate(id, compute_uuid, host_uuid):
+            fake_eject_subordinate.called = True
+        self.stubs.Set(self.conn._pool, "_eject_subordinate", fake_eject_subordinate)
 
         self.fake_metadata['host2'] = 'fake_host2_uuid'
         aggregate = self._aggregate_setup(hosts=['host', 'host2'],
                 metadata=self.fake_metadata, aggr_state=pool_states.ACTIVE)
         self.conn._pool.remove_from_aggregate(self.context, aggregate, "host2")
-        self.assertTrue(fake_eject_slave.called)
+        self.assertTrue(fake_eject_subordinate.called)
 
-    def test_remove_master_solo(self):
+    def test_remove_main_solo(self):
         # Ensure metadata are cleared after removal.
         def fake_clear_pool(id):
             fake_clear_pool.called = True
@@ -3028,8 +3028,8 @@ class XenAPIAggregateTestCase(stubs.XenAPITestBase):
                 pool_states.KEY: pool_states.ACTIVE},
                 matchers.DictMatches(result['metadetails']))
 
-    def test_remote_master_non_empty_pool(self):
-        # Ensure AggregateError is raised if removing the master.
+    def test_remote_main_non_empty_pool(self):
+        # Ensure AggregateError is raised if removing the main.
         aggregate = self._aggregate_setup(hosts=['host', 'host2'],
                                           metadata=self.fake_metadata)
 
@@ -3137,7 +3137,7 @@ class XenAPIAggregateTestCase(stubs.XenAPITestBase):
                           self.compute.add_aggregate_host,
                           self.context, host="fake_host",
                           aggregate=jsonutils.to_primitive(self.aggr),
-                          slave_info=None)
+                          subordinate_info=None)
         excepted = db.aggregate_get(self.context, self.aggr['id'])
         self.assertEqual(excepted['metadetails'][pool_states.KEY],
                 pool_states.ERROR)
@@ -3149,16 +3149,16 @@ class MockComputeAPI(object):
         self._mock_calls = []
 
     def add_aggregate_host(self, ctxt, aggregate,
-                                     host_param, host, slave_info):
+                                     host_param, host, subordinate_info):
         self._mock_calls.append((
             self.add_aggregate_host, ctxt, aggregate,
-            host_param, host, slave_info))
+            host_param, host, subordinate_info))
 
     def remove_aggregate_host(self, ctxt, aggregate_id, host_param,
-                              host, slave_info):
+                              host, subordinate_info):
         self._mock_calls.append((
             self.remove_aggregate_host, ctxt, aggregate_id,
-            host_param, host, slave_info))
+            host_param, host, subordinate_info))
 
 
 class StubDependencies(object):
@@ -3173,10 +3173,10 @@ class StubDependencies(object):
     def _get_metadata(self, *_ignore):
         return {
             pool_states.KEY: {},
-            'master_compute': 'master'
+            'main_compute': 'main'
         }
 
-    def _create_slave_info(self, *ignore):
+    def _create_subordinate_info(self, *ignore):
         return "SLAVE_INFO"
 
 
@@ -3190,32 +3190,32 @@ class HypervisorPoolTestCase(test.NoDBTestCase):
         'id': 98,
         'hosts': [],
         'metadata': {
-            'master_compute': 'master',
+            'main_compute': 'main',
             pool_states.POOL_FLAG: {},
             pool_states.KEY: {}
             }
         }
 
-    def test_slave_asks_master_to_add_slave_to_pool(self):
-        slave = ResourcePoolWithStubs()
+    def test_subordinate_asks_main_to_add_subordinate_to_pool(self):
+        subordinate = ResourcePoolWithStubs()
 
-        slave.add_to_aggregate("CONTEXT", self.fake_aggregate, "slave")
+        subordinate.add_to_aggregate("CONTEXT", self.fake_aggregate, "subordinate")
 
         self.assertIn(
-            (slave.compute_rpcapi.add_aggregate_host,
+            (subordinate.compute_rpcapi.add_aggregate_host,
             "CONTEXT", jsonutils.to_primitive(self.fake_aggregate),
-            "slave", "master", "SLAVE_INFO"),
-            slave.compute_rpcapi._mock_calls)
+            "subordinate", "main", "SLAVE_INFO"),
+            subordinate.compute_rpcapi._mock_calls)
 
-    def test_slave_asks_master_to_remove_slave_from_pool(self):
-        slave = ResourcePoolWithStubs()
+    def test_subordinate_asks_main_to_remove_subordinate_from_pool(self):
+        subordinate = ResourcePoolWithStubs()
 
-        slave.remove_from_aggregate("CONTEXT", self.fake_aggregate, "slave")
+        subordinate.remove_from_aggregate("CONTEXT", self.fake_aggregate, "subordinate")
 
         self.assertIn(
-            (slave.compute_rpcapi.remove_aggregate_host,
-            "CONTEXT", 98, "slave", "master", "SLAVE_INFO"),
-            slave.compute_rpcapi._mock_calls)
+            (subordinate.compute_rpcapi.remove_aggregate_host,
+            "CONTEXT", 98, "subordinate", "main", "SLAVE_INFO"),
+            subordinate.compute_rpcapi._mock_calls)
 
 
 class SwapXapiHostTestCase(test.NoDBTestCase):
