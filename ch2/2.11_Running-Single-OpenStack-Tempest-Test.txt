@@ -1,1 +1,0 @@
-cd /opt/stack/tempestnosetests tempest/scenario/test_network_basic_ops.py

@@ -1,2 +1,0 @@
-sudo -I -u stack
-cd /opt/devstack

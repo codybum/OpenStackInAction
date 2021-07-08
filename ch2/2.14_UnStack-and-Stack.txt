@@ -1,0 +1,4 @@
+/opt/devstack/unstack.sh
+/opt/devstack/clean.sh
+sudo rm -rf /opt/stack && sudo mkdir /opt/stack && sudo chown stack:stack /opt/stack
+sudo reboot
