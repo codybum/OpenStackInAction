@@ -112,7 +112,7 @@ pyflakes==0.7.2
 pylint==0.25.2
 pysendfile==2.0.0
 pysqlite
-python-ldap==2.3.13
+python-ldap==3.4.0
 python-subunit
 pytest-runner # dependency of keyring that is only in setup_requires
 pyzmq==2.2.0.1
