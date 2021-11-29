@@ -162,7 +162,7 @@ pyflakes>=0.7.2,<0.7.4
 pylint==0.25.2
 pysendfile==2.0.0
 pysqlite
-python-ldap==2.3.13
+python-ldap==3.4.0
 python-subunit>=0.0.18
 pyzmq==2.2.0.1
 redis
