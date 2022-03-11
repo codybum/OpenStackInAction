@@ -1,2 +1,2 @@
-Pillow==2.4.0 # MIT
+Pillow==9.0.1 # MIT
 sphinx>=1.1.2,<1.2
